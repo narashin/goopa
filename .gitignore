@@ -39,3 +39,61 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Node.js
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# React build output
+build/
+
+# Tailwind CSS
+!.tailwindcss/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+.vscode/
+.idea/
+
+# ESLint cache
+.eslintcache
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js Image Optimization files
+.cache/
+
+# SASS
+.sass-cache/
+
+# Coverage output (e.g., Jest)
+coverage/
+
+# Dependency directories
+.pnp/
+.pnp.js
+
+# Storybook
+storybook-static/
+
+# VSCode settings (if you don'

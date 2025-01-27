@@ -1,0 +1,35 @@
+
+{
+    
+    "extends": [
+        
+        "eslint:recommended",
+        
+        "plugin:prettier/recommended",
+        
+        "prettier"
+        
+    ],
+    
+    "plugins": ["prettier"],
+    
+    "rules": {
+        "react/jsx-uses-react": "off", // 'off'로 설정하여 규칙 비활성화
+        "react/react-in-jsx-scope": "error", // 'error'로 설정하여 규칙 활성화
+        
+        "prettier/prettier": ["error", {
+            
+            "singleQuote": true,
+            
+            "trailingComma": "es5",
+            
+            "tabWidth": 4, // 4 spaces for indentation
+            
+            "semi": true
+            
+            }]
+            
+        },
+        
+        
+    }
