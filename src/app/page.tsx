@@ -4,17 +4,41 @@ import React, { useState } from 'react';
 
 import { LaptopFrame } from '../components/layout/LaptopFrame';
 import { TopNav } from '../components/layout/TopNav';
+import { useSearch } from '../hooks/use-search';
 import { MenuType } from '../types/menu';
-import { AdvancedDev } from './advanced-dev-apps/Page';
-import { BasicApps } from './basic-apps/Page';
-import { DevSetup } from './dev-apps/Page';
-import { Home } from './home/Page';
+import { AdvancedDev } from './advanced-apps/Index';
+import { DevApps } from './dev-apps/Index';
+import { GeneralApps } from './general-apps/Index';
+import { Home } from './home/Index';
+import { SearchResultsPage } from './search/SearchResultPage';
 
-export default function SetupWizard() {
+export default function Goopa() {
     const [currentView, setCurrentView] = useState<MenuType>('home');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [initialCategory, setInitialCategory] = useState<string | null>(null);
+    const searchResults = useSearch(searchQuery);
 
-    const handleNavigation = (view: MenuType) => {
+    const handleNavigation = (
+        view: MenuType,
+        itemId?: string,
+        category?: string
+    ) => {
         setCurrentView(view);
+        if (view === 'advanced' && category) {
+            setInitialCategory(category);
+        }
+        if (itemId) {
+            console.log(`Navigating to ${view} with itemId: ${itemId}`);
+        }
+    };
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+        if (query.trim() !== '') {
+            setCurrentView('search');
+        } else {
+            setCurrentView('home');
+        }
     };
 
     return (
@@ -24,11 +48,20 @@ export default function SetupWizard() {
                     <TopNav
                         onNavigate={handleNavigation}
                         currentView={currentView}
+                        onSearch={handleSearch}
                     />
                     {currentView === 'home' && <Home />}
-                    {currentView === 'basic apps' && <BasicApps />}
-                    {currentView === 'dev apps' && <DevSetup />}
-                    {currentView === 'advanced-dev' && <AdvancedDev />}
+                    {currentView === 'general' && <GeneralApps />}
+                    {currentView === 'dev' && <DevApps />}
+                    {currentView === 'advanced' && (
+                        <AdvancedDev initialCategory={initialCategory} />
+                    )}
+                    {currentView === 'search' && (
+                        <SearchResultsPage
+                            results={searchResults}
+                            onNavigate={handleNavigation}
+                        />
+                    )}
                 </div>
             </LaptopFrame>
         </div>

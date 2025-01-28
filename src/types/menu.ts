@@ -1,8 +1,22 @@
-export type MenuType = 'home' | 'basic apps' | 'dev apps' | 'advanced-dev';
+export type MenuType =
+    | 'home'
+    | 'general'
+    | 'dev'
+    | 'advanced'
+    | 'requirement'
+    | 'additional'
+    | 'search'
+    | 'zsh-plugin';
 
 export const Menu: MenuType[] = [
     'home',
-    'basic apps',
-    'dev apps',
-    'advanced-dev',
+    'general',
+    'dev',
+    'advanced',
+    'requirement',
+    'additional',
+    'search',
+    'zsh-plugin',
 ];
+
+export type View = 'home' | 'general' | 'dev' | 'advanced' | 'search';
