@@ -1,35 +1,30 @@
 // AdvancedDev.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { Card } from '../../components/ui/Card';
-import { IconDisplay } from '../../components/ui/IconDisplay';
+import Image from 'next/image';
+
+import { ClipboardIcon } from '@heroicons/react/24/outline';
+
 import { categoryColors, categoryOrder } from '../../constants/category';
 import { additionalTools } from '../../data/additional-tools';
-import { requirementTools } from '../../data/requirement-tool';
+import { requirementToolsData } from '../../data/requirement-tool';
 import { zshPlugins } from '../../data/zsh-plugins';
-import { AdditionalTool } from '../../types/additional-tool';
-import { CategoryType } from '../../types/advanced-category';
-import { RequirementTool } from '../../types/requirement-tool';
-import { ZshPlugin } from '../../types/zsh-plugin';
-import AdditionalTools from './AdditionalTools';
-import RequirementTools from './RequirementTools';
-import ZshPlugins from './ZshPlugins';
+import { ITool } from '../../types/app';
+import { SubCategoryType } from '../../types/category';
+import AdditionalToolsPage from './AdditionalToolsPage';
+import RequirementToolsPage from './RequirementToolsPage';
+import ZshPluginsPage from './ZshPluginsPage';
 
 interface AdvancedDevProps {
-    initialCategory?: CategoryType;
+    initialCategory?: SubCategoryType;
 }
 
-const AdvancedDev = ({ initialCategory }: AdvancedDevProps) => {
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(
-        null
-    );
-    const [selectedTools, setSelectedTools] = useState<RequirementTool[]>([]);
-    const [selectedZshPlugins, setSelectedZshPlugins] = useState<ZshPlugin[]>(
-        []
-    );
-    const [selectedAdditionalTools, setSelectedAdditionalTools] = useState<
-        AdditionalTool[]
-    >([]);
+const AdvancedDev = ({
+    initialCategory: initialSubCategory,
+}: AdvancedDevProps) => {
+    const [selectedCategory, setSelectedCategory] =
+        useState<SubCategoryType | null>(null);
+    const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
 
     const handleHomebrewClick = () => {
         window.open('https://brew.sh/', '_blank', 'noopener,noreferrer');
@@ -41,84 +36,63 @@ const AdvancedDev = ({ initialCategory }: AdvancedDevProps) => {
         });
     };
 
-    const toggleTool = (tool: RequirementTool) => {
-        setSelectedTools((prev) =>
-            prev.some((t) => t.id === tool.id)
-                ? prev.filter((t) => t.id !== tool.id)
-                : [...prev, tool]
+    const isItemSelected = (id: string) =>
+        selectedItems.some((item) => item.id === id);
+
+    const toggleItem = (item: ITool) => {
+        setSelectedItems((prev) =>
+            prev.some((i) => i.id === item.id)
+                ? prev.filter((i) => i.id !== item.id)
+                : [...prev, item]
         );
     };
 
-    const isToolSelected = (toolId: string) =>
-        selectedTools.some((tool) => tool.id === toolId);
-    const toggleZshPlugin = (plugin: ZshPlugin) => {
-        setSelectedZshPlugins((prev) =>
-            prev.some((p) => p.id === plugin.id)
-                ? prev.filter((p) => p.id !== plugin.id)
-                : [...prev, plugin]
-        );
-    };
-    const isZshPluginSelected = (pluginId: string) =>
-        selectedZshPlugins.some((plugin) => plugin.id === pluginId);
-    const toggleAdditionalTool = (tool: AdditionalTool) => {
-        setSelectedAdditionalTools((prev) =>
-            prev.some((t) => t.id === tool.id)
-                ? prev.filter((t) => t.id !== tool.id)
-                : [...prev, tool]
-        );
-    };
-    const isAdditionalToolSelected = (toolId: string) =>
-        selectedAdditionalTools.some((tool) => tool.id === toolId);
-
-    const renderCategoryContent = (category: string) => {
-        switch (category) {
-            case CategoryType.Requirement:
-                return (
-                    <RequirementTools
-                        tools={requirementTools}
-                        selectedItems={selectedTools}
-                        isItemSelected={isToolSelected}
-                        toggleItem={toggleTool}
-                        category={category}
-                        copyToClipboard={copyToClipboard}
-                    />
-                );
-            case CategoryType.ZshPlugin:
-                return (
-                    <ZshPlugins
-                        tools={zshPlugins}
-                        selectedItems={selectedZshPlugins}
-                        isItemSelected={isZshPluginSelected}
-                        toggleItem={toggleZshPlugin}
-                        category={category}
-                        copyToClipboard={copyToClipboard}
-                    />
-                );
-            case CategoryType.Additional:
-                return (
-                    <AdditionalTools
-                        tools={additionalTools}
-                        selectedItems={selectedAdditionalTools}
-                        isItemSelected={isAdditionalToolSelected}
-                        toggleItem={toggleAdditionalTool}
-                        category={category}
-                        copyToClipboard={copyToClipboard}
-                    />
-                );
-            default:
-                return null;
-        }
-    };
+    const renderCategoryContent = useCallback(
+        (category: SubCategoryType) => {
+            switch (category) {
+                case SubCategoryType.Requirement:
+                    return (
+                        <RequirementToolsPage
+                            tools={requirementToolsData}
+                            isItemSelected={isItemSelected}
+                            toggleItem={toggleItem}
+                            copyToClipboard={copyToClipboard}
+                        />
+                    );
+                case SubCategoryType.ZshPlugin:
+                    return (
+                        <ZshPluginsPage
+                            tools={zshPlugins}
+                            isItemSelected={isItemSelected}
+                            toggleItem={toggleItem}
+                            copyToClipboard={copyToClipboard}
+                        />
+                    );
+                case SubCategoryType.Additional:
+                    return (
+                        <AdditionalToolsPage
+                            tools={additionalTools}
+                            isItemSelected={isItemSelected}
+                            toggleItem={toggleItem}
+                            copyToClipboard={copyToClipboard}
+                        />
+                    );
+                default:
+                    return null;
+            }
+        },
+        [copyToClipboard, isItemSelected, toggleItem]
+    );
 
     useEffect(() => {
-        if (initialCategory && categoryOrder.includes(initialCategory)) {
-            setSelectedCategory(initialCategory);
+        if (initialSubCategory && categoryOrder.includes(initialSubCategory)) {
+            setSelectedCategory(initialSubCategory);
         }
-    }, [initialCategory]);
+    }, [initialSubCategory]);
 
     return (
-        <Card className="flex-1 overflow-hidden relative bg-transparent h-full border-0">
-            <div className="flex-1 overflow-hidden relative h-full">
+        <>
+            <div className="flex-1 overflow-auto relative h-full">
                 {selectedCategory ? (
                     renderCategoryContent(selectedCategory)
                 ) : (
@@ -129,10 +103,11 @@ const AdvancedDev = ({ initialCategory }: AdvancedDevProps) => {
                                 onClick={handleHomebrewClick}
                             >
                                 <div className="flex items-center justify-center mb-4">
-                                    <IconDisplay
-                                        icon="/icons/homebrew_icon.png"
-                                        name="Homebrew"
-                                        tooltip="The Missing Package Manager for macOS"
+                                    <Image
+                                        src="/icons/homebrew_icon.png"
+                                        alt="Homebrew"
+                                        width={100}
+                                        height={100}
                                     />
                                 </div>
                                 <h3 className="text-xl font-bold text-[#f5b700] text-center mb-2">
@@ -141,12 +116,22 @@ const AdvancedDev = ({ initialCategory }: AdvancedDevProps) => {
                                 <p className="text-white/80 text-center mb-4">
                                     The Missing Package Manager for macOS
                                 </p>
-                                <div className="bg-black/50 rounded p-3 font-mono text-sm text-white/90 overflow-x-auto">
+                                <div className="bg-black/50 rounded p-3 font-mono text-sm text-white/90 overflow-x-auto relative">
                                     <code>
                                         {
                                             '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
                                         }
                                     </code>
+                                    <button
+                                        onClick={() =>
+                                            copyToClipboard(
+                                                '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+                                            )
+                                        }
+                                        className="absolute top-2 right-2 text-white/60 hover:text-white/90"
+                                    >
+                                        <ClipboardIcon className="h-5 w-5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -154,8 +139,7 @@ const AdvancedDev = ({ initialCategory }: AdvancedDevProps) => {
                 )}
             </div>
 
-            {/* 오른쪽 카테고리 인덱스 */}
-            <div className="fixed right-[18%] top-1/2 -translate-y-1/2 space-y-2 z-50">
+            <div className="fixed right-[16%] top-1/2 -translate-y-1/2 space-y-2 z-50">
                 {categoryOrder.map((category) => (
                     <div
                         key={category}
@@ -196,7 +180,7 @@ const AdvancedDev = ({ initialCategory }: AdvancedDevProps) => {
                     </div>
                 ))}
             </div>
-        </Card>
+        </>
     );
 };
 

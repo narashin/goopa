@@ -2,16 +2,16 @@ import React from 'react';
 
 import { AppIconCard } from '../../components/templates/AppIconCard';
 import { Card } from '../../components/ui/Card';
-import { CategoryType } from '../../types/advanced-category';
-import { AppIcon } from '../../types/common-apps';
+import { ITool } from '../../types/app';
+import { AppCategoryType } from '../../types/category';
 import { MenuType } from '../../types/menu';
 
 interface SearchResultsPageProps {
-    results: AppIcon[];
+    results: ITool[];
     onNavigate: (
         view: MenuType,
         itemId?: string,
-        category?: CategoryType
+        category?: AppCategoryType
     ) => void;
 }
 
@@ -19,14 +19,14 @@ export function SearchResultsPage({
     results,
     onNavigate,
 }: SearchResultsPageProps) {
-    const handleNavigation = (app: AppIcon) => {
+    const handleNavigation = (app: ITool) => {
         if (app.downloadUrl) {
             window.open(app.downloadUrl, '_blank', 'noopener,noreferrer');
         } else {
             onNavigate(
-                app.hasScript ? 'advanced' : app.category,
+                app.hasScript ? AppCategoryType.Advanced : app.category,
                 app.id,
-                app.category as CategoryType
+                app.category
             );
         }
     };

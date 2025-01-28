@@ -1,31 +1,32 @@
-import { AppIcon } from '../types/common-apps';
+import { ITool } from '../types/app';
+import { AppCategoryType } from '../types/category';
 
-export const generalApps: AppIcon[] = [
+export const generalApps: ITool[] = [
     {
         id: 'chrome',
         name: 'Chrome',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/chrome_icon.png',
         downloadUrl: 'https://www.google.com/chrome/',
     },
     {
         id: 'arc',
         name: 'Arc',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/arc_icon.webp',
         downloadUrl: 'https://arc.net/',
     },
     {
         id: 'magnet',
         name: 'Magnet',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/magnet_icon.png',
         downloadUrl: 'https://magnet.crowdcafe.com/',
     },
     {
         id: '1password',
         name: '1Password',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/1password_icon.png',
         downloadUrl: 'https://1password.com/downloads/mac/',
         hasSettings: true,
@@ -33,42 +34,42 @@ export const generalApps: AppIcon[] = [
     {
         id: 'scroll-reverser',
         name: 'Scroll Reverser',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/scroll-reverser_icon.png',
         downloadUrl: 'https://pilotmoon.com/scrollreverser/',
     },
     {
         id: 'batfi',
         name: 'BatFi',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/batfi_icon.png',
         downloadUrl: 'https://github.com/dwarvesf/Batfi',
     },
     {
         id: 'karabiner-elements',
         name: 'Karabiner Elements',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/karabiner-elements_icon.png',
         downloadUrl: 'https://karabiner-elements.pqrs.org/',
     },
     {
         id: 'notion',
         name: 'Notion',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/notion_icon.png',
         downloadUrl: 'https://www.notion.so/desktop',
     },
     {
         id: 'obsidian',
         name: 'Obsidian',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/obsidian_icon.png',
         downloadUrl: 'https://obsidian.md/',
     },
     {
         id: 'alfred',
         name: 'Alfred',
-        category: 'general',
+        category: AppCategoryType.General,
         icon: '/icons/alfred_icon.webp',
         downloadUrl: 'https://www.alfredapp.com/',
     },

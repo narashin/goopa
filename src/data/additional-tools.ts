@@ -1,6 +1,6 @@
-import type { AdditionalTool } from '../types/additional-tool';
+import type { IAdditionalTool } from '../types/additional-tool';
 
-export const additionalTools: AdditionalTool[] = [
+export const additionalTools: IAdditionalTool[] = [
     {
         id: 'fzf',
         name: 'fzf',

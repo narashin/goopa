@@ -1,8 +1,3 @@
-export interface AdditionalTool {
-    id: string;
-    name: string;
-    icon?: string;
-    description?: string;
-    tooltip?: string;
-    installCommand: string;
-}
+import { ITool } from './app';
+
+export type AdditionalToolType = ITool;

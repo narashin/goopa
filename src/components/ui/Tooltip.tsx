@@ -10,17 +10,22 @@ interface TooltipProps {
 
 export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
 
     return (
         <Popover className="relative">
-            {/* Tooltip trigger element */}
-            <Popover.Button
-                as="div" // Ensure it's a div element for proper ref forwarding
-                onMouseEnter={() => setIsOpen(true)}
+            <div
+                onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setPosition({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height,
+                    });
+                    setIsOpen(true);
+                }}
                 onMouseLeave={() => setIsOpen(false)}
-            >
-                {children}
-            </Popover.Button>
+            ></div>
+            <Popover.Button as={Fragment}>{children}</Popover.Button>
 
             <Transition
                 show={isOpen}
@@ -32,7 +37,16 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
                 leaveFrom="transform scale-100 opacity-100"
                 leaveTo="transform scale-95 opacity-0"
             >
-                <Popover.Panel className="absolute z-10 w-64 max-w-[16rem] mt-2 -translate-x-1/2 left-1/2">
+                <Popover.Panel
+                    className="fixed z-[100] w-64 max-w-[16rem] mt-2"
+                    style={{
+                        pointerEvents: 'none',
+                        position: 'fixed',
+                        left: position.x,
+                        top: position.y,
+                        transform: 'translateX(-50%)',
+                    }}
+                >
                     <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                         <div className="p-4 bg-white dark:bg-gray-800">
                             {typeof content === 'string' ? (

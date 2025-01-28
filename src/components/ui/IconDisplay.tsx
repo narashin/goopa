@@ -18,13 +18,15 @@ export const IconDisplay: React.FC<IconDisplayProps> = ({
     const IconComponent = () => {
         if (icon) {
             return (
-                <Image
-                    src={icon || ''}
-                    alt={name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="p-2"
-                />
+                <div className="relative w-16 h-16">
+                    <Image
+                        src={icon || ''}
+                        alt={name}
+                        layout="fill"
+                        objectFit="contain"
+                        className="rounded-xl"
+                    />
+                </div>
             );
         }
 

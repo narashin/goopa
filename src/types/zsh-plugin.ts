@@ -1,8 +1,3 @@
-export interface ZshPlugin {
-    id: string;
-    name: string;
-    icon?: string;
-    tooltip?: string;
-    installCommand: string;
-    zshrcCommand?: string;
-}
+import { ITool } from './app';
+
+export type ZshPluginType = ITool;

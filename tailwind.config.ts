@@ -15,4 +15,9 @@ export default {
         },
     },
     plugins: [],
+    safelist: [
+        {
+            pattern: /bg-(purple|orange|green|gray)-(400|500)/,
+        },
+    ],
 } satisfies Config;

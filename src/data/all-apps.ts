@@ -1,27 +1,28 @@
 import { devApps } from '@/data/dev-apps';
 import { generalApps } from '@/data/general-apps';
 
-import { AppIcon } from '../types/common-apps';
+import { ITool } from '../types/app';
+import { AppCategoryType } from '../types/category';
 import { additionalTools } from './additional-tools';
-import { requirementTools } from './requirement-tool';
+import { requirementToolsData } from './requirement-tool';
 import { zshPlugins } from './zsh-plugins';
 
-export const allApps: AppIcon[] = [
+export const allApps: ITool[] = [
     ...generalApps,
     ...devApps,
-    ...requirementTools.map((tool) => ({
+    ...requirementToolsData.map((tool) => ({
         ...tool,
-        category: 'requirement' as const,
+        category: AppCategoryType.Requirement,
         hasSettings: true,
     })),
     ...zshPlugins.map((plugin) => ({
         ...plugin,
-        category: 'zsh-plugin' as const,
+        category: AppCategoryType.ZshPlugin,
         hasSettings: true,
     })),
     ...additionalTools.map((tool) => ({
         ...tool,
-        category: 'additional' as const,
+        category: AppCategoryType.Additional,
         hasSettings: true,
     })),
 ];

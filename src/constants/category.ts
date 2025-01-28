@@ -1,14 +1,14 @@
-import { CategoryType } from '../types/advanced-category';
+import { SubCategoryType } from '../types/category';
 
-export const categoryColors: Record<CategoryType, string> = {
-    [CategoryType.Requirement]: 'bg-purple-500',
-    [CategoryType.ZshPlugin]: 'bg-orange-400',
-    [CategoryType.Additional]: 'bg-green-400',
-    [CategoryType.None]: 'bg-gray-400', // 실제로 쓰일 일은 없음
+export const categoryColors: Record<SubCategoryType, string> = {
+    [SubCategoryType.Requirement]: 'bg-purple-500',
+    [SubCategoryType.ZshPlugin]: 'bg-orange-400',
+    [SubCategoryType.Additional]: 'bg-green-400',
+    [SubCategoryType.None]: 'bg-gray-400', // 실제로 쓰일 일은 없음
 };
 
-export const categoryOrder: CategoryType[] = [
-    CategoryType.Requirement,
-    CategoryType.ZshPlugin,
-    CategoryType.Additional,
+export const categoryOrder: SubCategoryType[] = [
+    SubCategoryType.Requirement,
+    SubCategoryType.ZshPlugin,
+    SubCategoryType.Additional,
 ];
