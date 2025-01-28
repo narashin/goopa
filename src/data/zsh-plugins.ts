@@ -1,6 +1,7 @@
-import { ZshPlugin } from '@/types/zsh-plugin';
+import { AppCategoryType } from '../types/category';
+import { ZshPluginType } from '../types/zsh-plugin';
 
-export const zshPlugins: ZshPlugin[] = [
+export const zshPlugins: ZshPluginType[] = [
     {
         id: 'zsh-autosuggestions',
         name: 'zsh-autosuggestions',
@@ -9,6 +10,7 @@ export const zshPlugins: ZshPlugin[] = [
         installCommand:
             'git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions',
         zshrcCommand: "echo 'plugins+=(zsh-autosuggestions)' >> ~/.zshrc",
+        category: AppCategoryType.ZshPlugin,
     },
     {
         id: 'zsh-syntax-highlighting',
@@ -17,6 +19,7 @@ export const zshPlugins: ZshPlugin[] = [
         installCommand:
             'git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting',
         zshrcCommand: "echo 'plugins+=(zsh-syntax-highlighting)' >> ~/.zshrc",
+        category: AppCategoryType.ZshPlugin,
     },
     {
         id: 'zsh-completions',
@@ -27,5 +30,6 @@ export const zshPlugins: ZshPlugin[] = [
             'git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions',
         zshrcCommand:
             "echo 'plugins+=(zsh-completions)' >> ~/.zshrc && echo 'autoload -U compinit && compinit' >> ~/.zshrc",
+        category: AppCategoryType.ZshPlugin,
     },
 ];

@@ -4,13 +4,13 @@ import { generalApps } from '@/data/general-apps';
 import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
 import { additionalTools } from './additional-tools';
-import { requirementToolsData } from './requirement-tool';
+import { requirementTools } from './requirement-tool';
 import { zshPlugins } from './zsh-plugins';
 
 export const allApps: ITool[] = [
     ...generalApps,
     ...devApps,
-    ...requirementToolsData.map((tool) => ({
+    ...requirementTools.map((tool) => ({
         ...tool,
         category: AppCategoryType.Requirement,
         hasSettings: true,

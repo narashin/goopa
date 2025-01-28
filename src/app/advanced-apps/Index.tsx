@@ -7,7 +7,7 @@ import { ClipboardIcon } from '@heroicons/react/24/outline';
 
 import { categoryColors, categoryOrder } from '../../constants/category';
 import { additionalTools } from '../../data/additional-tools';
-import { requirementToolsData } from '../../data/requirement-tool';
+import { requirementTools } from '../../data/requirement-tool';
 import { zshPlugins } from '../../data/zsh-plugins';
 import { ITool } from '../../types/app';
 import { SubCategoryType } from '../../types/category';
@@ -53,7 +53,7 @@ const AdvancedDev = ({
                 case SubCategoryType.Requirement:
                     return (
                         <RequirementToolsPage
-                            tools={requirementToolsData}
+                            tools={requirementTools}
                             isItemSelected={isItemSelected}
                             toggleItem={toggleItem}
                             copyToClipboard={copyToClipboard}

@@ -1,7 +1,7 @@
 import { AppCategoryType } from '../types/category';
 import { RequirementToolType } from '../types/requirement-tool';
 
-export const requirementToolsData: RequirementToolType[] = [
+export const requirementTools: RequirementToolType[] = [
     {
         id: 'git',
         name: 'Git',

@@ -6,6 +6,7 @@ export interface ITool {
     icon?: string;
     tooltip?: string;
     installCommand?: string;
+    zshrcCommand?: string;
     description?: string;
     hasScript?: boolean;
     hasSettings?: boolean;
