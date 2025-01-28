@@ -2,12 +2,17 @@ import React from 'react';
 
 import { AppIconCard } from '../../components/templates/AppIconCard';
 import { Card } from '../../components/ui/Card';
+import { CategoryType } from '../../types/advanced-category';
 import { AppIcon } from '../../types/common-apps';
 import { MenuType } from '../../types/menu';
 
 interface SearchResultsPageProps {
     results: AppIcon[];
-    onNavigate: (view: MenuType, itemId?: string, category?: string) => void;
+    onNavigate: (
+        view: MenuType,
+        itemId?: string,
+        category?: CategoryType
+    ) => void;
 }
 
 export function SearchResultsPage({
@@ -21,7 +26,7 @@ export function SearchResultsPage({
             onNavigate(
                 app.hasScript ? 'advanced' : app.category,
                 app.id,
-                app.category
+                app.category as CategoryType
             );
         }
     };

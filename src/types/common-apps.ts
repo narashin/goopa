@@ -7,4 +7,5 @@ export interface AppIcon {
     description?: string;
     tooltip?: string;
     hasScript?: boolean;
+    hasSettings?: boolean;
 }

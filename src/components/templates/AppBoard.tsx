@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { generalAppsData } from '../../data/general-apps';
+import { generalApps } from '../../data/general-apps';
 import { Card } from '../ui/Card';
 import { AppboardHeader } from './AppBoardHeader';
 import { AppIconCard } from './AppIconCard';
@@ -20,7 +20,7 @@ export const AppBoard = () => {
             <Card className="h-full bg-black/20 border-white/10 backdrop-blur-sm">
                 <div className="p-6">
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                        {generalAppsData.map((app) => (
+                        {generalApps.map((app) => (
                             <AppIconCard
                                 key={app.id}
                                 app={app}

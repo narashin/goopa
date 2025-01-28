@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { devApps } from '@/data/dev-apps';
-import { generalAppsData } from '@/data/general-apps';
+import { generalApps } from '@/data/general-apps';
 import { zshPlugins } from '@/data/zsh-plugins';
 
 import { additionalTools } from '../data/additional-tools';
@@ -9,7 +9,7 @@ import { requirementTools } from '../data/requirement-tool';
 import { AppIcon } from '../types/common-apps';
 
 const allApps: AppIcon[] = [
-    ...generalAppsData,
+    ...generalApps,
     ...devApps,
     ...requirementTools.map((tool) => ({
         ...tool,

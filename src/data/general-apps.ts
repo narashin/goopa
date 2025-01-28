@@ -1,6 +1,6 @@
 import { AppIcon } from '../types/common-apps';
 
-export const generalAppsData: AppIcon[] = [
+export const generalApps: AppIcon[] = [
     {
         id: 'chrome',
         name: 'Chrome',
@@ -28,6 +28,7 @@ export const generalAppsData: AppIcon[] = [
         category: 'general',
         icon: '/icons/1password_icon.png',
         downloadUrl: 'https://1password.com/downloads/mac/',
+        hasSettings: true,
     },
     {
         id: 'scroll-reverser',

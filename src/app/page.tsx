@@ -5,8 +5,9 @@ import React, { useState } from 'react';
 import { LaptopFrame } from '../components/layout/LaptopFrame';
 import { TopNav } from '../components/layout/TopNav';
 import { useSearch } from '../hooks/use-search';
+import { CategoryType } from '../types/advanced-category';
 import { MenuType } from '../types/menu';
-import { AdvancedDev } from './advanced-apps/Index';
+import AdvancedDev from './advanced-apps/Index';
 import { DevApps } from './dev-apps/Index';
 import { GeneralApps } from './general-apps/Index';
 import { Home } from './home/Index';
@@ -15,13 +16,15 @@ import { SearchResultsPage } from './search/SearchResultPage';
 export default function Goopa() {
     const [currentView, setCurrentView] = useState<MenuType>('home');
     const [searchQuery, setSearchQuery] = useState('');
-    const [initialCategory, setInitialCategory] = useState<string | null>(null);
+    const [initialCategory, setInitialCategory] = useState<CategoryType>(
+        CategoryType.None
+    );
     const searchResults = useSearch(searchQuery);
 
     const handleNavigation = (
         view: MenuType,
         itemId?: string,
-        category?: string
+        category?: CategoryType
     ) => {
         setCurrentView(view);
         if (view === 'advanced' && category) {
