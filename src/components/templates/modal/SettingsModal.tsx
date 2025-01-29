@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { ITool } from '../types/app';
+import { ITool } from '../../../types/app';
 
 interface SettingsModalProps {
     app: ITool;

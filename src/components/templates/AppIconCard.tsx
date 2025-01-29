@@ -7,8 +7,8 @@ import {
 
 import { useAppContext } from '../../contexts/AppContext';
 import type { ITool } from '../../types/app';
-import { SettingsModal } from '../SettingsModal';
 import { IconDisplay } from '../ui/IconDisplay';
+import { SettingsModal } from './modal/SettingsModal';
 
 interface AppCardProps {
     app?: ITool;

@@ -2,23 +2,28 @@ import React, { useState } from 'react';
 
 import { useAppContext } from '../../contexts/AppContext';
 import { ITool } from '../../types/app';
+import { AppCategoryType } from '../../types/category';
 import { AppIconCard } from './AppIconCard';
-import { ConfirmModal } from './ConfirmModal';
+import { AddNewAppModal } from './modal/AddNewAppModal';
+import { ConfirmModal } from './modal/ConfirmModal';
 
 interface ToolIconsProps {
     tools: ITool[];
     isItemSelected: (id: string) => boolean;
     toggleItem: (item: ITool) => void;
+    currentCategory: AppCategoryType;
 }
 
 const ToolIconsArea: React.FC<ToolIconsProps> = ({
     tools,
     isItemSelected,
     toggleItem,
+    currentCategory,
 }) => {
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [apps, setApps] = useState(tools);
 
     const handleAddNewApp = () => {
         if (isEditMode) {
@@ -33,6 +38,10 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
         setIsConfirmModalOpen(false);
     };
 
+    const handleSubmitNewApp = (newApp: ITool) => {
+        setApps((prevApps) => [...prevApps, newApp]);
+    };
+
     return (
         <>
             <div className="overflow-hidden flex flex-col">
@@ -41,27 +50,27 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                 </h2>
                 <div className="overflow-y-auto flex-grow">
                     <div className="grid grid-cols-2 gap-4 w-full pt-2">
-                        {tools.map((tool) => (
+                        {apps.map((app) => (
                             <div
-                                key={tool.id}
+                                key={app.id}
                                 className={`relative transition-all cursor-pointer ${
-                                    isItemSelected(tool.id)
+                                    isItemSelected(app.id)
                                         ? 'border-white/60 bg-white/10'
                                         : 'border-white/20 hover:border-white/40'
                                 }`}
                             >
                                 <AppIconCard
-                                    key={tool.id}
+                                    key={app.id}
                                     app={{
-                                        id: tool.id,
-                                        icon: tool.icon,
-                                        name: tool.name,
-                                        description: tool.description || '',
-                                        hasSettings: tool.hasSettings,
-                                        downloadUrl: tool.downloadUrl,
-                                        category: tool.category,
+                                        id: app.id,
+                                        icon: app.icon,
+                                        name: app.name,
+                                        description: app.description || '',
+                                        hasSettings: app.hasSettings,
+                                        downloadUrl: app.downloadUrl,
+                                        category: app.category,
                                     }}
-                                    onClick={() => toggleItem(tool)}
+                                    onClick={() => toggleItem(app)}
                                 />
                             </div>
                         ))}
@@ -72,21 +81,13 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                     </div>
                 </div>
             </div>
-            {isAddModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-lg">
-                        <h2 className="text-lg font-bold mb-4">새 앱 추가</h2>
-                        {/* 여기에 새 앱 추가 폼을 구현하세요 */}
-                        <p>새 앱 추가 폼이 여기에 들어갑니다.</p>
-                        <button
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                            onClick={() => setIsAddModalOpen(false)}
-                        >
-                            닫기
-                        </button>
-                    </div>
-                </div>
-            )}
+            <AddNewAppModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onSubmit={handleSubmitNewApp}
+                currentCategory={currentCategory}
+            />
+
             <ConfirmModal
                 isOpen={isConfirmModalOpen}
                 onClose={() => setIsConfirmModalOpen(false)}

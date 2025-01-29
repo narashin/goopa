@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import Image from 'next/image';
 
 import { Menu } from '@headlessui/react';
@@ -9,7 +9,8 @@ import {
 } from '@heroicons/react/20/solid';
 
 import { useAppContext } from '../../contexts/AppContext';
-import { auth, googleProvider } from '../../lib/firebase';
+import { signInWithGoogle } from '../../lib/auth';
+import { auth } from '../../lib/firebase';
 import { MenuType } from '../../types/menu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
@@ -46,8 +47,8 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
 
     const handleSignIn = async () => {
         try {
-            const result = await signInWithPopup(auth, googleProvider);
-            setUser(result.user);
+            const result = await signInWithGoogle();
+            setUser(result);
         } catch (error) {
             console.error('Error signing in with Google:', error);
         }

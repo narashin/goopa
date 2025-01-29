@@ -5,6 +5,7 @@ import ToolIconsArea from '../../components/templates/ToolIconsArea';
 import ToolScriptsArea from '../../components/templates/ToolScriptsArea';
 import { Card } from '../../components/ui/Card';
 import { ITool } from '../../types/app';
+import { AppCategoryType } from '../../types/category';
 
 interface RequirementToolsProps {
     tools: ITool[];
@@ -19,17 +20,21 @@ const RequirementToolsPage: React.FC<RequirementToolsProps> = ({
     isItemSelected,
     copyToClipboard,
 }) => {
+    const filteredApps = tools.filter(
+        (app) => app.category === AppCategoryType.Requirement
+    );
     return (
         <Card className="flex-1 p-4 overflow-hidden relative">
             <div className="px-4 grid grid-cols-2 gap-6 h-full border-0">
                 <ToolIconsArea
-                    tools={tools}
+                    tools={filteredApps}
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
+                    currentCategory={AppCategoryType.Requirement}
                 />
 
                 <ToolScriptsArea
-                    selectedItems={tools.filter((tool) =>
+                    selectedItems={filteredApps.filter((tool) =>
                         isItemSelected(tool.id)
                     )}
                     copyToClipboard={copyToClipboard}
