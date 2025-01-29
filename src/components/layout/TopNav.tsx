@@ -5,9 +5,7 @@ import Image from 'next/image';
 
 import { Menu } from '@headlessui/react';
 import {
-    ArrowRightOnRectangleIcon,
-    CogIcon,
-    UserIcon,
+    ArrowRightOnRectangleIcon, CogIcon, UserIcon,
 } from '@heroicons/react/20/solid';
 
 import { auth, googleProvider } from '../../lib/firebase';
@@ -25,10 +23,12 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
     const views: MenuType[] = ['home', 'general', 'dev', 'advanced'];
     const [searchQuery, setSearchQuery] = useState('');
     const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             setUser(user);
+            setLoading(false);
         });
         return () => unsubscribe();
     }, []);
@@ -97,78 +97,84 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
                     onClear={clearSearch}
                 />
             </div>
-            {user ? (
-                <Menu as="div" className="relative ml-4">
-                    <Menu.Button className="relative w-8 h-8 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-                        <Image
-                            src="/images/sticker.webp"
-                            alt="Profile"
-                            layout="fill"
-                            objectFit="cover"
-                        />
-                    </Menu.Button>
-                    <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                        <Menu.Item>
-                            {({ active }) => (
-                                <button
-                                    className={`${
-                                        active ? 'bg-gray-100' : ''
-                                    } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                                    onClick={() =>
-                                        handleProfileAction('profile')
+            {!loading && (
+                <>
+                    {user ? (
+                        <Menu as="div" className="relative ml-4">
+                            <Menu.Button className="relative w-8 h-8 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                                <Image
+                                    src={
+                                        user.photoURL || '/images/sticker.webp'
                                     }
-                                >
-                                    <UserIcon
-                                        className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                        aria-hidden="true"
-                                    />
-                                    Profile
-                                </button>
-                            )}
-                        </Menu.Item>
-                        <Menu.Item>
-                            {({ active }) => (
-                                <button
-                                    className={`${
-                                        active ? 'bg-gray-100' : ''
-                                    } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                                    onClick={() =>
-                                        handleProfileAction('settings')
-                                    }
-                                >
-                                    <CogIcon
-                                        className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                        aria-hidden="true"
-                                    />
-                                    Settings
-                                </button>
-                            )}
-                        </Menu.Item>
-                        <Menu.Item>
-                            {({ active }) => (
-                                <button
-                                    className={`${
-                                        active ? 'bg-gray-100' : ''
-                                    } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                                    onClick={() => handleSignOut()}
-                                >
-                                    <ArrowRightOnRectangleIcon
-                                        className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                        aria-hidden="true"
-                                    />
-                                    Log out
-                                </button>
-                            )}
-                        </Menu.Item>
-                    </Menu.Items>
-                </Menu>
-            ) : (
-                <button
-                    onClick={handleSignIn}
-                    className="ml-4 px-4 py-2 text-sx font-medium text-white bg-blue-900 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                    Sign In
-                </button>
+                                    alt="Profile"
+                                    layout="fill"
+                                    objectFit="cover"
+                                />
+                            </Menu.Button>
+                            <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            className={`${
+                                                active ? 'bg-gray-100' : ''
+                                            } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                                            onClick={() =>
+                                                handleProfileAction('profile')
+                                            }
+                                        >
+                                            <UserIcon
+                                                className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                                                aria-hidden="true"
+                                            />
+                                            Profile
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            className={`${
+                                                active ? 'bg-gray-100' : ''
+                                            } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                                            onClick={() =>
+                                                handleProfileAction('settings')
+                                            }
+                                        >
+                                            <CogIcon
+                                                className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                                                aria-hidden="true"
+                                            />
+                                            Settings
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            className={`${
+                                                active ? 'bg-gray-100' : ''
+                                            } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                                            onClick={() => handleSignOut()}
+                                        >
+                                            <ArrowRightOnRectangleIcon
+                                                className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                                                aria-hidden="true"
+                                            />
+                                            Log out
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                            </Menu.Items>
+                        </Menu>
+                    ) : (
+                        <button
+                            onClick={handleSignIn}
+                            className="ml-4 px-4 py-2 text-sx font-medium text-white bg-blue-900 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            Sign In
+                        </button>
+                    )}
+                </>
             )}
         </div>
     );

@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+    images: {
+        domains: [
+            'firebasestorage.googleapis.com',
+            'lh3.googleusercontent.com',
+        ],
+    },
     reactStrictMode: true,
     env: {
         NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
