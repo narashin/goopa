@@ -9,13 +9,15 @@ import { IconDisplay } from '../ui/IconDisplay';
 
 interface AppCardProps {
     app: ITool;
-    onClick: () => void;
+    onClick: (e: React.MouseEvent) => void;
 }
 
 export const AppIconCard: React.FC<AppCardProps> = ({ app, onClick }) => {
-    const handleClick = () => {
+    const handleClick = (e: React.MouseEvent) => {
         if (app.downloadUrl) {
-            onClick();
+            window.open(app.downloadUrl, '_blank', 'noopener,noreferrer');
+        } else {
+            onClick(e);
         }
     };
 
@@ -31,6 +33,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({ app, onClick }) => {
                         icon={app.icon}
                         name={app.name}
                         tooltip={app.description}
+                        onClick={handleClick}
                     />
                 </div>
 

@@ -13,13 +13,11 @@ const ToolScriptsArea: React.FC<ToolScriptsAreaProps> = ({
     selectedItems,
     copyToClipboard,
 }) => {
-    console.log('selectedItems', selectedItems);
-    console.log('-------------------');
     return (
         <div className="border-l border-white/10 pl-6 overflow-hidden flex flex-col">
-            <h3 className="text-xl font-bold text-white/90 mb-4 sticky top-0 bg-[#1a1b26] py-2">
-                Installation Scripts
-            </h3>
+            <h2 className="text-xl font-bold text-white/90 mb-4 sticky top-0 bg-[#1a1b26] py-2">
+                📜 Installation Scripts
+            </h2>
             <div className="overflow-y-auto flex-grow">
                 {selectedItems.length > 0 ? (
                     <div className="space-y-4 pr-4 pt-2">

@@ -29,9 +29,6 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                     ? 'border-white/60 bg-white/10'
                                     : 'border-white/20 hover:border-white/40'
                             }`}
-                            onClick={() => {
-                                toggleItem(tool);
-                            }}
                         >
                             <AppIconCard
                                 key={tool.id}
