@@ -1,5 +1,7 @@
 import type { Config } from 'tailwindcss';
 
+import typography from '@tailwindcss/typography';
+
 export default {
     content: [
         './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -14,7 +16,7 @@ export default {
             },
         },
     },
-    plugins: [],
+    plugins: [typography],
     safelist: [
         {
             pattern: /bg-(purple|orange|green|gray)-(400|500)/,

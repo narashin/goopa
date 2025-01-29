@@ -1,0 +1,13 @@
+/* styles.css 또는 App.css에 추가 */
+.markdown-content {
+    padding-left: 1.5rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    padding-left: 1.5rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5rem;
+}

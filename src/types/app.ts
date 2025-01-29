@@ -12,4 +12,5 @@ export interface ITool {
     hasSettings?: boolean;
     downloadUrl?: string;
     category: AppCategoryType;
+    settings?: string;
 }

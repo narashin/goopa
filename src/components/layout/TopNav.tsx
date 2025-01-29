@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 
-import { signInWithPopup, signOut, type User } from 'firebase/auth';
+import { signInWithPopup, signOut } from 'firebase/auth';
 import Image from 'next/image';
 
 import { Menu } from '@headlessui/react';
 import {
-    ArrowRightOnRectangleIcon, CogIcon, UserIcon,
+    ArrowRightOnRectangleIcon, EyeIcon, PencilIcon,
 } from '@heroicons/react/20/solid';
 
+import { useAppContext } from '../../contexts/AppContext';
 import { auth, googleProvider } from '../../lib/firebase';
 import { MenuType } from '../../types/menu';
 import { Logo } from '../ui/Logo';
@@ -22,8 +23,8 @@ interface TopNavProps {
 export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
     const views: MenuType[] = ['home', 'general', 'dev', 'advanced'];
     const [searchQuery, setSearchQuery] = useState('');
-    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const { user, setUser, isEditMode, setIsEditMode } = useAppContext();
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -43,32 +44,35 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
         onSearch('');
     };
 
-    const handleProfileAction = (action: string) => {
-        console.log(`Profile action: ${action}`);
-        // Here you would typically handle the action, e.g. navigate to profile page, open settings, or log out
-    };
-
     const handleSignIn = async () => {
         try {
-            await signInWithPopup(auth, googleProvider);
+            const result = await signInWithPopup(auth, googleProvider);
+            setUser(result.user);
         } catch (error) {
-            console.error('Error signing in with Google', error);
+            console.error('Error signing in with Google:', error);
         }
     };
 
     const handleSignOut = async () => {
         try {
             await signOut(auth);
+            setUser(null);
+            setIsEditMode(false);
         } catch (error) {
-            console.error('Error signing out', error);
+            console.error('Error signing out with Google', error);
         }
+    };
+
+    const toggleEditMode = () => {
+        setIsEditMode(!isEditMode);
     };
 
     return (
         <div className="flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm border-b border-white/10 relative z-40">
             <div className="flex items-center space-x-3">
-                <Logo />
+                <Logo isEditMode={isEditMode} />
             </div>
+
             <div className="flex space-x-4 text-sm">
                 {views.map((view) => (
                     <button
@@ -101,7 +105,7 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
                 <>
                     {user ? (
                         <Menu as="div" className="relative ml-4">
-                            <Menu.Button className="relative w-8 h-8 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                            <Menu.Button className="relative w-9 h-9 mr-3 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
                                 <Image
                                     src={
                                         user.photoURL || '/images/sticker.webp'
@@ -118,33 +122,25 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
                                             className={`${
                                                 active ? 'bg-gray-100' : ''
                                             } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                                            onClick={() =>
-                                                handleProfileAction('profile')
-                                            }
+                                            onClick={toggleEditMode}
                                         >
-                                            <UserIcon
-                                                className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                                aria-hidden="true"
-                                            />
-                                            Profile
-                                        </button>
-                                    )}
-                                </Menu.Item>
-                                <Menu.Item>
-                                    {({ active }) => (
-                                        <button
-                                            className={`${
-                                                active ? 'bg-gray-100' : ''
-                                            } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                                            onClick={() =>
-                                                handleProfileAction('settings')
-                                            }
-                                        >
-                                            <CogIcon
-                                                className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                                aria-hidden="true"
-                                            />
-                                            Settings
+                                            {isEditMode ? (
+                                                <>
+                                                    <EyeIcon
+                                                        className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                                                        aria-hidden="true"
+                                                    />
+                                                    Go To Read Mode
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <PencilIcon
+                                                        className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                                                        aria-hidden="true"
+                                                    />
+                                                    Go To Edit Mode
+                                                </>
+                                            )}
                                         </button>
                                     )}
                                 </Menu.Item>

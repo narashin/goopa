@@ -11,7 +11,9 @@
     "dependencies": {
         "@headlessui/react": "^2.2.0",
         "@heroicons/react": "^2.2.0",
+        "@tailwindcss/typography": "^0.5.16",
         "@tailwindui/react": "^0.1.1",
+        "@uiw/react-md-editor": "^4.0.5",
         "clsx": "^2.1.1",
         "firebase": "^10.14.1",
         "firebaseui": "^6.1.0",
@@ -19,6 +21,7 @@
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "react-markdown": "^9.0.3",
+        "remark-gfm": "^4.0.0",
         "tailwind-merge": "^2.6.0"
     },
     "devDependencies": {
