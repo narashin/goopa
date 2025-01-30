@@ -1,6 +1,8 @@
 import {
     collection,
+    deleteDoc,
     doc,
+    FirestoreDataConverter,
     getDoc,
     getDocs,
     query,
@@ -85,6 +87,42 @@ export const updateAppDescription = async (
     }
 };
 
+const appConverter: FirestoreDataConverter<ITool> = {
+    toFirestore: (app: ITool) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...data } = app;
+        return data;
+    },
+    fromFirestore: (snapshot, options) => {
+        const data = snapshot.data(options);
+        return { id: snapshot.id, ...data } as ITool;
+    },
+};
+
+export const updateAppInFirestore = async (
+    userId: string,
+    updatedApp: ITool
+): Promise<void> => {
+    try {
+        const appDocRef = doc(
+            firestore,
+            'users',
+            userId,
+            'apps',
+            updatedApp.id
+        ).withConverter(appConverter);
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...updateData } = updatedApp;
+
+        await updateDoc(appDocRef, updateData);
+        console.log('App updated successfully');
+    } catch (error) {
+        console.error('Error updating app:', error);
+        throw error;
+    }
+};
+
 export const fetchAppsFromFirestore = async (
     category: AppCategoryType
 ): Promise<ITool[]> => {
@@ -121,5 +159,16 @@ export const fetchAllAppsFromFirestore = async (): Promise<ITool[]> => {
     } catch (error) {
         console.error('앱 데이터를 가져오는 중 오류 발생:', error);
         return [];
+    }
+};
+
+export const deleteAppFromFirestore = async (userId: string, appId: string) => {
+    try {
+        const appDocRef = doc(firestore, 'users', userId, 'apps', appId);
+        await deleteDoc(appDocRef);
+        console.log('App deleted successfully');
+    } catch (error) {
+        console.error('Error deleting app:', error);
+        throw error;
     }
 };

@@ -6,17 +6,24 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 
 import { auth } from '../lib/firebase';
-import { addAppToFirestore, getAppsFromFirestore } from '../lib/firestore';
+import {
+    addAppToFirestore,
+    deleteAppFromFirestore,
+    getAppsFromFirestore,
+    updateAppInFirestore,
+} from '../lib/firestore';
 import type { ITool } from '../types/app';
 
 interface AppContextType {
-    addApp: (newApp: ITool) => void;
-    apps: ITool[];
-    isEditMode: boolean;
-    setApps: React.Dispatch<React.SetStateAction<ITool[]>>;
-    setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-    setUser: React.Dispatch<React.SetStateAction<User | null>>;
     user: User | null;
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
+    apps: ITool[];
+    setApps: React.Dispatch<React.SetStateAction<ITool[]>>;
+    addApp: (newApp: ITool) => Promise<void>;
+    updateApp: (updatedApp: ITool) => Promise<void>;
+    deleteApp: (appId: string) => Promise<void>;
+    isEditMode: boolean;
+    setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,7 +40,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             setUser(currentUser);
         });
 
-        // Cleanup 함수
         return () => unsubscribe();
     }, []);
 
@@ -41,7 +47,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         if (user) {
             getAppsFromFirestore(user.uid).then(setApps);
         } else {
-            setApps([]); // 사용자가 로그아웃하면 앱 목록을 초기화
+            setApps([]);
         }
     }, [user]);
 
@@ -52,11 +58,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
                 setApps((prevApps) => [...prevApps, addedApp]);
             } catch (error) {
                 console.error('Error adding app:', error);
-                // TODO: 여기에 사용자에게 오류 메시지를 표시하는 로직을 추가할 수 있습니다.
+                // TODO: 여기에 사용자에게 오류 메시지를 표시하는 로직을 추가
             }
         } else {
             console.error('User is not logged in');
-            // 여기에 사용자에게 로그인이 필요하다는 알림을 추가할 수 있습니다.
+            // TODO: 여기에 사용자에게 로그인이 필요하다는 알림을 추가
+        }
+    };
+
+    const updateApp = async (updatedApp: ITool) => {
+        if (user) {
+            await updateAppInFirestore(user.uid, updatedApp);
+            setApps((prevApps) =>
+                prevApps.map((app) =>
+                    app.id === updatedApp.id ? updatedApp : app
+                )
+            );
+        } else {
+            console.error('User is not logged in');
+        }
+    };
+
+    const deleteApp = async (appId: string) => {
+        if (user) {
+            await deleteAppFromFirestore(user.uid, appId);
+            setApps((prevApps) => prevApps.filter((app) => app.id !== appId));
+        } else {
+            console.error('User is not logged in');
         }
     };
 
@@ -65,11 +93,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             value={{
                 user,
                 setUser,
-                isEditMode,
-                setIsEditMode,
                 apps,
                 setApps,
                 addApp,
+                updateApp,
+                deleteApp,
+                isEditMode,
+                setIsEditMode,
             }}
         >
             {children}

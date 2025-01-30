@@ -11,26 +11,24 @@ import {
 import { useAppContext } from '../../contexts/AppContext';
 import type { ITool } from '../../types/app';
 import { IconDisplay } from '../ui/IconDisplay';
+import { DeleteConfirmModal } from './modal/DeleteConfirmModal';
 import { SettingsModal } from './modal/SettingsModal';
 
 interface AppCardProps {
     app?: ITool;
     onClick: (e: React.MouseEvent) => void;
-    onDelete?: (appId: string) => void;
-    onEditSettings?: (appId: string, settings: string) => void;
     isAddNewAppCard?: boolean;
 }
 
 export const AppIconCard: React.FC<AppCardProps> = ({
     app,
     onClick,
-    onDelete,
-    onEditSettings,
     isAddNewAppCard = false,
 }) => {
-    const { isEditMode, user } = useAppContext();
+    const { isEditMode, user, deleteApp, updateApp } = useAppContext();
     const [selectedApp, setSelectedApp] = useState<ITool | null>(app || null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
     const handleClick = (e: React.MouseEvent) => {
         if (isAddNewAppCard) {
@@ -49,15 +47,19 @@ export const AppIconCard: React.FC<AppCardProps> = ({
 
     const handleDeleteClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (onDelete && app) {
-            onDelete(app.id);
+        setShowDeleteConfirmModal(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (selectedApp) {
+            await deleteApp(selectedApp.id);
+            setShowDeleteConfirmModal(false);
         }
     };
 
     const handleUpdateApp = (updatedApp: ITool) => {
         setSelectedApp(updatedApp);
-        // 여기에 앱 상태를 전역적으로 업데이트하는 로직을 추가할 수 있습니다.
-        // 예: updateApp(updatedApp);
+        updateApp(updatedApp);
     };
 
     return (
@@ -127,12 +129,20 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                     user={user}
                     onClose={() => setShowSettingsModal(false)}
                     onSave={(settings) => {
-                        if (onEditSettings) {
-                            onEditSettings(selectedApp.id, settings);
-                        }
+                        handleUpdateApp({
+                            ...selectedApp,
+                            description: settings,
+                        });
                         setShowSettingsModal(false);
                     }}
                     onUpdate={handleUpdateApp}
+                />
+            )}
+            {showDeleteConfirmModal && selectedApp && (
+                <DeleteConfirmModal
+                    appName={selectedApp.name}
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setShowDeleteConfirmModal(false)}
                 />
             )}
         </div>
