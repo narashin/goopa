@@ -20,8 +20,8 @@
         "firebase": "^10.14.1",
         "firebaseui": "^6.1.0",
         "install": "^0.13.0",
-        "loadsh": "^0.0.4",
         "lodash": "^4.17.21",
+        "nanoid": "^5.0.9",
         "next": "15.1.6",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
@@ -29,8 +29,7 @@
         "react-markdown": "^9.0.3",
         "react-toastify": "^11.0.3",
         "remark-gfm": "^4.0.0",
-        "tailwind-merge": "^2.6.0",
-        "uuid": "^11.0.5"
+        "tailwind-merge": "^2.6.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",

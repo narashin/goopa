@@ -9,7 +9,7 @@ import { firestore } from './firebase';
 
 export const addAppToFirestore = async (
     userId: string,
-    appData: Omit<ITool, 'id'>
+    appData: ITool
 ): Promise<ITool> => {
     try {
         const appsCollectionRef = collection(
@@ -18,8 +18,8 @@ export const addAppToFirestore = async (
             userId,
             'apps'
         );
-        const newAppDocRef = doc(appsCollectionRef);
-        const newApp: ITool = { ...appData, id: newAppDocRef.id };
+        const newAppDocRef = doc(appsCollectionRef, appData.id);
+        const newApp: ITool = { ...appData };
         await setDoc(newAppDocRef, newApp);
         console.log('App added successfully with ID:', newAppDocRef.id);
         return newApp;

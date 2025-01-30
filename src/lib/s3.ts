@@ -1,9 +1,7 @@
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 import {
-    ObjectCannedACL,
-    PutObjectCommand,
-    S3Client,
+    ObjectCannedACL, PutObjectCommand, S3Client,
 } from '@aws-sdk/client-s3';
 
 const s3Client = new S3Client({
@@ -15,7 +13,7 @@ const s3Client = new S3Client({
 });
 
 export const uploadToS3 = async (file: File): Promise<string> => {
-    const fileName = `icons/${uuidv4()}-${file.name}`;
+    const fileName = `icons/${nanoid()}-${file.name}`;
     const fileArrayBuffer = await file.arrayBuffer();
 
     const params = {

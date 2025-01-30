@@ -46,6 +46,7 @@ export function SettingsModal({
         }
 
         try {
+            console.log('Saving settings:', { user, app, description });
             await updateAppDescription(user.uid, app.id, description);
             const updatedApp = { ...app, description };
             onUpdate(updatedApp);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import { useAppContext } from '../../../contexts/AppContext';
+import { useUserContext } from '../../../contexts/UserContext';
 import { addAppToFirestore } from '../../../lib/firestore';
 import { ITool } from '../../../types/app';
 import { AppCategoryType } from '../../../types/category';
@@ -20,7 +20,7 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
     currentCategory,
     onSubmit,
 }) => {
-    const { user } = useAppContext();
+    const { user } = useUserContext();
     const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
 
     const handleFormSubmit = async (newApp: ITool) => {
         if (user) {
-            await addAppToFirestore(newApp, user.uid);
+            await addAppToFirestore(user.uid, newApp);
         }
         onSubmit(newApp);
         onClose();

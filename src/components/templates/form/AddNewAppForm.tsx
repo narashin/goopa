@@ -1,8 +1,8 @@
 import type React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
+import { nanoid } from 'nanoid';
 import { useDropzone } from 'react-dropzone';
-import { v4 as uuidv4 } from 'uuid';
 
 import { uploadToS3 } from '../../../lib/s3';
 import type { ITool } from '../../../types/app';
@@ -167,7 +167,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
         }
 
         const newApp: ITool = {
-            id: uuidv4(),
+            id: nanoid(),
             name,
             category,
             ...(iconUrl && { icon: iconUrl }),

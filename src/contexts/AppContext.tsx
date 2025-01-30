@@ -3,22 +3,23 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import {
-    addAppToFirestore, deleteAppFromFirestore, updateAppInFirestore,
+    addAppToFirestore, deleteAppFromFirestore, getAppsFromFirestore,
+    updateAppInFirestore,
 } from '../lib/firestore';
 import { ITool } from '../types/app';
 import { useUserContext } from './UserContext';
 
 interface AppContextType {
+    addApp: (newApp: ITool) => Promise<void>;
     apps: ITool[];
     setApps: React.Dispatch<React.SetStateAction<ITool[]>>;
-    isEditMode: boolean;
-    setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-    isLoading: boolean;
-    error: string | null;
-    addApp: (newApp: ITool) => Promise<void>;
-    updateApp: (updatedApp: ITool) => Promise<void>;
     deleteApp: (appId: string) => Promise<void>;
+    error: string | null;
+    isEditMode: boolean;
+    isLoading: boolean;
+    setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     toggleEditMode: () => void;
+    updateApp: (updatedApp: ITool) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -41,6 +42,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     useEffect(() => {
         localStorage.setItem('isEditMode', JSON.stringify(isEditMode));
     }, [isEditMode]);
+
+    useEffect(() => {
+        const fetchApps = async () => {
+            if (user) {
+                const appsData = await getAppsFromFirestore(user.uid);
+                setApps(appsData);
+            }
+        };
+
+        if (user) {
+            fetchApps();
+        }
+    }, [user]);
 
     const toggleEditMode = () => {
         setIsEditMode((prevMode) => !prevMode);
