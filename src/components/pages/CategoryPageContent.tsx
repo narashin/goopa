@@ -3,7 +3,6 @@
 import React, { useCallback, useMemo } from 'react';
 
 import { useAppContext } from '../../contexts/AppContext';
-import { addAppToFirestore } from '../../lib/firestore';
 import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 import AdditionalAppsPage from './AdditionalToolsPage';
@@ -19,14 +18,13 @@ interface CategoryPageContentProps {
 }
 
 const CategoryPageContent = ({ category }: CategoryPageContentProps) => {
-    const { user, apps, addApp } = useAppContext();
+    const { apps, addApp } = useAppContext();
 
     const handleAddNewApp = useCallback(
         async (newApp: ITool) => {
-            if (user) await addAppToFirestore(newApp, user.uid);
             addApp(newApp);
         },
-        [user, addApp]
+        [addApp]
     );
 
     const copyToClipboard = useCallback((text: string) => {

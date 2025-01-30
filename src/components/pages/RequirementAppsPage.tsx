@@ -52,6 +52,7 @@ const RequirementAppsPage: React.FC<RequirementAppsPageProps> = ({
                 />
 
                 <ToolScriptsArea
+                    appCount={filteredApps.length}
                     selectedItems={selectedItems}
                     copyToClipboard={copyToClipboard}
                 />

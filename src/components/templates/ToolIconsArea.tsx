@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { useAppContext } from '../../contexts/AppContext';
+import { useUserContext } from '../../contexts/UserContext';
 import { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 import { AppIconCard } from './AppIconCard';
@@ -22,6 +23,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     toggleItem,
     currentCategory,
 }) => {
+    const { user } = useUserContext();
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -75,10 +77,12 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                 />
                             </div>
                         ))}
-                        <AppIconCard
-                            isAddNewAppCard
-                            onClick={handleAddNewApp}
-                        />
+                        {user && (
+                            <AppIconCard
+                                isAddNewAppCard
+                                onClick={handleAddNewApp}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

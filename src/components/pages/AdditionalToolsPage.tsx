@@ -50,6 +50,7 @@ const AdditionalAppsPage: React.FC<AdditionalAppsPageProps> = ({
                 />
 
                 <ToolScriptsArea
+                    appCount={filteredApps.length}
                     selectedItems={selectedItems}
                     copyToClipboard={copyToClipboard}
                 />

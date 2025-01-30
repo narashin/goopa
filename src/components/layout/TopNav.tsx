@@ -1,11 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 
 import { signOut } from 'firebase/auth';
 import * as _ from 'lodash';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { Menu } from '@headlessui/react';
+import {
+    Menu, MenuButton, MenuItem, MenuItems, Transition,
+} from '@headlessui/react';
 
 import { useAppContext } from '../../contexts/AppContext';
 import { signInWithGoogle } from '../../lib/auth';
@@ -18,7 +21,8 @@ export function TopNav() {
     const views: MenuType[] = ['home', 'general', 'dev', 'advanced'];
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
-    const { user, setUser, isEditMode, setIsEditMode } = useAppContext();
+    const [user, setUser] = useState(auth.currentUser);
+    const { isEditMode, setIsEditMode } = useAppContext();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -120,45 +124,82 @@ export function TopNav() {
             </div>
             <div className="flex items-center space-x-4">
                 {user ? (
-                    <>
-                        <Menu
-                            as="div"
-                            className="relative inline-block text-left"
+                    <Menu as="div" className="relative inline-block text-left">
+                        <div className="flex items-center">
+                            <MenuButton className="inline-flex w-full justify-center items-center">
+                                {user.photoURL ? (
+                                    <Image
+                                        src={user.photoURL}
+                                        alt="Profile"
+                                        width={32}
+                                        height={32}
+                                        className="rounded-full"
+                                    />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+                                        {user.displayName
+                                            ? user.displayName[0].toUpperCase()
+                                            : 'U'}
+                                    </div>
+                                )}
+                            </MenuButton>
+                        </div>
+                        <Transition
+                            as={Fragment}
+                            enter="transition ease-out duration-50"
+                            enterFrom="transform opacity-0 scale-95"
+                            enterTo="transform opacity-100 scale-100"
+                            leave="transition ease-in duration-75"
+                            leaveFrom="transform opacity-100 scale-100"
+                            leaveTo="transform opacity-0 scale-95"
                         >
-                            <div>
-                                <Menu.Button className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                    {user.displayName || user.email}
-                                </Menu.Button>
-                            </div>
-                            <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <Menu.Item>
-                                    {({ active }) => (
-                                        <button
-                                            onClick={toggleEditMode}
-                                            className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-left text-sm`}
-                                        >
-                                            {isEditMode
-                                                ? 'Edit Mode OFF'
-                                                : 'Edit Mode ON'}
-                                        </button>
-                                    )}
-                                </Menu.Item>
-                                <Menu.Item>
-                                    {({ active }) => (
-                                        <button
-                                            onClick={handleSignOut}
-                                            className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-left text-sm`}
-                                        >
-                                            Sign out
-                                        </button>
-                                    )}
-                                </Menu.Item>
-                            </Menu.Items>
-                        </Menu>
-                    </>
+                            <MenuItems className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <div className="py-1">
+                                    <MenuItem>
+                                        {({ active }) => (
+                                            <div className="w-full">
+                                                {isEditMode && (
+                                                    <div className="flex items-center px-4 py-2 text-xs text-gray-500">
+                                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                                        {"You're in Edit Mode"}
+                                                    </div>
+                                                )}
+                                                <button
+                                                    onClick={toggleEditMode}
+                                                    className={`${
+                                                        active
+                                                            ? 'bg-gray-100 text-gray-900'
+                                                            : 'text-gray-700'
+                                                    } block w-full px-4 py-2 text-left text-xs`}
+                                                >
+                                                    {isEditMode
+                                                        ? 'Edit Mode OFF'
+                                                        : 'Edit Mode ON'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </MenuItem>
+                                    <MenuItem>
+                                        {({ active }) => (
+                                            <button
+                                                onClick={handleSignOut}
+                                                className={`${
+                                                    active
+                                                        ? 'bg-gray-100 text-gray-900'
+                                                        : 'text-gray-700'
+                                                } block w-full px-4 py-2 text-left text-xs`}
+                                            >
+                                                Sign out
+                                            </button>
+                                        )}
+                                    </MenuItem>
+                                </div>
+                            </MenuItems>
+                        </Transition>
+                    </Menu>
                 ) : (
                     <button
-                        className="ml-4 px-4 py-2 text-sx font-medium text-white bg-blue-900 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="ml-4 px-3 py-1.5 text-xs font-medium text-white bg-gray-800 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out shadow-sm"
                         onClick={handleSignIn}
                     >
                         Sign in

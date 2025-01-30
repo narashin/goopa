@@ -5,11 +5,13 @@ import { ClipboardIcon } from '@heroicons/react/24/outline';
 import { ITool } from '../../types/app';
 
 interface ToolScriptsAreaProps {
+    appCount: number;
     selectedItems: ITool[];
     copyToClipboard: (text: string) => void;
 }
 
 const ToolScriptsArea: React.FC<ToolScriptsAreaProps> = ({
+    appCount,
     selectedItems,
     copyToClipboard,
 }) => {
@@ -49,9 +51,11 @@ const ToolScriptsArea: React.FC<ToolScriptsAreaProps> = ({
                         ))}
                     </div>
                 ) : (
-                    <p className="text-white/60 text-sm">
-                        Select items to see installation scripts
-                    </p>
+                    appCount > 0 && (
+                        <p className="text-white/60 text-sm">
+                            Select items to see installation scripts
+                        </p>
+                    )
                 )}
             </div>
         </div>

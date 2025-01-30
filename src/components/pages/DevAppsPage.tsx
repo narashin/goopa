@@ -4,10 +4,13 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
-import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
+import {
+    AddNewAppModal,
+} from '../../components/templates/modal/AddNewAppModal';
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAppContext } from '../../contexts/AppContext';
+import { useUserContext } from '../../contexts/UserContext';
 import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
@@ -17,6 +20,7 @@ interface DevAppsPageProps {
 }
 
 export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
+    const { user } = useUserContext();
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -69,10 +73,12 @@ export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
                                 }
                             />
                         ))}
-                        <AppIconCard
-                            isAddNewAppCard
-                            onClick={handleAddNewApp}
-                        />
+                        {user && (
+                            <AppIconCard
+                                isAddNewAppCard
+                                onClick={handleAddNewApp}
+                            />
+                        )}
                     </div>
                 </div>
             </Card>

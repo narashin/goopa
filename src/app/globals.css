@@ -3,19 +3,52 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --foreground: #171717;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+    color: var(--foreground);
+    background: var(--background);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.neon-text-outline {
+    color: #4ade80;
+    text-shadow:
+    0 0 7px #4ade80,
+    0 0 10px #4ade80,
+    0 0 21px #4ade80,
+    0 0 42px #4ade80,
+    0 0 82px #4ade80,
+    0 0 92px #4ade80;
+    animation: pulsate 1.5s infinite alternate;  
+}
+
+@keyframes pulsate {
+    100% {
+        text-shadow:
+        0 0 4px #4ade80,
+        0 0 11px #4ade80,
+        0 0 19px #4ade80,
+        0 0 40px #4ade80,
+        0 0 80px #4ade80,
+        0 0 90px #4ade80,
+    }
+    0% {
+        text-shadow:
+        0 0 2px #4ade80,
+        0 0 4px #4ade80,
+        0 0 6px #4ade80,
+        0 0 10px #4ade80,
+        0 0 45px #4ade80,
+        0 0 55px #4ade80,
+    }
 }

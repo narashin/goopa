@@ -1,14 +1,6 @@
 import {
-    collection,
-    deleteDoc,
-    doc,
-    FirestoreDataConverter,
-    getDoc,
-    getDocs,
-    query,
-    setDoc,
-    updateDoc,
-    where,
+    collection, deleteDoc, doc, FirestoreDataConverter, getDoc, getDocs, query,
+    setDoc, updateDoc, where,
 } from 'firebase/firestore';
 
 import { ITool } from '../types/app';
@@ -16,8 +8,8 @@ import { AppCategoryType } from '../types/category';
 import { firestore } from './firebase';
 
 export const addAppToFirestore = async (
-    appData: Omit<ITool, 'id'>,
-    userId: string
+    userId: string,
+    appData: Omit<ITool, 'id'>
 ): Promise<ITool> => {
     try {
         const appsCollectionRef = collection(
@@ -72,7 +64,6 @@ export const updateAppDescription = async (
         console.log('Document exists:', docSnap.exists());
 
         if (docSnap.exists()) {
-            // 문서가 존재하면 'description' 필드를 추가 (기존 데이터는 그대로 유지)
             await updateDoc(appDocRef, {
                 description: description,
             });
@@ -126,8 +117,8 @@ export const updateAppInFirestore = async (
 export const fetchAppsFromFirestore = async (
     category: AppCategoryType
 ): Promise<ITool[]> => {
-    const appsRef = collection(firestore, 'apps'); // 'apps' 컬렉션에서 데이터 가져오기
-    const q = query(appsRef, where('category', '==', category)); // 'category'가 'Dev'인 앱들만 필터링
+    const appsRef = collection(firestore, 'apps');
+    const q = query(appsRef, where('category', '==', category));
 
     const querySnapshot = await getDocs(q);
     const appsList: ITool[] = querySnapshot.docs.map((doc) => {

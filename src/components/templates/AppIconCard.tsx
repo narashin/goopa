@@ -2,13 +2,11 @@ import type React from 'react';
 import { useState } from 'react';
 
 import {
-    BookOpenIcon,
-    Cog6ToothIcon,
-    MinusIcon,
-    PlusIcon,
+    BookOpenIcon, Cog6ToothIcon, MinusIcon, PlusIcon,
 } from '@heroicons/react/24/outline';
 
 import { useAppContext } from '../../contexts/AppContext';
+import { useUserContext } from '../../contexts/UserContext';
 import type { ITool } from '../../types/app';
 import { IconDisplay } from '../ui/IconDisplay';
 import { DeleteConfirmModal } from './modal/DeleteConfirmModal';
@@ -25,7 +23,8 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     onClick,
     isAddNewAppCard = false,
 }) => {
-    const { isEditMode, user, deleteApp, updateApp } = useAppContext();
+    const { user } = useUserContext();
+    const { isEditMode, deleteApp, updateApp } = useAppContext();
     const [selectedApp, setSelectedApp] = useState<ITool | null>(app || null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);

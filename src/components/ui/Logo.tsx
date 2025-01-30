@@ -26,8 +26,8 @@ export function Logo({ isEditMode = false }: LogoProps) {
                 </div>
             </div>
             {isEditMode && (
-                <div className="absolute top-[30%] left-[5.3%] bg-transparent border-x-2 border-green-500 text-green-500 px-2 py-1 rounded-md text-xs font-semibold">
-                    Edit mode
+                <div className="absolute top-[30%] left-[5.3%] bg-transparent border-x-2 border-green-500 text-green-500 px-2 py-1 rounded-md text-xs font-bold">
+                    <span className="neon-text-outline">Edit mode</span>
                 </div>
             )}
         </Link>
