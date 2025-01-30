@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useAppContext } from '../../contexts/AppContext';
 import { addAppToFirestore } from '../../lib/firestore';
-import { ITool } from '../../types/app';
+import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 import AdditionalAppsPage from './AdditionalToolsPage';
 import AdvancedDevAppPage from './AdvancedAppsPage';
@@ -23,13 +23,18 @@ const CategoryPageContent = ({
     category,
     initialApps,
 }: CategoryPageContentProps) => {
-    const { user } = useAppContext();
-    const [apps, setApps] = useState<ITool[]>(initialApps);
+    const { user, apps, setApps, addApp } = useAppContext();
     const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
+
+    useEffect(() => {
+        if (initialApps.length > 0 && apps.length === 0) {
+            setApps(initialApps);
+        }
+    }, [initialApps, apps, setApps]);
 
     const handleAddNewApp = async (newApp: ITool) => {
         if (user) await addAppToFirestore(newApp, user.uid);
-        setApps((prevApps) => [...prevApps, newApp]);
+        addApp(newApp);
     };
 
     const toggleItem = (item: ITool) => {

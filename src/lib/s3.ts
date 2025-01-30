@@ -14,23 +14,24 @@ const s3Client = new S3Client({
     },
 });
 
-console.log('AWS_REGION:', process.env.AWS_REGION);
-
 export const uploadToS3 = async (file: File): Promise<string> => {
     const fileName = `icons/${uuidv4()}-${file.name}`;
+    const fileArrayBuffer = await file.arrayBuffer();
+
     const params = {
         Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME!,
         Key: fileName,
-        Body: file.stream(),
+        Body: new Uint8Array(fileArrayBuffer),
         ContentType: file.type,
-        ACL: ObjectCannedACL.public_read,
+        ACL: ObjectCannedACL.public_read_write,
     };
 
     try {
         const command = new PutObjectCommand(params);
         const data = await s3Client.send(command);
-        console.log('File uploaded successfully', data);
-        return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`; // S3 URL 반환
+        console.log('S3 upload successful:', data);
+
+        return `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
     } catch (error) {
         console.error('Error uploading file:', error);
         throw new Error('S3 upload failed');

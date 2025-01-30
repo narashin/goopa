@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
         domains: [
             'firebasestorage.googleapis.com',
             'lh3.googleusercontent.com',
+            'goopa.s3.amazonaws.com',
         ],
     },
     reactStrictMode: true,

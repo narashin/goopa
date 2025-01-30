@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,6 +7,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { uploadToS3 } from '../../../lib/s3';
 import type { ITool } from '../../../types/app';
 import { AppCategoryType } from '../../../types/category';
+
+// fieldConfig에 대한 타입 정의
+type FieldConfig = {
+    [key in AppCategoryType]: {
+        required: string[];
+        optional: string[];
+        hidden: string[];
+    };
+};
 
 interface AddNewAppFormProps {
     onSubmit: (newApp: ITool) => void;
@@ -22,16 +31,13 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [name, setName] = useState('');
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [iconPreview, setIconPreview] = useState<string | null>(null);
-    const [category, setCategory] = useState<AppCategoryType | ''>(
-        currentCategory
-    );
+    const [category, setCategory] = useState<AppCategoryType>(currentCategory);
     const [downloadUrl, setDownloadUrl] = useState('');
     const [tooltip, setTooltip] = useState('');
     const [installCommand, setInstallCommand] = useState('');
     const [zshrcCommand, setZshrcCommand] = useState('');
 
-    const [nameError, setNameError] = useState(false);
-    const [categoryError, setCategoryError] = useState(false);
+    const [errors, setErrors] = useState<Record<string, boolean>>({});
 
     const categoryOptions = [
         { value: AppCategoryType.General, label: 'General' },
@@ -53,6 +59,42 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
         },
     ];
 
+    const fieldConfig: FieldConfig = useMemo(
+        () => ({
+            [AppCategoryType.General]: {
+                required: ['name', 'downloadUrl'],
+                optional: ['icon', 'tooltip'],
+                hidden: ['installCommand', 'zshrcCommand'],
+            },
+            [AppCategoryType.Dev]: {
+                required: ['name', 'downloadUrl'],
+                optional: ['icon', 'tooltip'],
+                hidden: ['installCommand', 'zshrcCommand'],
+            },
+            [AppCategoryType.ZshPlugin]: {
+                required: ['name', 'installCommand'],
+                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                hidden: [],
+            },
+            [AppCategoryType.Requirement]: {
+                required: ['name', 'installCommand'],
+                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                hidden: [],
+            },
+            [AppCategoryType.Additional]: {
+                required: ['name', 'installCommand'],
+                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                hidden: [],
+            },
+            [AppCategoryType.Advanced]: {
+                required: ['name', 'installCommand'],
+                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                hidden: [],
+            },
+        }),
+        []
+    );
+
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
             const file = acceptedFiles[0];
@@ -70,10 +112,8 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     });
 
     const validateField = (field: string, value: string) => {
-        if (field === 'name') {
-            setNameError(value.trim() === '');
-        } else if (field === 'category') {
-            setCategoryError(value === '');
+        if (fieldConfig[category].required.includes(field)) {
+            setErrors((prev) => ({ ...prev, [field]: value.trim() === '' }));
         }
     };
 
@@ -83,10 +123,25 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        validateField('name', name);
-        validateField('category', category);
+        const newErrors: Record<string, boolean> = {};
 
-        if (name.trim() === '' || category === '') {
+        fieldConfig[category].required.forEach((field) => {
+            const value =
+                field === 'name'
+                    ? name
+                    : field === 'downloadUrl'
+                      ? downloadUrl
+                      : field === 'installCommand'
+                        ? installCommand
+                        : '';
+            if (value.trim() === '') {
+                newErrors[field] = true;
+            }
+        });
+
+        setErrors(newErrors);
+
+        if (Object.values(newErrors).some((error) => error)) {
             return;
         }
 
@@ -118,17 +173,53 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const inputClassName = (error: boolean) =>
         `w-full px-3 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500`;
 
+    const renderField = (
+        field: string,
+        label: string,
+        value: string,
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+        type = 'text'
+    ) => {
+        if (fieldConfig[category].hidden.includes(field)) {
+            return null;
+        }
+
+        const isRequired = fieldConfig[category].required.includes(field);
+
+        return (
+            <div>
+                <label
+                    htmlFor={field}
+                    className="block text-sm font-medium text-gray-700"
+                >
+                    {label}{' '}
+                    {isRequired && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                    id={field}
+                    type={type}
+                    value={value}
+                    onChange={onChange}
+                    onBlur={() => handleBlur(field, value)}
+                    required={isRequired}
+                    className={inputClassName(!!errors[field])}
+                />
+                {errors[field] && (
+                    <p className="text-red-500 text-xs mt-1">
+                        {label}은(는) 필수입니다.
+                    </p>
+                )}
+            </div>
+        );
+    };
+
     return (
         <form onSubmit={handleFormSubmit} className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-1">
                     <div
                         {...getRootProps()}
-                        className={`w-full h-32 border-2 border-dashed ${
-                            isDragActive
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-300'
-                        } rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex flex-col items-center justify-center`}
+                        className={`w-full h-32 border-2 border-dashed ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex flex-col items-center justify-center`}
                     >
                         <input {...getInputProps()} />
                         {iconPreview ? (
@@ -161,25 +252,8 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                     </div>
                 </div>
                 <div className="col-span-2">
-                    <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        앱 이름 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        id="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        onBlur={() => handleBlur('name', name)}
-                        required
-                        className={inputClassName(nameError)}
-                    />
-                    {nameError && (
-                        <p className="text-red-500 text-xs mt-1">
-                            앱 이름은 필수입니다.
-                        </p>
+                    {renderField('name', '앱 이름', name, (e) =>
+                        setName(e.target.value)
                     )}
                 </div>
             </div>
@@ -197,11 +271,9 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                     onChange={(e) =>
                         setCategory(e.target.value as AppCategoryType)
                     }
-                    onBlur={() => handleBlur('category', category)}
                     required
-                    className={inputClassName(categoryError)}
+                    className={inputClassName(false)}
                 >
-                    <option value="">카테고리 선택</option>
                     {categoryOptions
                         .filter((option) => !option.group)
                         .map(({ value, label }) => (
@@ -219,76 +291,24 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                             ))}
                     </optgroup>
                 </select>
-                {categoryError && (
-                    <p className="text-red-500 text-xs mt-1">
-                        카테고리 선택은 필수입니다.
-                    </p>
-                )}
             </div>
 
-            <div>
-                <label
-                    htmlFor="downloadUrl"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    다운로드 URL
-                </label>
-                <input
-                    id="downloadUrl"
-                    type="url"
-                    value={downloadUrl}
-                    onChange={(e) => setDownloadUrl(e.target.value)}
-                    className={inputClassName(false)}
-                />
-            </div>
-
-            <div>
-                <label
-                    htmlFor="tooltip"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    툴팁
-                </label>
-                <input
-                    id="tooltip"
-                    type="text"
-                    value={tooltip}
-                    onChange={(e) => setTooltip(e.target.value)}
-                    className={inputClassName(false)}
-                />
-            </div>
-
-            <div>
-                <label
-                    htmlFor="installCommand"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    설치 명령어
-                </label>
-                <input
-                    id="installCommand"
-                    type="text"
-                    value={installCommand}
-                    onChange={(e) => setInstallCommand(e.target.value)}
-                    className={inputClassName(false)}
-                />
-            </div>
-
-            <div>
-                <label
-                    htmlFor="zshrcCommand"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    zshrc 추가 코드
-                </label>
-                <input
-                    id="zshrcCommand"
-                    type="text"
-                    value={zshrcCommand}
-                    onChange={(e) => setZshrcCommand(e.target.value)}
-                    className={inputClassName(false)}
-                />
-            </div>
+            {renderField(
+                'downloadUrl',
+                '다운로드 URL',
+                downloadUrl,
+                (e) => setDownloadUrl(e.target.value),
+                'url'
+            )}
+            {renderField('tooltip', '툴팁', tooltip, (e) =>
+                setTooltip(e.target.value)
+            )}
+            {renderField('installCommand', '설치 명령어', installCommand, (e) =>
+                setInstallCommand(e.target.value)
+            )}
+            {renderField('zshrcCommand', 'zshrc 추가 코드', zshrcCommand, (e) =>
+                setZshrcCommand(e.target.value)
+            )}
 
             <div className="flex justify-between pt-4">
                 <button

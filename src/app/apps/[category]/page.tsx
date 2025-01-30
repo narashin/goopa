@@ -1,20 +1,16 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 
-import CategoryPageContent from '../../../components/pages/CategoryPageContent';
 import { fetchAppsFromFirestore } from '../../../lib/firestore';
 import { AppCategoryType } from '../../../types/category';
+import CategoryPageClient from './CategoryPageClient';
 
 interface CategoryPageProps {
-    params: { category: string };
+    params: { category: AppCategoryType };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-    const category = await Promise.resolve(params.category as AppCategoryType);
-    const apps = await fetchAppsFromFirestore(category);
+    const { category } = params;
+    const initialApps = await fetchAppsFromFirestore(category);
 
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <CategoryPageContent category={category} initialApps={apps} />
-        </Suspense>
-    );
+    return <CategoryPageClient category={category} initialApps={initialApps} />;
 }

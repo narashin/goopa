@@ -1,6 +1,7 @@
 import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 import { ITool } from '../types/app';
+import { AppCategoryType } from '../types/category';
 import { firestore } from './firebase';
 
 export const addAppToFirestore = async (newApp: ITool, userId: string) => {
@@ -14,7 +15,7 @@ export const addAppToFirestore = async (newApp: ITool, userId: string) => {
 };
 
 export const fetchAppsFromFirestore = async (
-    category: string
+    category: AppCategoryType
 ): Promise<ITool[]> => {
     const appsRef = collection(firestore, 'apps'); // 'apps' 컬렉션에서 데이터 가져오기
     const q = query(appsRef, where('category', '==', category)); // 'category'가 'Dev'인 앱들만 필터링
@@ -32,4 +33,22 @@ export const fetchAppsFromFirestore = async (
     });
 
     return appsList;
+};
+
+export const fetchAllAppsFromFirestore = async (): Promise<ITool[]> => {
+    try {
+        const appsCollection = collection(firestore, 'apps');
+        const appsSnapshot = await getDocs(appsCollection);
+        const apps: ITool[] = [];
+
+        appsSnapshot.forEach((doc) => {
+            const appData = doc.data() as ITool;
+            apps.push({ ...appData, id: doc.id });
+        });
+
+        return apps;
+    } catch (error) {
+        console.error('앱 데이터를 가져오는 중 오류 발생:', error);
+        return [];
+    }
 };
