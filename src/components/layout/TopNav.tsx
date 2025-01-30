@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { signOut } from 'firebase/auth';
+import * as _ from 'lodash';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { Menu } from '@headlessui/react';
-import {
-    ArrowRightOnRectangleIcon,
-    EyeIcon,
-    PencilIcon,
-} from '@heroicons/react/20/solid';
 
 import { useAppContext } from '../../contexts/AppContext';
 import { signInWithGoogle } from '../../lib/auth';
@@ -23,8 +19,8 @@ export function TopNav() {
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const { user, setUser, isEditMode, setIsEditMode } = useAppContext();
-    const pathname = usePathname();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -34,19 +30,25 @@ export function TopNav() {
         return () => unsubscribe();
     }, [setUser]);
 
+    const debouncedSearch = useCallback(
+        _.debounce((query: string) => {
+            if (query.trim()) {
+                router.push(`/search?q=${encodeURIComponent(query)}`);
+            } else {
+                router.push('/');
+            }
+        }, 300),
+        []
+    );
+
     const handleSearch = (query: string) => {
         setSearchQuery(query);
-    };
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-        }
+        debouncedSearch(query);
     };
 
     const clearSearch = () => {
         setSearchQuery('');
+        router.push('/');
     };
 
     const handleSignIn = async () => {
@@ -71,6 +73,10 @@ export function TopNav() {
     const toggleEditMode = () => {
         setIsEditMode(!isEditMode);
     };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm border-b border-white/10 relative z-40">
@@ -105,85 +111,60 @@ export function TopNav() {
                     </Link>
                 ))}
             </div>
-            <div className="flex items-center space-x-4 relative">
+            <div className="flex items-center space-x-3 relative">
                 <SearchInput
                     value={searchQuery}
                     onChange={handleSearch}
                     onClear={clearSearch}
-                    onSubmit={handleSearchSubmit}
                 />
             </div>
-
-            {!loading && (
-                <>
-                    {user ? (
-                        <Menu as="div" className="relative ml-4">
-                            <Menu.Button className="relative w-9 h-9 mr-3 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-                                <img
-                                    src={
-                                        user.photoURL || '/images/sticker.webp'
-                                    }
-                                    alt="Profile"
-                                    className="w-full h-full object-cover rounded-full"
-                                />
-                            </Menu.Button>
-                            <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+            <div className="flex items-center space-x-4">
+                {user ? (
+                    <>
+                        <Menu
+                            as="div"
+                            className="relative inline-block text-left"
+                        >
+                            <div>
+                                <Menu.Button className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                    {user.displayName || user.email}
+                                </Menu.Button>
+                            </div>
+                            <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <Menu.Item>
                                     {({ active }) => (
                                         <button
-                                            className={`${
-                                                active ? 'bg-gray-100' : ''
-                                            } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
                                             onClick={toggleEditMode}
+                                            className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-left text-sm`}
                                         >
-                                            {isEditMode ? (
-                                                <>
-                                                    <EyeIcon
-                                                        className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                                        aria-hidden="true"
-                                                    />
-                                                    Go To Read Mode
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <PencilIcon
-                                                        className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                                        aria-hidden="true"
-                                                    />
-                                                    Go To Edit Mode
-                                                </>
-                                            )}
+                                            {isEditMode
+                                                ? 'Edit Mode OFF'
+                                                : 'Edit Mode ON'}
                                         </button>
                                     )}
                                 </Menu.Item>
                                 <Menu.Item>
                                     {({ active }) => (
                                         <button
-                                            className={`${
-                                                active ? 'bg-gray-100' : ''
-                                            } group flex items-center w-full px-4 py-2 text-sm text-gray-700`}
-                                            onClick={() => handleSignOut()}
+                                            onClick={handleSignOut}
+                                            className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-left text-sm`}
                                         >
-                                            <ArrowRightOnRectangleIcon
-                                                className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                                aria-hidden="true"
-                                            />
-                                            Log out
+                                            Sign out
                                         </button>
                                     )}
                                 </Menu.Item>
                             </Menu.Items>
                         </Menu>
-                    ) : (
-                        <button
-                            onClick={handleSignIn}
-                            className="ml-4 px-4 py-2 text-sx font-medium text-white bg-blue-900 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            Sign In
-                        </button>
-                    )}
-                </>
-            )}
+                    </>
+                ) : (
+                    <button
+                        className="ml-4 px-4 py-2 text-sx font-medium text-white bg-blue-900 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        onClick={handleSignIn}
+                    >
+                        Sign in
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
