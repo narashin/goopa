@@ -1,16 +1,87 @@
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    setDoc,
+    updateDoc,
+    where,
+} from 'firebase/firestore';
 
 import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
 import { firestore } from './firebase';
 
-export const addAppToFirestore = async (newApp: ITool, userId: string) => {
+export const addAppToFirestore = async (
+    appData: Omit<ITool, 'id'>,
+    userId: string
+): Promise<ITool> => {
     try {
-        const appsRef = collection(firestore, 'users', userId, 'apps');
-        const docRef = await addDoc(appsRef, newApp);
-        console.log('App added to Firestore with ID: ', docRef.id);
+        const appsCollectionRef = collection(
+            firestore,
+            'users',
+            userId,
+            'apps'
+        );
+        const newAppDocRef = doc(appsCollectionRef);
+        const newApp: ITool = { ...appData, id: newAppDocRef.id };
+        await setDoc(newAppDocRef, newApp);
+        console.log('App added successfully with ID:', newAppDocRef.id);
+        return newApp;
     } catch (error) {
-        console.error('Error adding app to Firestore: ', error);
+        console.error('Error adding app:', error);
+        throw error;
+    }
+};
+
+export const getAppsFromFirestore = async (
+    userId: string
+): Promise<ITool[]> => {
+    try {
+        const appsCollection = collection(firestore, 'users', userId, 'apps');
+        const appsSnapshot = await getDocs(appsCollection);
+        const apps: ITool[] = [];
+
+        appsSnapshot.forEach((doc) => {
+            const appData = doc.data() as ITool;
+            apps.push({ ...appData, id: doc.id });
+        });
+
+        return apps;
+    } catch (error) {
+        console.error('Error fetching apps from Firestore: ', error);
+        return [];
+    }
+};
+
+export const updateAppDescription = async (
+    userId: string,
+    appId: string,
+    description: string
+) => {
+    console.log('Updating app description:', { userId, appId, description });
+    try {
+        const appDocRef = doc(firestore, 'users', userId, 'apps', appId);
+        console.log('Document reference:', appDocRef.path);
+
+        // 문서가 존재하는지 확인
+        const docSnap = await getDoc(appDocRef);
+        console.log('Document exists:', docSnap.exists());
+
+        if (docSnap.exists()) {
+            // 문서가 존재하면 'description' 필드를 추가 (기존 데이터는 그대로 유지)
+            await updateDoc(appDocRef, {
+                description: description,
+            });
+            console.log('App description updated successfully');
+        } else {
+            console.error('No document found to update');
+            throw new Error('No document found to update');
+        }
+    } catch (error) {
+        console.error('Error updating app description:', error);
+        throw error; // 원래 에러를 그대로 던집니다.
     }
 };
 

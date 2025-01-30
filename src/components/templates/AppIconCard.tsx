@@ -2,7 +2,10 @@ import type React from 'react';
 import { useState } from 'react';
 
 import {
-    BookOpenIcon, Cog6ToothIcon, MinusIcon, PlusIcon,
+    BookOpenIcon,
+    Cog6ToothIcon,
+    MinusIcon,
+    PlusIcon,
 } from '@heroicons/react/24/outline';
 
 import { useAppContext } from '../../contexts/AppContext';
@@ -25,7 +28,8 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     onEditSettings,
     isAddNewAppCard = false,
 }) => {
-    const { isEditMode } = useAppContext();
+    const { isEditMode, user } = useAppContext();
+    const [selectedApp, setSelectedApp] = useState<ITool | null>(app || null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
 
     const handleClick = (e: React.MouseEvent) => {
@@ -50,6 +54,12 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         }
     };
 
+    const handleUpdateApp = (updatedApp: ITool) => {
+        setSelectedApp(updatedApp);
+        // 여기에 앱 상태를 전역적으로 업데이트하는 로직을 추가할 수 있습니다.
+        // 예: updateApp(updatedApp);
+    };
+
     return (
         <div
             key={app?.id || 'add-new'}
@@ -62,18 +72,18 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                         {isAddNewAppCard ? (
                             <PlusIcon className="w-10 h-10 text-white/80" />
                         ) : (
-                            app && (
+                            selectedApp && (
                                 <IconDisplay
-                                    icon={app.icon}
-                                    name={app.name}
-                                    tooltip={app.description}
+                                    icon={selectedApp.icon}
+                                    name={selectedApp.name}
+                                    tooltip={selectedApp.description}
                                     onClick={handleClick}
                                 />
                             )
                         )}
                     </div>
                 </div>
-                {!isAddNewAppCard && isEditMode && app && (
+                {!isAddNewAppCard && isEditMode && selectedApp && (
                     <>
                         <button
                             onClick={handleDeleteClick}
@@ -89,36 +99,40 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                         </button>
                     </>
                 )}
-                {!isAddNewAppCard && !isEditMode && app?.hasSettings && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            window.open(
-                                `/settings/${app.id}`,
-                                '_blank',
-                                'noopener,noreferrer'
-                            );
-                        }}
-                        className="absolute -top-1 right-0 w-5 h-5 bg-red-700 rounded-full flex items-center justify-center text-white/80 hover:text-white transition-colors z-10"
-                    >
-                        <BookOpenIcon className="w-3 h-3" />
-                    </button>
-                )}
+                {!isAddNewAppCard &&
+                    !isEditMode &&
+                    selectedApp?.hasSettings && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(
+                                    `/settings/${selectedApp.id}`,
+                                    '_blank',
+                                    'noopener,noreferrer'
+                                );
+                            }}
+                            className="absolute -top-1 right-0 w-5 h-5 bg-red-700 rounded-full flex items-center justify-center text-white/80 hover:text-white transition-colors z-10"
+                        >
+                            <BookOpenIcon className="w-3 h-3" />
+                        </button>
+                    )}
             </div>
             <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors text-center w-full px-2">
-                {isAddNewAppCard ? 'Add new app' : app?.name}
+                {isAddNewAppCard ? 'Add new app' : selectedApp?.name}
             </span>
 
-            {showSettingsModal && app && (
+            {showSettingsModal && selectedApp && (
                 <SettingsModal
-                    app={app}
+                    app={selectedApp}
+                    user={user}
                     onClose={() => setShowSettingsModal(false)}
                     onSave={(settings) => {
                         if (onEditSettings) {
-                            onEditSettings(app.id, settings);
+                            onEditSettings(selectedApp.id, settings);
                         }
                         setShowSettingsModal(false);
                     }}
+                    onUpdate={handleUpdateApp}
                 />
             )}
         </div>
