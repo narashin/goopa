@@ -2,10 +2,22 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
     images: {
-        domains: [
-            'firebasestorage.googleapis.com',
-            'lh3.googleusercontent.com',
-            'goopa.s3.amazonaws.com',
+        remotePatterns: [
+            {
+                protocol: 'http',
+                hostname: 'firebasestorage.googleapis.com',
+                pathname: '/**',
+            },
+            {
+                protocol: 'http',
+                hostname: 'lh3.googleusercontent.com',
+                pathname: '/**',
+            },
+            {
+                protocol: 'http',
+                hostname: 'goopa.s3.amazonaws.com',
+                pathname: '/**',
+            },
         ],
     },
     reactStrictMode: true,
