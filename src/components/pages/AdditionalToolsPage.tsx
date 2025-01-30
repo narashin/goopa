@@ -1,28 +1,40 @@
-import React from 'react';
+'use client';
+
+import React, { useCallback, useState } from 'react';
 
 import ToolIconsArea from '../../components/templates/ToolIconsArea';
 import ToolScriptsArea from '../../components/templates/ToolScriptsArea';
 import { Card } from '../../components/ui/Card';
-import { AdditionalToolType } from '../../types/additional-tool';
-import { ITool } from '../../types/app';
+import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
-interface AdditionalToolsPageProps {
-    apps: AdditionalToolType[];
+interface AdditionalAppsPageProps {
+    apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
-    toggleItem: (item: ITool) => void;
-    isItemSelected: (id: string) => boolean;
     copyToClipboard: (text: string) => void;
 }
 
-const AdditionalAppsPage: React.FC<AdditionalToolsPageProps> = ({
-    apps: tools,
+const AdditionalAppsPage: React.FC<AdditionalAppsPageProps> = ({
+    apps,
     onAddNewApp,
-    toggleItem,
-    isItemSelected,
     copyToClipboard,
 }) => {
-    const filteredApps = tools.filter(
+    const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
+
+    const toggleItem = useCallback((item: ITool) => {
+        setSelectedItems((prev) =>
+            prev.some((i) => i.id === item.id)
+                ? prev.filter((i) => i.id !== item.id)
+                : [...prev, item]
+        );
+    }, []);
+
+    const isItemSelected = useCallback(
+        (id: string) => selectedItems.some((item) => item.id === id),
+        [selectedItems]
+    );
+
+    const filteredApps = apps.filter(
         (app) => app.category === AppCategoryType.Additional
     );
 
@@ -38,9 +50,7 @@ const AdditionalAppsPage: React.FC<AdditionalToolsPageProps> = ({
                 />
 
                 <ToolScriptsArea
-                    selectedItems={filteredApps.filter((tool) =>
-                        isItemSelected(tool.id)
-                    )}
+                    selectedItems={selectedItems}
                     copyToClipboard={copyToClipboard}
                 />
             </div>
@@ -48,4 +58,4 @@ const AdditionalAppsPage: React.FC<AdditionalToolsPageProps> = ({
     );
 };
 
-export default AdditionalAppsPage;
+export default React.memo(AdditionalAppsPage);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import CategoryPageContent from '../../../components/pages/CategoryPageContent';
 import { useAppContext } from '../../../contexts/AppContext';
@@ -22,11 +22,7 @@ export default function CategoryPageClient({
         if (initialApps.length > 0 && apps.length === 0) {
             setApps(initialApps);
         }
-    }, [initialApps, apps, setApps]);
+    }, [initialApps, apps.length, setApps]);
 
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <CategoryPageContent category={category} initialApps={apps} />
-        </Suspense>
-    );
+    return <CategoryPageContent category={category} />;
 }

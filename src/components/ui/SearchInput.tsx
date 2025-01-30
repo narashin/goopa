@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -6,7 +6,7 @@ interface SearchInputProps {
     value: string;
     onChange: (query: string) => void;
     onClear: () => void;
-    onSubmit?: () => void;
+    onSubmit?: (e: React.FormEvent) => void;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = ({
@@ -15,7 +15,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     onClear,
     onSubmit,
 }) => (
-    <div className="relative">
+    <form onSubmit={onSubmit} className="relative">
         <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-white/50" />
         <input
             type="text"
@@ -23,20 +23,15 @@ export const SearchInput: React.FC<SearchInputProps> = ({
             placeholder="Search..."
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            onKeyPress={(e) => {
-                if (e.key === 'Enter' && onSubmit) {
-                    e.preventDefault();
-                    onSubmit();
-                }
-            }}
         />
         {value && (
             <button
+                type="button"
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/70"
                 onClick={onClear}
             >
                 <XMarkIcon className="h-4 w-4" />
             </button>
         )}
-    </div>
+    </form>
 );

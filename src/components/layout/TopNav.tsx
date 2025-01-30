@@ -18,11 +18,7 @@ import { MenuType } from '../../types/menu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
 
-interface TopNavProps {
-    onSearch: (query: string) => void;
-}
-
-export function TopNav({ onSearch }: TopNavProps) {
+export function TopNav() {
     const views: MenuType[] = ['home', 'general', 'dev', 'advanced'];
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
@@ -36,7 +32,11 @@ export function TopNav({ onSearch }: TopNavProps) {
             setLoading(false);
         });
         return () => unsubscribe();
-    }, []);
+    }, [setUser]);
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+    };
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,14 +45,8 @@ export function TopNav({ onSearch }: TopNavProps) {
         }
     };
 
-    const handleSearchChange = (query: string) => {
-        setSearchQuery(query);
-        onSearch(query);
-    };
-
     const clearSearch = () => {
         setSearchQuery('');
-        onSearch('');
     };
 
     const handleSignIn = async () => {
@@ -115,8 +109,9 @@ export function TopNav({ onSearch }: TopNavProps) {
                 <form onSubmit={handleSearchSubmit}>
                     <SearchInput
                         value={searchQuery}
-                        onChange={handleSearchChange}
+                        onChange={handleSearch}
                         onClear={clearSearch}
+                        onSubmit={handleSearchSubmit}
                     />
                 </form>
             </div>

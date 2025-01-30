@@ -1,5 +1,11 @@
 // src/contexts/NavigationContext.tsx
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import React, {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useState,
+} from 'react';
 
 import { AppCategoryType } from '../types/category';
 
@@ -8,15 +14,28 @@ interface NavigationContextType {
     setCurrentCategory: (category: AppCategoryType | null) => void;
 }
 
-const NavigationContext = createContext<NavigationContextType | undefined>(
-    undefined
+// 초기값 설정
+const initialNavigationContext: NavigationContextType = {
+    currentCategory: null,
+    setCurrentCategory: () => {},
+};
+
+const NavigationContext = createContext<NavigationContextType>(
+    initialNavigationContext
 );
 
 export const NavigationProvider: React.FC<{ children: ReactNode }> = ({
     children,
 }) => {
-    const [currentCategory, setCurrentCategory] =
+    const [currentCategory, setCurrentCategoryState] =
         useState<AppCategoryType | null>(null);
+
+    const setCurrentCategory = useCallback(
+        (category: AppCategoryType | null) => {
+            setCurrentCategoryState(category);
+        },
+        []
+    );
 
     return (
         <NavigationContext.Provider

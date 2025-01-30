@@ -1,42 +1,53 @@
+'use client';
 import React from 'react';
+
+import { useRouter } from 'next/navigation';
 
 import { AppIconCard } from '../../components/templates/AppIconCard';
 import { Card } from '../../components/ui/Card';
+import { useSearch } from '../../hooks/use-search';
 import { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
-import { MenuType } from '../../types/menu';
 
 interface SearchResultsPageProps {
-    results: ITool[];
-    onNavigate: (
-        view: MenuType,
-        itemId?: string,
-        category?: AppCategoryType
-    ) => void;
+    query: string;
 }
 
-export function SearchResultsPage({
-    results,
-    onNavigate,
-}: SearchResultsPageProps) {
+export function SearchResultsPage({ query }: SearchResultsPageProps) {
+    const router = useRouter();
+    const results = useSearch(query);
+
     const handleNavigation = (app: ITool) => {
         if (app.downloadUrl) {
             window.open(app.downloadUrl, '_blank', 'noopener,noreferrer');
         } else {
-            onNavigate(
-                app.hasScript ? AppCategoryType.Advanced : app.category,
-                app.id,
-                app.category
-            );
+            const category = app.hasScript
+                ? AppCategoryType.Advanced
+                : app.category;
+            router.push(`/apps/${category.toLowerCase()}/${app.id}`);
         }
     };
+
+    if (!query) {
+        return (
+            <div className="flex-1 p-4 overflow-auto">
+                <Card className="h-full bg-black/20 border-white/10 backdrop-blur-sm">
+                    <div className="p-6">
+                        <h2 className="text-2xl font-bold text-white/90 mb-6">
+                            검색어를 입력해주세요
+                        </h2>
+                    </div>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 p-4 overflow-auto">
             <Card className="h-full bg-black/20 border-white/10 backdrop-blur-sm">
                 <div className="p-6">
                     <h2 className="text-2xl font-bold text-white/90 mb-6">
-                        Search Results
+                        Search Results for {query}
                     </h2>
                     {results.length === 0 ? (
                         <p className="text-white/70">No results found</p>

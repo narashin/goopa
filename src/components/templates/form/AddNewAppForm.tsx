@@ -61,6 +61,17 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
     const fieldConfig: FieldConfig = useMemo(
         () => ({
+            [AppCategoryType.Home]: {
+                required: ['name'],
+                optional: [
+                    'icon',
+                    'tooltip',
+                    'downloadUrl',
+                    'installCommand',
+                    'zshrcCommand',
+                ],
+                hidden: [],
+            },
             [AppCategoryType.General]: {
                 required: ['name', 'downloadUrl'],
                 optional: ['icon', 'tooltip'],

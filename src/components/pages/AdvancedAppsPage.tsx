@@ -1,98 +1,64 @@
-// AdvancedDev.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+'use client';
+
+import React, { useCallback, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
 import { ClipboardIcon } from '@heroicons/react/24/outline';
 
 import { categoryColors, categoryOrder } from '../../constants/category';
-import { ITool } from '../../types/app';
+import type { ITool } from '../../types/app';
 import { SubCategoryType } from '../../types/category';
 import AdditionalAppsPage from './AdditionalToolsPage';
 import RequirementAppsPage from './RequirementAppsPage';
 import ZshPluginsPage from './ZshPluginsPage';
 
 interface AdvancedDevProps {
-    initialCategory?: SubCategoryType;
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
 }
 
-const AdvancedDevAppPage = ({
-    initialCategory: initialSubCategory,
-    apps,
-    onAddNewApp,
-}: AdvancedDevProps) => {
+const AdvancedDevAppPage = ({ apps, onAddNewApp }: AdvancedDevProps) => {
     const [selectedCategory, setSelectedCategory] =
         useState<SubCategoryType | null>(null);
-    const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
 
-    const handleHomebrewClick = () => {
+    const handleHomebrewClick = useCallback(() => {
         window.open('https://brew.sh/', '_blank', 'noopener,noreferrer');
-    };
+    }, []);
 
-    const copyToClipboard = (text: string) => {
+    const copyToClipboard = useCallback((text: string) => {
         navigator.clipboard.writeText(text).then(() => {
             console.log('Copied to clipboard');
         });
-    };
-
-    const isItemSelected = (id: string) =>
-        selectedItems.some((item) => item.id === id);
-
-    const toggleItem = (item: ITool) => {
-        setSelectedItems((prev) =>
-            prev.some((i) => i.id === item.id)
-                ? prev.filter((i) => i.id !== item.id)
-                : [...prev, item]
-        );
-    };
+    }, []);
 
     const renderCategoryContent = useCallback(
         (category: SubCategoryType) => {
+            const commonProps = {
+                apps,
+                onAddNewApp,
+                copyToClipboard,
+            };
+
             switch (category) {
                 case SubCategoryType.Requirement:
-                    return (
-                        <RequirementAppsPage
-                            apps={apps}
-                            onAddNewApp={onAddNewApp}
-                            isItemSelected={isItemSelected}
-                            toggleItem={toggleItem}
-                            copyToClipboard={copyToClipboard}
-                        />
-                    );
+                    return <RequirementAppsPage {...commonProps} />;
                 case SubCategoryType.ZshPlugin:
-                    return (
-                        <ZshPluginsPage
-                            onAddNewApp={onAddNewApp}
-                            apps={apps}
-                            isItemSelected={isItemSelected}
-                            toggleItem={toggleItem}
-                            copyToClipboard={copyToClipboard}
-                        />
-                    );
+                    return <ZshPluginsPage {...commonProps} />;
                 case SubCategoryType.Additional:
-                    return (
-                        <AdditionalAppsPage
-                            onAddNewApp={onAddNewApp}
-                            apps={apps}
-                            isItemSelected={isItemSelected}
-                            toggleItem={toggleItem}
-                            copyToClipboard={copyToClipboard}
-                        />
-                    );
+                    return <AdditionalAppsPage {...commonProps} />;
                 default:
                     return null;
             }
         },
-        [copyToClipboard, isItemSelected, toggleItem]
+        [apps, onAddNewApp, copyToClipboard]
     );
 
-    useEffect(() => {
-        if (initialSubCategory && categoryOrder.includes(initialSubCategory)) {
-            setSelectedCategory(initialSubCategory);
-        }
-    }, [initialSubCategory]);
+    const homebrewInstallCommand = useMemo(
+        () =>
+            '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+        []
+    );
 
     return (
         <>
@@ -121,17 +87,14 @@ const AdvancedDevAppPage = ({
                                     The Missing Package Manager for macOS
                                 </p>
                                 <div className="bg-black/50 rounded p-3 font-mono text-sm text-white/90 overflow-x-auto relative">
-                                    <code>
-                                        {
-                                            '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-                                        }
-                                    </code>
+                                    <code>{homebrewInstallCommand}</code>
                                     <button
-                                        onClick={() =>
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             copyToClipboard(
-                                                '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-                                            )
-                                        }
+                                                homebrewInstallCommand
+                                            );
+                                        }}
                                         className="absolute top-2 right-2 text-white/60 hover:text-white/90"
                                     >
                                         <ClipboardIcon className="h-5 w-5" />
@@ -188,4 +151,4 @@ const AdvancedDevAppPage = ({
     );
 };
 
-export default AdvancedDevAppPage;
+export default React.memo(AdvancedDevAppPage);

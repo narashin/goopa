@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { useAppContext } from '../../contexts/AppContext';
 import { addAppToFirestore } from '../../lib/firestore';
@@ -16,102 +16,67 @@ import ZshPluginsPage from './ZshPluginsPage';
 
 interface CategoryPageContentProps {
     category: AppCategoryType;
-    initialApps: ITool[];
 }
 
-const CategoryPageContent = ({
-    category,
-    initialApps,
-}: CategoryPageContentProps) => {
-    const { user, apps, setApps, addApp } = useAppContext();
-    const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
+const CategoryPageContent = ({ category }: CategoryPageContentProps) => {
+    const { user, apps, addApp } = useAppContext();
 
-    useEffect(() => {
-        if (initialApps.length > 0 && apps.length === 0) {
-            setApps(initialApps);
-        }
-    }, [initialApps, apps, setApps]);
+    const handleAddNewApp = useCallback(
+        async (newApp: ITool) => {
+            if (user) await addAppToFirestore(newApp, user.uid);
+            addApp(newApp);
+        },
+        [user, addApp]
+    );
 
-    const handleAddNewApp = async (newApp: ITool) => {
-        if (user) await addAppToFirestore(newApp, user.uid);
-        addApp(newApp);
-    };
-
-    const toggleItem = (item: ITool) => {
-        setSelectedItems((prev) =>
-            prev.some((i) => i.id === item.id)
-                ? prev.filter((i) => i.id !== item.id)
-                : [...prev, item]
-        );
-    };
-
-    const isItemSelected = (id: string) =>
-        selectedItems.some((item) => item.id === id);
-
-    const copyToClipboard = (text: string) => {
+    const copyToClipboard = useCallback((text: string) => {
         navigator.clipboard.writeText(text).then(() => {
             console.log('Copied to clipboard');
         });
-    };
+    }, []);
 
-    const renderCategoryContent = () => {
+    const categoryContent = useMemo(() => {
+        const commonProps = {
+            apps,
+            onAddNewApp: handleAddNewApp,
+        };
+
         switch (category) {
-            case 'home' as AppCategoryType:
+            case AppCategoryType.Home:
                 return <HomePage />;
             case AppCategoryType.General:
-                return (
-                    <GeneralAppsPage
-                        apps={apps}
-                        onAddNewApp={handleAddNewApp}
-                    />
-                );
+                return <GeneralAppsPage {...commonProps} />;
             case AppCategoryType.Dev:
-                return (
-                    <DevAppsPage apps={apps} onAddNewApp={handleAddNewApp} />
-                );
+                return <DevAppsPage {...commonProps} />;
             case AppCategoryType.Advanced:
-                return (
-                    <AdvancedDevAppPage
-                        apps={apps}
-                        onAddNewApp={handleAddNewApp}
-                    />
-                );
+                return <AdvancedDevAppPage {...commonProps} />;
             case AppCategoryType.Requirement:
                 return (
                     <RequirementAppsPage
-                        apps={apps}
-                        onAddNewApp={handleAddNewApp}
-                        isItemSelected={isItemSelected}
-                        toggleItem={toggleItem}
+                        {...commonProps}
                         copyToClipboard={copyToClipboard}
                     />
                 );
             case AppCategoryType.ZshPlugin:
                 return (
                     <ZshPluginsPage
-                        apps={apps}
-                        onAddNewApp={handleAddNewApp}
-                        isItemSelected={isItemSelected}
-                        toggleItem={toggleItem}
+                        {...commonProps}
                         copyToClipboard={copyToClipboard}
                     />
                 );
             case AppCategoryType.Additional:
                 return (
                     <AdditionalAppsPage
-                        apps={apps}
-                        onAddNewApp={handleAddNewApp}
-                        isItemSelected={isItemSelected}
-                        toggleItem={toggleItem}
+                        {...commonProps}
                         copyToClipboard={copyToClipboard}
                     />
                 );
             default:
                 return <div>Category not found.</div>;
         }
-    };
+    }, [category, apps, handleAddNewApp, copyToClipboard]);
 
-    return renderCategoryContent();
+    return categoryContent;
 };
 
-export default CategoryPageContent;
+export default React.memo(CategoryPageContent);

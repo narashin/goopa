@@ -1,30 +1,45 @@
-// RequirementTools.tsx
-import React from 'react';
+'use client';
+
+import React, { useCallback, useMemo, useState } from 'react';
 
 import ToolIconsArea from '../../components/templates/ToolIconsArea';
 import ToolScriptsArea from '../../components/templates/ToolScriptsArea';
 import { Card } from '../../components/ui/Card';
-import { ITool } from '../../types/app';
+import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
-interface RequirementToolsProps {
+interface RequirementAppsPageProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
-    toggleItem: (item: ITool) => void;
-    isItemSelected: (id: string) => boolean;
     copyToClipboard: (text: string) => void;
 }
 
-const RequirementAppsPage: React.FC<RequirementToolsProps> = ({
-    apps: tools,
+const RequirementAppsPage: React.FC<RequirementAppsPageProps> = ({
+    apps,
     onAddNewApp,
-    toggleItem,
-    isItemSelected,
     copyToClipboard,
 }) => {
-    const filteredApps = tools.filter(
-        (app) => app.category === AppCategoryType.Requirement
+    const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
+
+    const filteredApps = useMemo(
+        () =>
+            apps.filter((app) => app.category === AppCategoryType.Requirement),
+        [apps]
     );
+
+    const toggleItem = useCallback((item: ITool) => {
+        setSelectedItems((prev) =>
+            prev.some((i) => i.id === item.id)
+                ? prev.filter((i) => i.id !== item.id)
+                : [...prev, item]
+        );
+    }, []);
+
+    const isItemSelected = useCallback(
+        (id: string) => selectedItems.some((item) => item.id === id),
+        [selectedItems]
+    );
+
     return (
         <Card className="flex-1 p-4 overflow-hidden relative">
             <div className="px-4 grid grid-cols-2 gap-6 h-full border-0">
@@ -37,9 +52,7 @@ const RequirementAppsPage: React.FC<RequirementToolsProps> = ({
                 />
 
                 <ToolScriptsArea
-                    selectedItems={filteredApps.filter((tool) =>
-                        isItemSelected(tool.id)
-                    )}
+                    selectedItems={selectedItems}
                     copyToClipboard={copyToClipboard}
                 />
             </div>
@@ -47,4 +60,4 @@ const RequirementAppsPage: React.FC<RequirementToolsProps> = ({
     );
 };
 
-export default RequirementAppsPage;
+export default React.memo(RequirementAppsPage);

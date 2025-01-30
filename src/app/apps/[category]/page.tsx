@@ -4,13 +4,16 @@ import { fetchAppsFromFirestore } from '../../../lib/firestore';
 import { AppCategoryType } from '../../../types/category';
 import CategoryPageClient from './CategoryPageClient';
 
-interface CategoryPageProps {
-    params: { category: AppCategoryType };
-}
+type Params = Promise<{ category: AppCategoryType }>;
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-    const { category } = params;
-    const initialApps = await fetchAppsFromFirestore(category);
+export default async function CategoryPage(props: { params: Params }) {
+    const params = await props.params;
+    const initialApps = await fetchAppsFromFirestore(params.category);
 
-    return <CategoryPageClient category={category} initialApps={initialApps} />;
+    return (
+        <CategoryPageClient
+            category={params.category}
+            initialApps={initialApps}
+        />
+    );
 }

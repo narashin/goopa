@@ -6,6 +6,7 @@ export enum SubCategoryType {
 }
 
 export enum AppCategoryType {
+    Home = 'home',
     General = 'general',
     Dev = 'dev',
     Advanced = 'advanced',

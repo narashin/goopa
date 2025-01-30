@@ -24,6 +24,8 @@ interface AppContextType {
     deleteApp: (appId: string) => Promise<void>;
     isEditMode: boolean;
     setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
+    isLoading: boolean;
+    error: string | null;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -34,6 +36,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     const [user, setUser] = useState<User | null>(null);
     const [apps, setApps] = useState<ITool[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -45,7 +49,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
     useEffect(() => {
         if (user) {
-            getAppsFromFirestore(user.uid).then(setApps);
+            setIsLoading(true);
+            getAppsFromFirestore(user.uid)
+                .then(setApps)
+                .catch((err) => setError(err.message))
+                .finally(() => setIsLoading(false));
         } else {
             setApps([]);
         }
@@ -53,38 +61,58 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const addApp = async (newApp: ITool) => {
         if (user) {
+            setIsLoading(true);
             try {
                 const addedApp = await addAppToFirestore(newApp, user.uid);
                 setApps((prevApps) => [...prevApps, addedApp]);
             } catch (error) {
                 console.error('Error adding app:', error);
-                // TODO: 여기에 사용자에게 오류 메시지를 표시하는 로직을 추가
+                setError('앱 추가 중 오류가 발생했습니다.');
+            } finally {
+                setIsLoading(false);
             }
         } else {
-            console.error('User is not logged in');
-            // TODO: 여기에 사용자에게 로그인이 필요하다는 알림을 추가
+            setError('로그인이 필요합니다.');
         }
     };
 
     const updateApp = async (updatedApp: ITool) => {
         if (user) {
-            await updateAppInFirestore(user.uid, updatedApp);
-            setApps((prevApps) =>
-                prevApps.map((app) =>
-                    app.id === updatedApp.id ? updatedApp : app
-                )
-            );
+            setIsLoading(true);
+            try {
+                await updateAppInFirestore(user.uid, updatedApp);
+                setApps((prevApps) =>
+                    prevApps.map((app) =>
+                        app.id === updatedApp.id ? updatedApp : app
+                    )
+                );
+            } catch (error) {
+                console.error('Error updating app:', error);
+                setError('앱 업데이트 중 오류가 발생했습니다.');
+            } finally {
+                setIsLoading(false);
+            }
         } else {
-            console.error('User is not logged in');
+            setError('로그인이 필요합니다.');
         }
     };
 
     const deleteApp = async (appId: string) => {
         if (user) {
-            await deleteAppFromFirestore(user.uid, appId);
-            setApps((prevApps) => prevApps.filter((app) => app.id !== appId));
+            setIsLoading(true);
+            try {
+                await deleteAppFromFirestore(user.uid, appId);
+                setApps((prevApps) =>
+                    prevApps.filter((app) => app.id !== appId)
+                );
+            } catch (error) {
+                console.error('Error deleting app:', error);
+                setError('앱 삭제 중 오류가 발생했습니다.');
+            } finally {
+                setIsLoading(false);
+            }
         } else {
-            console.error('User is not logged in');
+            setError('로그인이 필요합니다.');
         }
     };
 
@@ -100,6 +128,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
                 deleteApp,
                 isEditMode,
                 setIsEditMode,
+                isLoading,
+                error,
             }}
         >
             {children}

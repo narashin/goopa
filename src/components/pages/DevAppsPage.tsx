@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
@@ -6,7 +8,7 @@ import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal'
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAppContext } from '../../contexts/AppContext';
-import { ITool } from '../../types/app';
+import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
 interface DevAppsPageProps {
@@ -19,29 +21,35 @@ export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-    const handleAppClick = (url: string) => {
-        window.open(url, '_blank', 'noopener,noreferrer');
-    };
+    const filteredApps = useMemo(
+        () => apps.filter((app) => app.category === AppCategoryType.Dev),
+        [apps]
+    );
 
-    const handleAddNewApp = () => {
+    const handleAppClick = useCallback((url: string) => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }, []);
+
+    const handleAddNewApp = useCallback(() => {
         if (isEditMode) {
             setIsAddModalOpen(true);
         } else {
             setIsConfirmModalOpen(true);
         }
-    };
+    }, [isEditMode]);
 
-    const handleSubmitNewApp = async (newApp: ITool) => {
-        onAddNewApp(newApp);
-    };
+    const handleSubmitNewApp = useCallback(
+        (newApp: ITool) => {
+            onAddNewApp(newApp);
+            setIsAddModalOpen(false);
+        },
+        [onAddNewApp]
+    );
 
-    const handleConfirmEditMode = () => {
+    const handleConfirmEditMode = useCallback(() => {
         setIsEditMode(true);
         setIsConfirmModalOpen(false);
-    };
-    const filteredApps = apps.filter(
-        (app) => app.category === AppCategoryType.Dev
-    );
+    }, [setIsEditMode]);
 
     return (
         <div className="flex-1 p-4 overflow-auto">
@@ -85,3 +93,5 @@ export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
         </div>
     );
 }
+
+export default React.memo(DevAppsPage);
