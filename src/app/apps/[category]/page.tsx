@@ -1,4 +1,4 @@
-import React, { JSX, Suspense } from 'react';
+import React, { Suspense } from 'react';
 
 import CategoryPageContent from '../../../components/pages/CategoryPageContent';
 import { fetchAppsFromFirestore } from '../../../lib/firestore';
@@ -8,10 +8,8 @@ interface CategoryPageProps {
     params: { category: string };
 }
 
-export default async function CategoryPage({
-    params,
-}: CategoryPageProps): Promise<JSX.Element> {
-    const category = params.category as AppCategoryType;
+export default async function CategoryPage({ params }: CategoryPageProps) {
+    const category = await Promise.resolve(params.category as AppCategoryType);
     const apps = await fetchAppsFromFirestore(category);
 
     return (

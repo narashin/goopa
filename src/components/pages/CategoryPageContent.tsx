@@ -10,6 +10,7 @@ import AdditionalAppsPage from './AdditionalToolsPage';
 import AdvancedDevAppPage from './AdvancedAppsPage';
 import { DevAppsPage } from './DevAppsPage';
 import { GeneralAppsPage } from './GeneralAppsPage';
+import { HomePage } from './HomePage';
 import RequirementAppsPage from './RequirementAppsPage';
 import ZshPluginsPage from './ZshPluginsPage';
 
@@ -50,6 +51,8 @@ const CategoryPageContent = ({
 
     const renderCategoryContent = () => {
         switch (category) {
+            case 'home' as AppCategoryType:
+                return <HomePage />;
             case AppCategoryType.General:
                 return (
                     <GeneralAppsPage

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { signOut } from 'firebase/auth';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Menu } from '@headlessui/react';
 import {
@@ -26,6 +27,8 @@ export function TopNav({ onSearch }: TopNavProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const { user, setUser, isEditMode, setIsEditMode } = useAppContext();
+    const pathname = usePathname();
+    const router = useRouter();
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -34,6 +37,13 @@ export function TopNav({ onSearch }: TopNavProps) {
         });
         return () => unsubscribe();
     }, []);
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+        }
+    };
 
     const handleSearchChange = (query: string) => {
         setSearchQuery(query);
@@ -76,10 +86,15 @@ export function TopNav({ onSearch }: TopNavProps) {
 
             <div className="flex space-x-4 text-sm">
                 {views.map((view) => (
-                    <Link key={view} href={`/apps/${view}`}>
+                    <Link
+                        key={view}
+                        href={view === 'home' ? '/' : `/apps/${view}`}
+                    >
                         <button
                             className={`px-3 h-8 rounded-md transition-colors ${
-                                window.location.pathname.includes(view)
+                                (view === 'home' && pathname === '/') ||
+                                (view !== 'home' &&
+                                    pathname?.includes(`/apps/${view}`))
                                     ? 'text-white bg-white/10'
                                     : 'text-white/70 hover:text-white'
                             }`}
@@ -97,11 +112,13 @@ export function TopNav({ onSearch }: TopNavProps) {
                 ))}
             </div>
             <div className="flex items-center space-x-3 relative">
-                <SearchInput
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    onClear={clearSearch}
-                />
+                <form onSubmit={handleSearchSubmit}>
+                    <SearchInput
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        onClear={clearSearch}
+                    />
+                </form>
             </div>
 
             {!loading && (

@@ -1,4 +1,3 @@
-// src/components/pages/SearchResultsPage.tsx
 'use client';
 
 import React from 'react';
