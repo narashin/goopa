@@ -105,7 +105,7 @@ export function TopNav() {
                     </Link>
                 ))}
             </div>
-            <div className="flex items-center space-x-3 relative">
+            <div className="flex items-center space-x-4 relative">
                 <SearchInput
                     value={searchQuery}
                     onChange={handleSearch}
