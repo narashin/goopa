@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import { Card } from '../../components/ui/Card';
 
-export function Home() {
+export function HomePage() {
     return (
         <div className="flex-1 p-4">
             <Card className="h-full bg-[#C5C6BD] border-white/10 backdrop-blur-sm overflow-hidden">

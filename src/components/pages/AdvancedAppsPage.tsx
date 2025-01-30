@@ -6,21 +6,22 @@ import Image from 'next/image';
 import { ClipboardIcon } from '@heroicons/react/24/outline';
 
 import { categoryColors, categoryOrder } from '../../constants/category';
-import { additionalTools } from '../../data/additional-tools';
-import { requirementTools } from '../../data/requirement-tool';
-import { zshPlugins } from '../../data/zsh-plugins';
 import { ITool } from '../../types/app';
 import { SubCategoryType } from '../../types/category';
-import AdditionalToolsPage from './AdditionalToolsPage';
-import RequirementToolsPage from './RequirementToolsPage';
+import AdditionalAppsPage from './AdditionalToolsPage';
+import RequirementAppsPage from './RequirementAppsPage';
 import ZshPluginsPage from './ZshPluginsPage';
 
 interface AdvancedDevProps {
     initialCategory?: SubCategoryType;
+    apps: ITool[];
+    onAddNewApp: (newApp: ITool) => void;
 }
 
-const AdvancedDev = ({
+const AdvancedDevAppPage = ({
     initialCategory: initialSubCategory,
+    apps,
+    onAddNewApp,
 }: AdvancedDevProps) => {
     const [selectedCategory, setSelectedCategory] =
         useState<SubCategoryType | null>(null);
@@ -52,8 +53,9 @@ const AdvancedDev = ({
             switch (category) {
                 case SubCategoryType.Requirement:
                     return (
-                        <RequirementToolsPage
-                            tools={requirementTools}
+                        <RequirementAppsPage
+                            apps={apps}
+                            onAddNewApp={onAddNewApp}
                             isItemSelected={isItemSelected}
                             toggleItem={toggleItem}
                             copyToClipboard={copyToClipboard}
@@ -62,7 +64,8 @@ const AdvancedDev = ({
                 case SubCategoryType.ZshPlugin:
                     return (
                         <ZshPluginsPage
-                            tools={zshPlugins}
+                            onAddNewApp={onAddNewApp}
+                            apps={apps}
                             isItemSelected={isItemSelected}
                             toggleItem={toggleItem}
                             copyToClipboard={copyToClipboard}
@@ -70,8 +73,9 @@ const AdvancedDev = ({
                     );
                 case SubCategoryType.Additional:
                     return (
-                        <AdditionalToolsPage
-                            tools={additionalTools}
+                        <AdditionalAppsPage
+                            onAddNewApp={onAddNewApp}
+                            apps={apps}
                             isItemSelected={isItemSelected}
                             toggleItem={toggleItem}
                             copyToClipboard={copyToClipboard}
@@ -184,4 +188,4 @@ const AdvancedDev = ({
     );
 };
 
-export default AdvancedDev;
+export default AdvancedDevAppPage;

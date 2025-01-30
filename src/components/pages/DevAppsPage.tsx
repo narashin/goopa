@@ -2,21 +2,22 @@ import React, { useState } from 'react';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
-import {
-    AddNewAppModal,
-} from '../../components/templates/modal/AddNewAppModal';
+import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAppContext } from '../../contexts/AppContext';
-import { devApps } from '../../data/dev-apps';
 import { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
-export function DevApps() {
+interface DevAppsPageProps {
+    apps: ITool[];
+    onAddNewApp: (newApp: ITool) => void;
+}
+
+export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [apps, setApps] = useState(devApps);
 
     const handleAppClick = (url: string) => {
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -30,15 +31,14 @@ export function DevApps() {
         }
     };
 
+    const handleSubmitNewApp = async (newApp: ITool) => {
+        onAddNewApp(newApp);
+    };
+
     const handleConfirmEditMode = () => {
         setIsEditMode(true);
         setIsConfirmModalOpen(false);
     };
-
-    const handleSubmitNewApp = (newApp: ITool) => {
-        setApps((prevApps) => [...prevApps, newApp]);
-    };
-
     const filteredApps = apps.filter(
         (app) => app.category === AppCategoryType.Dev
     );
@@ -68,6 +68,7 @@ export function DevApps() {
                     </div>
                 </div>
             </Card>
+
             <AddNewAppModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}

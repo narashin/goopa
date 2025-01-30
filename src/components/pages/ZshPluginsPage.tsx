@@ -1,4 +1,3 @@
-// RequirementTools.tsx
 import React from 'react';
 
 import ToolIconsArea from '../../components/templates/ToolIconsArea';
@@ -7,30 +6,34 @@ import { Card } from '../../components/ui/Card';
 import { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
-interface RequirementToolsProps {
-    tools: ITool[];
+interface ZshPluginsPageProps {
+    apps: ITool[];
+    onAddNewApp: (newApp: ITool) => void;
     toggleItem: (item: ITool) => void;
     isItemSelected: (id: string) => boolean;
     copyToClipboard: (text: string) => void;
 }
 
-const RequirementToolsPage: React.FC<RequirementToolsProps> = ({
-    tools,
+const ZshPluginsPage: React.FC<ZshPluginsPageProps> = ({
+    apps: tools,
+    onAddNewApp,
     toggleItem,
     isItemSelected,
     copyToClipboard,
 }) => {
     const filteredApps = tools.filter(
-        (app) => app.category === AppCategoryType.Requirement
+        (app) => app.category === AppCategoryType.ZshPlugin
     );
+
     return (
         <Card className="flex-1 p-4 overflow-hidden relative">
             <div className="px-4 grid grid-cols-2 gap-6 h-full border-0">
                 <ToolIconsArea
-                    tools={filteredApps}
+                    apps={filteredApps}
+                    onAddNewApp={onAddNewApp}
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
-                    currentCategory={AppCategoryType.Requirement}
+                    currentCategory={AppCategoryType.ZshPlugin}
                 />
 
                 <ToolScriptsArea
@@ -44,4 +47,4 @@ const RequirementToolsPage: React.FC<RequirementToolsProps> = ({
     );
 };
 
-export default RequirementToolsPage;
+export default ZshPluginsPage;

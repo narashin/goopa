@@ -8,14 +8,16 @@ import { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
 interface AdditionalToolsPageProps {
-    tools: AdditionalToolType[];
+    apps: AdditionalToolType[];
+    onAddNewApp: (newApp: ITool) => void;
     toggleItem: (item: ITool) => void;
     isItemSelected: (id: string) => boolean;
     copyToClipboard: (text: string) => void;
 }
 
-const AdditionalToolsPage: React.FC<AdditionalToolsPageProps> = ({
-    tools,
+const AdditionalAppsPage: React.FC<AdditionalToolsPageProps> = ({
+    apps: tools,
+    onAddNewApp,
     toggleItem,
     isItemSelected,
     copyToClipboard,
@@ -28,7 +30,8 @@ const AdditionalToolsPage: React.FC<AdditionalToolsPageProps> = ({
         <Card className="flex-1 p-4 overflow-hidden relative">
             <div className="px-4 grid grid-cols-2 gap-6 h-full border-0">
                 <ToolIconsArea
-                    tools={filteredApps}
+                    apps={filteredApps}
+                    onAddNewApp={onAddNewApp}
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
                     currentCategory={AppCategoryType.Additional}
@@ -45,4 +48,4 @@ const AdditionalToolsPage: React.FC<AdditionalToolsPageProps> = ({
     );
 };
 
-export default AdditionalToolsPage;
+export default AdditionalAppsPage;

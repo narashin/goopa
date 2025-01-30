@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
 import { signOut } from 'firebase/auth';
-import Image from 'next/image';
+import Link from 'next/link';
 
 import { Menu } from '@headlessui/react';
 import {
-    ArrowRightOnRectangleIcon, EyeIcon, PencilIcon,
+    ArrowRightOnRectangleIcon,
+    EyeIcon,
+    PencilIcon,
 } from '@heroicons/react/20/solid';
 
 import { useAppContext } from '../../contexts/AppContext';
@@ -16,12 +18,10 @@ import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
 
 interface TopNavProps {
-    onNavigate: (view: MenuType) => void;
-    currentView: MenuType;
     onSearch: (query: string) => void;
 }
 
-export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
+export function TopNav({ onSearch }: TopNavProps) {
     const views: MenuType[] = ['home', 'general', 'dev', 'advanced'];
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
@@ -76,23 +76,24 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
 
             <div className="flex space-x-4 text-sm">
                 {views.map((view) => (
-                    <button
-                        key={view}
-                        className={`px-3 h-8 rounded-md transition-colors ${
-                            currentView === view
-                                ? 'text-white bg-white/10'
-                                : 'text-white/70 hover:text-white'
-                        }`}
-                        onClick={() => onNavigate(view)}
-                    >
-                        {view
-                            .split('-')
-                            .map(
-                                (word) =>
-                                    word.charAt(0).toUpperCase() + word.slice(1)
-                            )
-                            .join(' ')}
-                    </button>
+                    <Link key={view} href={`/apps/${view}`}>
+                        <button
+                            className={`px-3 h-8 rounded-md transition-colors ${
+                                window.location.pathname.includes(view)
+                                    ? 'text-white bg-white/10'
+                                    : 'text-white/70 hover:text-white'
+                            }`}
+                        >
+                            {view
+                                .split('-')
+                                .map(
+                                    (word) =>
+                                        word.charAt(0).toUpperCase() +
+                                        word.slice(1)
+                                )
+                                .join(' ')}
+                        </button>
+                    </Link>
                 ))}
             </div>
             <div className="flex items-center space-x-3 relative">
@@ -102,18 +103,18 @@ export function TopNav({ onNavigate, currentView, onSearch }: TopNavProps) {
                     onClear={clearSearch}
                 />
             </div>
+
             {!loading && (
                 <>
                     {user ? (
                         <Menu as="div" className="relative ml-4">
                             <Menu.Button className="relative w-9 h-9 mr-3 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-                                <Image
+                                <img
                                     src={
                                         user.photoURL || '/images/sticker.webp'
                                     }
                                     alt="Profile"
-                                    layout="fill"
-                                    objectFit="cover"
+                                    className="w-full h-full object-cover rounded-full"
                                 />
                             </Menu.Button>
                             <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">

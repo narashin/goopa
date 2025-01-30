@@ -8,14 +8,16 @@ import { AddNewAppModal } from './modal/AddNewAppModal';
 import { ConfirmModal } from './modal/ConfirmModal';
 
 interface ToolIconsProps {
-    tools: ITool[];
+    apps: ITool[];
+    onAddNewApp: (newApp: ITool) => void;
     isItemSelected: (id: string) => boolean;
     toggleItem: (item: ITool) => void;
     currentCategory: AppCategoryType;
 }
 
 const ToolIconsArea: React.FC<ToolIconsProps> = ({
-    tools,
+    apps: tools,
+    onAddNewApp,
     isItemSelected,
     toggleItem,
     currentCategory,
@@ -23,7 +25,6 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [apps, setApps] = useState(tools);
 
     const handleAddNewApp = () => {
         if (isEditMode) {
@@ -39,7 +40,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     };
 
     const handleSubmitNewApp = (newApp: ITool) => {
-        setApps((prevApps) => [...prevApps, newApp]);
+        onAddNewApp(newApp);
     };
 
     return (
@@ -50,27 +51,27 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                 </h2>
                 <div className="overflow-y-auto flex-grow">
                     <div className="grid grid-cols-2 gap-4 w-full pt-2">
-                        {apps.map((app) => (
+                        {tools.map((tool) => (
                             <div
-                                key={app.id}
+                                key={tool.id}
                                 className={`relative transition-all cursor-pointer ${
-                                    isItemSelected(app.id)
+                                    isItemSelected(tool.id)
                                         ? 'border-white/60 bg-white/10'
                                         : 'border-white/20 hover:border-white/40'
                                 }`}
                             >
                                 <AppIconCard
-                                    key={app.id}
+                                    key={tool.id}
                                     app={{
-                                        id: app.id,
-                                        icon: app.icon,
-                                        name: app.name,
-                                        description: app.description || '',
-                                        hasSettings: app.hasSettings,
-                                        downloadUrl: app.downloadUrl,
-                                        category: app.category,
+                                        id: tool.id,
+                                        icon: tool.icon,
+                                        name: tool.name,
+                                        description: tool.description || '',
+                                        hasSettings: tool.hasSettings,
+                                        downloadUrl: tool.downloadUrl,
+                                        category: tool.category,
                                     }}
-                                    onClick={() => toggleItem(app)}
+                                    onClick={() => toggleItem(tool)}
                                 />
                             </div>
                         ))}

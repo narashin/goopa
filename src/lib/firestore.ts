@@ -1,9 +1,9 @@
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 import { ITool } from '../types/app';
 import { firestore } from './firebase';
 
-export const addAppDataToFirestore = async (newApp: ITool, userId: string) => {
+export const addAppToFirestore = async (newApp: ITool, userId: string) => {
     try {
         const appsRef = collection(firestore, 'users', userId, 'apps');
         const docRef = await addDoc(appsRef, newApp);
@@ -13,9 +13,23 @@ export const addAppDataToFirestore = async (newApp: ITool, userId: string) => {
     }
 };
 
-export const fetchAppsFromFirestore = async (category: string) => {
-    const appsRef = collection(firestore, category);
-    const querySnapshot = await getDocs(appsRef);
-    const appsList = querySnapshot.docs.map((doc) => doc.data());
+export const fetchAppsFromFirestore = async (
+    category: string
+): Promise<ITool[]> => {
+    const appsRef = collection(firestore, 'apps'); // 'apps' 컬렉션에서 데이터 가져오기
+    const q = query(appsRef, where('category', '==', category)); // 'category'가 'Dev'인 앱들만 필터링
+
+    const querySnapshot = await getDocs(q);
+    const appsList: ITool[] = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            name: data.name,
+            category: data.category,
+            icon: data.icon,
+            downloadUrl: data.downloadUrl,
+        };
+    });
+
     return appsList;
 };

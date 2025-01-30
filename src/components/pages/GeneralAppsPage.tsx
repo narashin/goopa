@@ -2,37 +2,22 @@ import React, { useState } from 'react';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
-import {
-    AddNewAppModal,
-} from '../../components/templates/modal/AddNewAppModal';
+import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAppContext } from '../../contexts/AppContext';
-import { generalApps } from '../../data/general-apps';
-import { fetchAppsFromFirestore } from '../../lib/firestore';
 import { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
-export function GeneralApps() {
+interface GeneralAppsPageProps {
+    apps: ITool[];
+    onAddNewApp: (newApp: ITool) => void;
+}
+
+export function GeneralAppsPage({ apps, onAddNewApp }: GeneralAppsPageProps) {
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [apps, setApps] = useState(generalApps);
-    const [loading, setLoading] = useState(true);
-
-    const fetchData = async () => {
-        setLoading(true);
-        const appsList = await fetchAppsFromFirestore(); // 데이터 가져오기
-        const devApps = appsList.filter(
-            (app: ITool) => app.category === AppCategoryType.Dev
-        ); // `dev` 카테고리 필터링
-        setApps(devApps);
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchData(); // 컴포넌트가 마운트될 때 데이터 가져오기
-    }, []);
 
     const handleAppClick = (url: string) => {
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -51,8 +36,8 @@ export function GeneralApps() {
         setIsConfirmModalOpen(false);
     };
 
-    const handleSubmitNewApp = (newApp: ITool) => {
-        setApps((prevApps) => [...prevApps, newApp]);
+    const handleSubmitNewApp = async (newApp: ITool) => {
+        onAddNewApp(newApp);
     };
 
     const filteredApps = apps.filter(

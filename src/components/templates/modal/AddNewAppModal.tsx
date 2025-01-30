@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import { useAppContext } from '../../../contexts/AppContext';
-import { addAppDataToFirestore } from '../../../lib/firestore';
+import { addAppToFirestore } from '../../../lib/firestore';
 import { ITool } from '../../../types/app';
 import { AppCategoryType } from '../../../types/category';
 import { AddNewAppForm } from '../form/AddNewAppForm';
@@ -29,7 +29,7 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
 
     const handleFormSubmit = async (newApp: ITool) => {
         if (user) {
-            await addAppDataToFirestore(newApp, user.uid);
+            await addAppToFirestore(newApp, user.uid);
         }
         onSubmit(newApp);
         onClose();

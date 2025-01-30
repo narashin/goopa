@@ -2,7 +2,7 @@ import type React from 'react';
 
 import { Card } from '../../components/ui/Card';
 import { allApps } from '../../data/all-apps';
-import { MarkdownViewer } from './MarkdownViewer';
+import { MarkdownViewer } from './AppSettingsMarkdownViewer';
 
 interface AppSettingsProps {
     appId: string;

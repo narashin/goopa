@@ -5,6 +5,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { Goopa } from '../components/pages/Goopa';
 import { AppProvider } from '../contexts/AppContext';
 
 const geistSans = Geist({
@@ -32,7 +33,9 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-                <AppProvider>{children}</AppProvider>
+                <AppProvider>
+                    <Goopa>{children}</Goopa>
+                </AppProvider>
             </body>
         </html>
     );
