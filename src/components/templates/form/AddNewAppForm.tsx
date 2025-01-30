@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from 'uuid';
 
+import { uploadToS3 } from '../../../lib/s3';
 import type { ITool } from '../../../types/app';
 import { AppCategoryType } from '../../../types/category';
 
@@ -91,9 +92,12 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
         let iconUrl = '';
         if (iconFile) {
-            // 여기에 파일 업로드 로직 추가 (예: Firebase Storage 사용)
-            // iconUrl = await uploadFile(iconFile);
-            iconUrl = URL.createObjectURL(iconFile); // 임시 URL 생성 (실제 구현에서는 서버 업로드 후 URL 사용)
+            try {
+                iconUrl = await uploadToS3(iconFile);
+            } catch (error) {
+                console.error('Image upload failed:', error);
+                return;
+            }
         }
 
         const newApp: ITool = {
