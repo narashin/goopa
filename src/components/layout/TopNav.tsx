@@ -106,14 +106,12 @@ export function TopNav() {
                 ))}
             </div>
             <div className="flex items-center space-x-3 relative">
-                <form onSubmit={handleSearchSubmit}>
-                    <SearchInput
-                        value={searchQuery}
-                        onChange={handleSearch}
-                        onClear={clearSearch}
-                        onSubmit={handleSearchSubmit}
-                    />
-                </form>
+                <SearchInput
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    onClear={clearSearch}
+                    onSubmit={handleSearchSubmit}
+                />
             </div>
 
             {!loading && (
