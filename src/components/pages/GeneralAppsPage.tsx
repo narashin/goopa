@@ -17,9 +17,14 @@ import { AppCategoryType } from '../../types/category';
 interface GeneralAppsPageProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
+    onDeleteApp: (id: string) => void;
 }
 
-export function GeneralAppsPage({ apps, onAddNewApp }: GeneralAppsPageProps) {
+export function GeneralAppsPage({
+    apps,
+    onAddNewApp,
+    onDeleteApp,
+}: GeneralAppsPageProps) {
     const { user } = useUserContext();
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -41,6 +46,13 @@ export function GeneralAppsPage({ apps, onAddNewApp }: GeneralAppsPageProps) {
             setIsConfirmModalOpen(true);
         }
     }, [isEditMode]);
+
+    const handleDeleteApp = useCallback(
+        (appId: string) => {
+            onDeleteApp(appId);
+        },
+        [onDeleteApp]
+    );
 
     const handleConfirmEditMode = useCallback(() => {
         setIsEditMode(true);
@@ -71,12 +83,14 @@ export function GeneralAppsPage({ apps, onAddNewApp }: GeneralAppsPageProps) {
                                 onClick={() =>
                                     handleAppClick(app.downloadUrl ?? '')
                                 }
+                                onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
                         {user && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}
+                                onDeleteApp={() => {}}
                             />
                         )}
                     </div>

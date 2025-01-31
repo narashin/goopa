@@ -11,12 +11,14 @@ import { AppCategoryType } from '../../types/category';
 interface ZshPluginsPageProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
+    onDeleteApp: (id: string) => void;
     copyToClipboard: (text: string) => void;
 }
 
 const ZshPluginsPage: React.FC<ZshPluginsPageProps> = ({
     apps,
     onAddNewApp,
+    onDeleteApp,
     copyToClipboard,
 }) => {
     const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
@@ -44,6 +46,7 @@ const ZshPluginsPage: React.FC<ZshPluginsPageProps> = ({
                 <ToolIconsArea
                     apps={filteredApps}
                     onAddNewApp={onAddNewApp}
+                    onDeleteApp={onDeleteApp}
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
                     currentCategory={AppCategoryType.ZshPlugin}

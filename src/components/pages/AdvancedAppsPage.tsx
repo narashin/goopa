@@ -16,9 +16,14 @@ import ZshPluginsPage from './ZshPluginsPage';
 interface AdvancedDevProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
+    onDeleteApp: (id: string) => void;
 }
 
-const AdvancedDevAppPage = ({ apps, onAddNewApp }: AdvancedDevProps) => {
+const AdvancedDevAppPage = ({
+    apps,
+    onAddNewApp,
+    onDeleteApp,
+}: AdvancedDevProps) => {
     const [selectedCategory, setSelectedCategory] =
         useState<SubCategoryType | null>(null);
 
@@ -37,6 +42,7 @@ const AdvancedDevAppPage = ({ apps, onAddNewApp }: AdvancedDevProps) => {
             const commonProps = {
                 apps,
                 onAddNewApp,
+                onDeleteApp,
                 copyToClipboard,
             };
 

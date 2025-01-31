@@ -18,13 +18,20 @@ interface CategoryPageContentProps {
 }
 
 const CategoryPageContent = ({ category }: CategoryPageContentProps) => {
-    const { apps, addApp } = useAppContext();
+    const { apps, addApp, deleteApp } = useAppContext();
 
     const handleAddNewApp = useCallback(
         async (newApp: ITool) => {
             addApp(newApp);
         },
         [addApp]
+    );
+
+    const handleDeleteApp = useCallback(
+        async (appId: string) => {
+            deleteApp(appId);
+        },
+        [deleteApp]
     );
 
     const copyToClipboard = useCallback((text: string) => {
@@ -37,6 +44,7 @@ const CategoryPageContent = ({ category }: CategoryPageContentProps) => {
         const commonProps = {
             apps,
             onAddNewApp: handleAddNewApp,
+            onDeleteApp: handleDeleteApp,
         };
 
         switch (category) {

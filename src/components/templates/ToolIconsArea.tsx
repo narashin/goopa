@@ -11,6 +11,7 @@ import { ConfirmModal } from './modal/ConfirmModal';
 interface ToolIconsProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
+    onDeleteApp: (id: string) => void;
     isItemSelected: (id: string) => boolean;
     toggleItem: (item: ITool) => void;
     currentCategory: AppCategoryType;
@@ -19,6 +20,7 @@ interface ToolIconsProps {
 const ToolIconsArea: React.FC<ToolIconsProps> = ({
     apps: tools,
     onAddNewApp,
+    onDeleteApp,
     isItemSelected,
     toggleItem,
     currentCategory,
@@ -36,6 +38,10 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
         }
     };
 
+    const handleDeleteApp = (appId: string) => {
+        onDeleteApp(appId);
+    };
+
     const handleConfirmEditMode = () => {
         setIsEditMode(true);
         setIsConfirmModalOpen(false);
@@ -43,6 +49,10 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
 
     const handleSubmitNewApp = (newApp: ITool) => {
         onAddNewApp(newApp);
+    };
+
+    const toggleSelectedItem = (item: ITool) => {
+        toggleItem(item);
     };
 
     return (
@@ -64,16 +74,9 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                             >
                                 <AppIconCard
                                     key={tool.id}
-                                    app={{
-                                        id: tool.id,
-                                        icon: tool.icon,
-                                        name: tool.name,
-                                        description: tool.description || '',
-                                        hasSettings: tool.hasSettings,
-                                        downloadUrl: tool.downloadUrl,
-                                        category: tool.category,
-                                    }}
-                                    onClick={() => toggleItem(tool)}
+                                    app={tool}
+                                    onClick={() => toggleSelectedItem(tool)}
+                                    onDeleteApp={() => handleDeleteApp(tool.id)}
                                 />
                             </div>
                         ))}
@@ -81,6 +84,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}
+                                onDeleteApp={() => {}}
                             />
                         )}
                     </div>

@@ -58,6 +58,7 @@ export function SearchResultsPage({ query }: SearchResultsPageProps) {
                                     key={app.id}
                                     app={app}
                                     onClick={() => handleNavigation(app)}
+                                    onDeleteApp={() => {}}
                                 />
                             ))}
                         </div>

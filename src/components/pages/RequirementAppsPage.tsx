@@ -11,12 +11,14 @@ import { AppCategoryType } from '../../types/category';
 interface RequirementAppsPageProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
+    onDeleteApp: (id: string) => void;
     copyToClipboard: (text: string) => void;
 }
 
 const RequirementAppsPage: React.FC<RequirementAppsPageProps> = ({
     apps,
     onAddNewApp,
+    onDeleteApp,
     copyToClipboard,
 }) => {
     const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
@@ -46,6 +48,7 @@ const RequirementAppsPage: React.FC<RequirementAppsPageProps> = ({
                 <ToolIconsArea
                     apps={filteredApps}
                     onAddNewApp={onAddNewApp}
+                    onDeleteApp={onDeleteApp}
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
                     currentCategory={AppCategoryType.Requirement}

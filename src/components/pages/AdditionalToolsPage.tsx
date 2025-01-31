@@ -11,12 +11,14 @@ import { AppCategoryType } from '../../types/category';
 interface AdditionalAppsPageProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
+    onDeleteApp: (id: string) => void;
     copyToClipboard: (text: string) => void;
 }
 
 const AdditionalAppsPage: React.FC<AdditionalAppsPageProps> = ({
     apps,
     onAddNewApp,
+    onDeleteApp,
     copyToClipboard,
 }) => {
     const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
@@ -44,6 +46,7 @@ const AdditionalAppsPage: React.FC<AdditionalAppsPageProps> = ({
                 <ToolIconsArea
                     apps={filteredApps}
                     onAddNewApp={onAddNewApp}
+                    onDeleteApp={onDeleteApp}
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
                     currentCategory={AppCategoryType.Additional}

@@ -16,20 +16,26 @@ interface AppCardProps {
     app?: ITool;
     onClick: (e: React.MouseEvent) => void;
     isAddNewAppCard?: boolean;
+    onDeleteApp: (id: string) => void;
 }
 
 export const AppIconCard: React.FC<AppCardProps> = ({
     app,
     onClick,
     isAddNewAppCard = false,
+    onDeleteApp,
 }) => {
     const { user } = useUserContext();
-    const { isEditMode, deleteApp, updateApp } = useAppContext();
+    const { isEditMode, updateApp } = useAppContext();
     const [selectedApp, setSelectedApp] = useState<ITool | null>(app || null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
     const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (showDeleteConfirmModal || showSettingsModal) {
+            return;
+        }
         if (isAddNewAppCard) {
             onClick(e);
         } else if (app?.downloadUrl) {
@@ -44,16 +50,17 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         setShowSettingsModal(true);
     };
 
-    const handleDeleteClick = (e: React.MouseEvent) => {
+    const showDeleteConfirmationModal = (e: React.MouseEvent) => {
         e.stopPropagation();
         setShowDeleteConfirmModal(true);
     };
 
-    const handleDeleteConfirm = async () => {
+    const deleteAppAndCloseModal = async () => {
         if (selectedApp) {
-            await deleteApp(selectedApp.id);
-            setShowDeleteConfirmModal(false);
+            await onDeleteApp(selectedApp.id);
+            setSelectedApp(null);
         }
+        setShowDeleteConfirmModal(false);
     };
 
     const handleUpdateApp = (updatedApp: ITool) => {
@@ -87,7 +94,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                 {!isAddNewAppCard && isEditMode && selectedApp && (
                     <>
                         <button
-                            onClick={handleDeleteClick}
+                            onClick={showDeleteConfirmationModal} // Modified function name
                             className="absolute -top-1 left-0 w-5 h-5 bg-gray-500 rounded-full flex items-center justify-center z-10"
                         >
                             <MinusIcon className="w-3 h-3 text-white" />
@@ -139,8 +146,8 @@ export const AppIconCard: React.FC<AppCardProps> = ({
             )}
             {showDeleteConfirmModal && selectedApp && (
                 <DeleteConfirmModal
-                    appName={selectedApp.name}
-                    onConfirm={handleDeleteConfirm}
+                    app={selectedApp}
+                    onConfirm={deleteAppAndCloseModal}
                     onCancel={() => setShowDeleteConfirmModal(false)}
                 />
             )}

@@ -17,9 +17,14 @@ import { AppCategoryType } from '../../types/category';
 interface DevAppsPageProps {
     apps: ITool[];
     onAddNewApp: (newApp: ITool) => void;
+    onDeleteApp: (id: string) => void;
 }
 
-export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
+export function DevAppsPage({
+    apps,
+    onAddNewApp,
+    onDeleteApp,
+}: DevAppsPageProps) {
     const { user } = useUserContext();
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -41,6 +46,13 @@ export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
             setIsConfirmModalOpen(true);
         }
     }, [isEditMode]);
+
+    const handleDeleteApp = useCallback(
+        (appId: string) => {
+            onDeleteApp(appId);
+        },
+        [onDeleteApp]
+    );
 
     const handleSubmitNewApp = useCallback(
         (newApp: ITool) => {
@@ -71,12 +83,14 @@ export function DevAppsPage({ apps, onAddNewApp }: DevAppsPageProps) {
                                 onClick={() =>
                                     handleAppClick(app.downloadUrl ?? '')
                                 }
+                                onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
                         {user && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}
+                                onDeleteApp={() => {}}
                             />
                         )}
                     </div>
