@@ -38,22 +38,23 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
     if (!isOpen) return null;
 
     const modalContent = (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-gray-100 rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-                <div className="bg-gradient-to-b from-gray-200 to-gray-300 px-4 py-2 flex items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 backdrop-blur-[2px]">
+            <div className="bg-[#f6f6f6] w-[480px] rounded-lg shadow-xl">
+                <div className="h-[12px] bg-[#bdbdbd] rounded-t-lg" />
+                <div className="px-4 py-2 flex items-center">
                     <div className="flex space-x-2">
                         <button
                             onClick={onClose}
-                            className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600"
+                            className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 focus:outline-none"
                         ></button>
                         <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                     <h2 className="text-center flex-grow text-sm font-semibold text-gray-700">
-                        새 앱 추가
+                        Add New App
                     </h2>
                 </div>
-                <div className="p-6 bg-white">
+                <div className="p-6 bg-white rounded-b-lg">
                     <AddNewAppForm
                         onSubmit={handleFormSubmit}
                         onClose={onClose}

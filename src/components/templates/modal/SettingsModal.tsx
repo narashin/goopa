@@ -35,10 +35,6 @@ export function SettingsModal({
         setDescription(app.description || '');
     }, [app]);
 
-    const handleContentClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-    };
-
     const handleSave = async () => {
         if (!user || !user.uid) {
             console.error('User not logged in or user.uid is not available.');
@@ -58,26 +54,20 @@ export function SettingsModal({
     };
 
     const modalContent = (
-        <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-            onClick={onClose}
-        >
-            <div
-                className="bg-white rounded-lg shadow-2xl w-4/5 max-w-6xl overflow-hidden flex flex-col"
-                onClick={handleContentClick}
-            >
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-xl">
                 {/* macOS-style window header */}
-                <div className="bg-gray-200 px-4 py-2 flex items-center border-b border-gray-300">
+                <div className="bg-gray-200 px-4 py-2 flex items-center rounded-t-lg border-b border-gray-300">
                     <div className="flex space-x-2">
                         <button
-                            className="w-3 h-3 rounded-full bg-red-500"
+                            className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600"
                             onClick={onClose}
                         ></button>
-                        <button className="w-3 h-3 rounded-full bg-yellow-500"></button>
-                        <button className="w-3 h-3 rounded-full bg-green-500"></button>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                     <h2 className="text-center flex-grow text-sm font-semibold text-gray-700">
-                        {app.name} 설정
+                        {app.name} Settings
                     </h2>
                 </div>
 
@@ -97,12 +87,12 @@ export function SettingsModal({
                         </p>
                         {app.tooltip && (
                             <p className="text-sm text-gray-600">
-                                설명: {app.tooltip}
+                                Description: {app.tooltip}
                             </p>
                         )}
                         {app.installCommand && (
                             <p className="text-sm text-gray-600">
-                                설치 명령어: {app.installCommand}
+                                Install Command: {app.installCommand}
                             </p>
                         )}
                     </div>
@@ -111,20 +101,20 @@ export function SettingsModal({
                 {/* Content area */}
                 <div className="flex min-h-[400px] h-[60vh]">
                     <div className="w-1/2 p-4 border-r border-gray-200 flex flex-col">
-                        <h2 className="text-lg font-semibold mb-2">
-                            ✍️ 마크다운 에디터
+                        <h2 className="text-base font-semibold mb-2">
+                            ✍️ Markdown Editor
                         </h2>
                         <textarea
                             className="flex-1 w-full p-2 border rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="마크다운 형식으로 설정을 입력하세요..."
+                            placeholder="Enter settings in markdown format..."
                         />
                     </div>
 
                     <div className="w-1/2 p-4 flex flex-col">
-                        <h2 className="text-lg font-semibold mb-2">
-                            👁️ 미리보기
+                        <h2 className="text-base font-semibold mb-2">
+                            👁️ Preview
                         </h2>
                         <div className="flex-1 border p-4 rounded bg-gray-50 overflow-auto prose prose-sm max-w-none">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -134,18 +124,18 @@ export function SettingsModal({
                     </div>
                 </div>
 
-                <div className="bg-gray-100 px-4 py-3 flex justify-between border-t border-gray-200">
+                <div className="bg-gray-100 px-4 py-3 flex justify-end space-x-2 border-t border-gray-200 rounded-b-lg">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="px-3 py-1 text-[11px] bg-white border border-gray-300 rounded-[4px] hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors shadow-sm"
                     >
-                        닫기
+                        Cancel
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="px-3 py-1 text-[11px] bg-[#007AFF] text-white rounded-[4px] hover:bg-[#0063CC] focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors shadow-sm"
                     >
-                        저장
+                        Save
                     </button>
                 </div>
             </div>

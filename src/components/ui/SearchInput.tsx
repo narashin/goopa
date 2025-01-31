@@ -21,8 +21,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
             <input
                 disabled={disabled}
                 type="text"
-                className="w-36 pl-8 pr-8 py-1.5 bg-white/10 border border-white/20 rounded-md text-sm text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Search..."
+                className="w-36 pl-8 pr-8 py-1.5 bg-white/10 border border-white/20 rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="will be soon😉"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
             />

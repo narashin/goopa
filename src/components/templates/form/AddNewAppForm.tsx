@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { nanoid } from 'nanoid';
 import { useDropzone } from 'react-dropzone';
@@ -128,6 +128,40 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
         }
     };
 
+    useEffect(() => {
+        fieldConfig[category].required.forEach((field) => {
+            const value =
+                field === 'name'
+                    ? name
+                    : field === 'downloadUrl'
+                      ? downloadUrl
+                      : field === 'installCommand'
+                        ? installCommand
+                        : field === 'zshrcCommand'
+                          ? zshrcCommand
+                          : '';
+
+            validateField(field, value);
+        });
+    }, [category]);
+
+    const isFormValid = useMemo(() => {
+        return fieldConfig[category].required.every((field) => {
+            const value =
+                field === 'name'
+                    ? name
+                    : field === 'downloadUrl'
+                      ? downloadUrl
+                      : field === 'installCommand'
+                        ? installCommand
+                        : field === 'zshrcCommand'
+                          ? zshrcCommand
+                          : '';
+
+            return value.trim() !== '' && !errors[field];
+        });
+    }, [errors, category, name, downloadUrl, installCommand, zshrcCommand]);
+
     const handleBlur = (field: string, value: string) => {
         validateField(field, value);
     };
@@ -181,8 +215,10 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
         onClose();
     };
 
-    const inputClassName = (error: boolean) =>
-        `w-full px-3 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500`;
+    const inputClassName = (hasError: boolean) =>
+        `w-full px-2 py-1 text-xs text-gray-700 border ${
+            hasError ? 'border-red-500' : 'border-gray-300'
+        } rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white`;
 
     const renderField = (
         field: string,
@@ -198,10 +234,10 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
         const isRequired = fieldConfig[category].required.includes(field);
 
         return (
-            <div>
+            <div className="mb-4">
                 <label
                     htmlFor={field}
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-gray-700 mb-1"
                 >
                     {label}{' '}
                     {isRequired && <span className="text-red-500">*</span>}
@@ -217,7 +253,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 />
                 {errors[field] && (
                     <p className="text-red-500 text-xs mt-1">
-                        {label}은(는) 필수입니다.
+                        {label} is required.
                     </p>
                 )}
             </div>
@@ -230,17 +266,18 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 <div className="col-span-1">
                     <div
                         {...getRootProps()}
-                        className={`w-full h-32 border-2 border-dashed ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex flex-col items-center justify-center`}
+                        className={`w-32 h-32 border-2 border-dashed ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex flex-col items-center justify-center 
+                        transition-colors duration-200 mx-auto`}
                     >
                         <input {...getInputProps()} />
                         {iconPreview ? (
                             <img
-                                src={iconPreview || '/placeholder.svg'}
+                                src={iconPreview}
                                 alt="Icon preview"
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-contain rounded-md"
                             />
                         ) : (
-                            <div className="text-gray-400">
+                            <div className="text-gray-400 text-center">
                                 <svg
                                     className="mx-auto h-12 w-12"
                                     stroke="currentColor"
@@ -255,26 +292,26 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                                         strokeLinejoin="round"
                                     />
                                 </svg>
-                                <p className="mt-1 text-sm text-gray-600">
-                                    아이콘 추가
+                                <p className="mt-1 text-xs text-gray-600">
+                                    Insert Image
                                 </p>
                             </div>
                         )}
                     </div>
                 </div>
                 <div className="col-span-2">
-                    {renderField('name', '앱 이름', name, (e) =>
+                    {renderField('name', 'Name', name, (e) =>
                         setName(e.target.value)
                     )}
                 </div>
             </div>
 
-            <div>
+            <div className="mb-4">
                 <label
                     htmlFor="category"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                    카테고리 <span className="text-red-500">*</span>
+                    Category <span className="text-red-500">*</span>
                 </label>
                 <select
                     id="category"
@@ -283,7 +320,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                         setCategory(e.target.value as AppCategoryType)
                     }
                     required
-                    className={inputClassName(false)}
+                    className={inputClassName(!!errors.category)}
                 >
                     {categoryOptions
                         .filter((option) => !option.group)
@@ -306,34 +343,46 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
             {renderField(
                 'downloadUrl',
-                '다운로드 URL',
+                'URL',
                 downloadUrl,
                 (e) => setDownloadUrl(e.target.value),
                 'url'
             )}
-            {renderField('tooltip', '툴팁', tooltip, (e) =>
+            {renderField('tooltip', 'Tooltip', tooltip, (e) =>
                 setTooltip(e.target.value)
             )}
-            {renderField('installCommand', '설치 명령어', installCommand, (e) =>
-                setInstallCommand(e.target.value)
+            {renderField(
+                'installCommand',
+                'Install Command',
+                installCommand,
+                (e) => setInstallCommand(e.target.value)
             )}
-            {renderField('zshrcCommand', 'zshrc 추가 코드', zshrcCommand, (e) =>
-                setZshrcCommand(e.target.value)
+            {renderField(
+                'zshrcCommand',
+                'Install Code for zshrc',
+                zshrcCommand,
+                (e) => setZshrcCommand(e.target.value)
             )}
 
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-end space-x-2 pt-4">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="px-3 py-1 text-xs bg-white border border-gray-300 rounded-[4px] hover:bg-gray-50 
+                    focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors shadow-sm"
                 >
-                    닫기
+                    Cancel
                 </button>
                 <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    disabled={!isFormValid}
+                    className={`px-3 py-1 text-xs rounded-[4px] transition-colors shadow-sm ${
+                        isFormValid
+                            ? 'bg-[#007AFF] text-white hover:bg-[#0063CC] focus:ring-1 focus:ring-blue-400'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
                 >
-                    저장
+                    Save
                 </button>
             </div>
         </form>
