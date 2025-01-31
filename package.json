@@ -6,7 +6,9 @@
         "dev": "next dev --turbopack",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "export": "next export",
+        "deploy": "npm run build && firebase deploy"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.738.0",

@@ -36,6 +36,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [tooltip, setTooltip] = useState('');
     const [installCommand, setInstallCommand] = useState('');
     const [zshrcCommand, setZshrcCommand] = useState('');
+    const [formTouched, setFormTouched] = useState(false); // Added state for form touch
 
     const [errors, setErrors] = useState<Record<string, boolean>>({});
 
@@ -123,7 +124,8 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     });
 
     const validateField = (field: string, value: string) => {
-        if (fieldConfig[category].required.includes(field)) {
+        if (formTouched && fieldConfig[category].required.includes(field)) {
+            // Updated validation
             setErrors((prev) => ({ ...prev, [field]: value.trim() === '' }));
         }
     };
@@ -163,11 +165,13 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     }, [errors, category, name, downloadUrl, installCommand, zshrcCommand]);
 
     const handleBlur = (field: string, value: string) => {
+        setFormTouched(true); // Set form as touched on blur
         validateField(field, value);
     };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormTouched(true); // Set form as touched before validation
         const newErrors: Record<string, boolean> = {};
 
         fieldConfig[category].required.forEach((field) => {
@@ -251,11 +255,12 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                     required={isRequired}
                     className={inputClassName(!!errors[field])}
                 />
-                {errors[field] && (
-                    <p className="text-red-500 text-xs mt-1">
-                        {label} is required.
-                    </p>
-                )}
+                {formTouched &&
+                    errors[field] && ( // Updated error message display
+                        <p className="text-red-500 text-xs mt-1">
+                            {label} is required.
+                        </p>
+                    )}
             </div>
         );
     };
@@ -272,7 +277,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                         <input {...getInputProps()} />
                         {iconPreview ? (
                             <img
-                                src={iconPreview}
+                                src={iconPreview || '/placeholder.svg'}
                                 alt="Icon preview"
                                 className="w-full h-full object-contain rounded-md"
                             />

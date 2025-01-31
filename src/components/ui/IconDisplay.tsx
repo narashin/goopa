@@ -2,19 +2,15 @@ import type React from 'react';
 
 import Image from 'next/image';
 
-import { Tooltip } from './Tooltip';
-
 interface IconDisplayProps {
     icon?: string;
     name: string;
-    tooltip?: string;
     onClick?: (e: React.MouseEvent) => void;
 }
 
 export const IconDisplay: React.FC<IconDisplayProps> = ({
     icon,
     name,
-    tooltip,
     onClick,
 }) => {
     const IconComponent = () => {
@@ -44,16 +40,6 @@ export const IconDisplay: React.FC<IconDisplayProps> = ({
             </div>
         );
     };
-
-    if (tooltip) {
-        return (
-            <Tooltip content={tooltip}>
-                <div>
-                    <IconComponent />
-                </div>
-            </Tooltip>
-        );
-    }
 
     return <IconComponent />;
 };

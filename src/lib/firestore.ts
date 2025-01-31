@@ -92,6 +92,28 @@ export const getAppsFromFirestore = async (
     }
 };
 
+type UpdateData = Partial<Omit<ITool, 'id'>>;
+
+export const updateApp = async (
+    userId: string,
+    updatedApp: ITool
+): Promise<void> => {
+    try {
+        const appRef = doc(firestore, 'users', userId, 'apps', updatedApp.id);
+
+        const filteredAppData: UpdateData = Object.fromEntries(
+            Object.entries(updatedApp).filter(
+                ([key, value]) => key !== 'id' && value !== undefined
+            )
+        ) as UpdateData;
+
+        await updateDoc(appRef, filteredAppData);
+    } catch (error) {
+        console.error('Error updating app:', error);
+        throw error;
+    }
+};
+
 export const updateAppDescription = async (
     userId: string,
     appId: string,

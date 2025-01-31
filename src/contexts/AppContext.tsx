@@ -20,6 +20,7 @@ interface AppContextType {
     setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     toggleEditMode: () => void;
     updateApp: (updatedApp: ITool) => Promise<void>;
+    isPublishMode: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -31,6 +32,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useUserContext();
+
     const [isEditMode, setIsEditMode] = useState<boolean>(() => {
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('isEditMode');
@@ -117,6 +119,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
+    const isPublishMode = !user && !isEditMode;
+
     return (
         <AppContext.Provider
             value={{
@@ -130,6 +134,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
                 updateApp,
                 deleteApp,
                 toggleEditMode,
+                isPublishMode,
             }}
         >
             {children}

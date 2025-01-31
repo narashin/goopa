@@ -184,6 +184,20 @@ export function TopNav() {
                                     <MenuItem>
                                         {({ active }) => (
                                             <button
+                                                onClick={() => {}}
+                                                className={`${
+                                                    active
+                                                        ? 'bg-gray-100 text-gray-900'
+                                                        : 'text-gray-700'
+                                                } block w-full px-4 py-2 text-left text-xs`}
+                                            >
+                                                Publish
+                                            </button>
+                                        )}
+                                    </MenuItem>
+                                    <MenuItem>
+                                        {({ active }) => (
+                                            <button
                                                 onClick={handleSignOut}
                                                 className={`${
                                                     active
