@@ -15,7 +15,7 @@ interface SearchResultsPageProps {
 
 export function SearchResultsPage({ query }: SearchResultsPageProps) {
     const router = useRouter();
-    const results = useSearch(query);
+    const results = useSearch(query, 'testid');
 
     const handleNavigation = (app: ITool) => {
         if (app.downloadUrl) {
@@ -49,11 +49,11 @@ export function SearchResultsPage({ query }: SearchResultsPageProps) {
                     <h2 className="text-2xl font-bold text-white/90 mb-6">
                         Search Results for {query}
                     </h2>
-                    {results.length === 0 ? (
+                    {results.results.length === 0 ? (
                         <p className="text-white/70">No results found</p>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                            {results.map((app) => (
+                            {results.results.map((app) => (
                                 <AppIconCard
                                     key={app.id}
                                     app={app}

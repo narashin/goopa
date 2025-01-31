@@ -116,7 +116,9 @@ export function TopNav() {
                 ))}
             </div>
             <div className="flex items-center space-x-3 relative">
+                {/* TODO: 개인화 전 까지 검색 막아두기 */}
                 <SearchInput
+                    disabled={true}
                     value={searchQuery}
                     onChange={handleSearch}
                     onClear={clearSearch}
