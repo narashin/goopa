@@ -2,53 +2,11 @@ import {
     collection, deleteDoc, doc, FirestoreDataConverter, getDoc, getDocs, query,
     setDoc, updateDoc, where,
 } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
 
 import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
 import { firestore } from './firebase';
-
-export const updateUserPublishStatus = async (
-    userId: string,
-    isPublished: boolean
-): Promise<void> => {
-    try {
-        const userSettingsRef = doc(firestore, 'users', userId, 'settings');
-
-        const publishData = {
-            isPublished: isPublished,
-            publishDate: isPublished ? new Date().toISOString() : '',
-        };
-
-        await setDoc(userSettingsRef, publishData, { merge: true });
-
-        console.log(`Updated User(${userId}) Publish Status`, publishData);
-    } catch (error) {
-        console.error('Error updating user publish status:', error);
-        throw error;
-    }
-};
-
-export const getUserPublishStatus = async (
-    userId: string
-): Promise<{ isPublished: boolean; publishDate: string }> => {
-    try {
-        const userSettingsRef = doc(firestore, 'users', userId, 'settings');
-        const docSnap = await getDoc(userSettingsRef);
-
-        if (!docSnap.exists()) {
-            return { isPublished: false, publishDate: '' };
-        }
-
-        const data = docSnap.data();
-        return {
-            isPublished: data.isPublished ?? false,
-            publishDate: data.publishDate ?? '',
-        };
-    } catch (error) {
-        console.error('Error fetching user publish status:', error);
-        throw error;
-    }
-};
 
 export const addAppToFirestore = async (
     userId: string,
@@ -225,6 +183,160 @@ export const deleteAppFromFirestore = async (userId: string, appId: string) => {
         console.log('App deleted successfully');
     } catch (error) {
         console.error('Error deleting app:', error);
+        throw error;
+    }
+};
+
+/*
+ * ---------------------------------- Publish를 위한 Firestore 메서드
+ */
+
+/**
+ * 공개 이력을 위한 타입
+ */
+export interface PublishHistoryRecord {
+    publishId: string;
+    startedAt: string;
+    endedAt: string | null; // null이면 아직 공개 중
+}
+
+/**
+ * 사용자 공개 상태 타입
+ */
+export interface UserPublishStatus {
+    isPublished: boolean;
+    publishHistory: PublishHistoryRecord[];
+    latestPublishId: string;
+}
+
+/**
+ * 사용자의 공개 상태를 가져오는 함수
+ * @param userId - 사용자 ID
+ * @returns 공개 상태 정보 (isPublished, publishHistory, latestPublishId)
+ */
+export const getUserPublishStatus = async (
+    userId: string
+): Promise<UserPublishStatus> => {
+    try {
+        const userSettingsRef = doc(
+            firestore,
+            'users',
+            userId,
+            'settings',
+            'publish'
+        );
+        const docSnap = await getDoc(userSettingsRef);
+
+        if (!docSnap.exists()) {
+            return {
+                isPublished: false,
+                publishHistory: [],
+                latestPublishId: '',
+            };
+        }
+
+        const data = docSnap.data();
+        return {
+            isPublished: data.isPublished ?? false,
+            publishHistory: data.publishHistory ?? [],
+            latestPublishId: data.latestPublishId ?? '',
+        };
+    } catch (error) {
+        console.error('Error fetching user publish status:', error);
+        throw error;
+    }
+};
+
+/**
+ * 사용자의 공개 상태를 업데이트하고, 새로운 publishId를 추가하는 함수
+ * @param userId - 사용자 ID
+ * @param isPublished - 공개 여부
+ * @returns 생성된 publishId
+ */
+export const updateUserPublishStatus = async (
+    userId: string,
+    isPublished: boolean
+): Promise<string> => {
+    try {
+        const userSettingsRef = doc(
+            firestore,
+            'users',
+            userId,
+            'settings',
+            'publish'
+        );
+        const docSnap = await getDoc(userSettingsRef);
+
+        let publishHistory: PublishHistoryRecord[] = [];
+
+        if (docSnap.exists()) {
+            publishHistory =
+                (docSnap.data()?.publishHistory as PublishHistoryRecord[]) ??
+                [];
+        }
+
+        // 새로운 publishId 생성
+        const newPublishId = nanoid();
+        const newPublishData = {
+            publishId: newPublishId,
+            startedAt: new Date().toISOString(),
+            endedAt: null, // 종료되지 않은 상태
+        };
+
+        const updatedHistory = [...publishHistory, newPublishData];
+
+        // 기존 데이터를 유지하면서 새로운 공개 기록 추가
+        await updateDoc(userSettingsRef, {
+            isPublished,
+            publishHistory: updatedHistory,
+            latestPublishId: newPublishId, // 최신 publishId 유지
+        });
+
+        console.log(`Updated User(${userId}) Publish Status`, newPublishData);
+        return newPublishId;
+    } catch (error) {
+        console.error('Error updating user publish status:', error);
+        throw error;
+    }
+};
+
+/**
+ * 특정 publishId를 종료하는 함수 (endedAt 업데이트)
+ * @param userId - 사용자 ID
+ * @param publishId - 종료할 publishId
+ */
+export const endUserPublish = async (
+    userId: string,
+    publishId: string
+): Promise<void> => {
+    try {
+        const userSettingsRef = doc(
+            firestore,
+            'users',
+            userId,
+            'settings',
+            'publish'
+        );
+        const docSnap = await getDoc(userSettingsRef);
+
+        if (!docSnap.exists()) return;
+
+        const publishHistory: PublishHistoryRecord[] =
+            docSnap.data()?.publishHistory ?? [];
+
+        const updatedHistory = publishHistory.map((entry) =>
+            entry.publishId === publishId
+                ? { ...entry, endedAt: new Date().toISOString() }
+                : entry
+        );
+
+        await updateDoc(userSettingsRef, {
+            publishHistory: updatedHistory,
+        });
+
+        console.log(`Ended publishId ${publishId} for user ${userId}`);
+    } catch (error) {
+        console.error('Error ending user publish:', error);
         throw error;
     }
 };

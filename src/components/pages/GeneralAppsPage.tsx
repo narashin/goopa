@@ -16,14 +16,16 @@ import { AppCategoryType } from '../../types/category';
 
 interface GeneralAppsPageProps {
     apps: ITool[];
-    onAddNewApp: (newApp: ITool) => void;
-    onDeleteApp: (id: string) => void;
+    onAddNewApp?: (newApp: ITool) => void;
+    onDeleteApp?: (id: string) => void;
+    isReadOnly?: boolean;
 }
 
 export function GeneralAppsPage({
     apps,
     onAddNewApp,
     onDeleteApp,
+    isReadOnly = false,
 }: GeneralAppsPageProps) {
     const { user } = useUserContext();
     const { isEditMode, setIsEditMode } = useAppContext();
@@ -40,6 +42,8 @@ export function GeneralAppsPage({
     }, []);
 
     const handleAddNewApp = useCallback(() => {
+        if (isReadOnly || !onAddNewApp) return;
+
         if (isEditMode) {
             setIsAddModalOpen(true);
         } else {
@@ -49,6 +53,7 @@ export function GeneralAppsPage({
 
     const handleDeleteApp = useCallback(
         (appId: string) => {
+            if (isReadOnly || !onDeleteApp) return;
             onDeleteApp(appId);
         },
         [onDeleteApp]
@@ -61,6 +66,7 @@ export function GeneralAppsPage({
 
     const handleSubmitNewApp = useCallback(
         (newApp: ITool) => {
+            if (isReadOnly || !onAddNewApp) return;
             onAddNewApp(newApp);
             setIsAddModalOpen(false);
         },
@@ -86,7 +92,7 @@ export function GeneralAppsPage({
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
-                        {user && (
+                        {!user && !isReadOnly && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}

@@ -10,11 +10,12 @@ import { ConfirmModal } from './modal/ConfirmModal';
 
 interface ToolIconsProps {
     apps: ITool[];
-    onAddNewApp: (newApp: ITool) => void;
-    onDeleteApp: (id: string) => void;
+    onAddNewApp?: (newApp: ITool) => void;
+    onDeleteApp?: (id: string) => void;
     isItemSelected: (id: string) => boolean;
     toggleItem: (item: ITool) => void;
     currentCategory: AppCategoryType;
+    isReadOnly?: boolean;
 }
 
 const ToolIconsArea: React.FC<ToolIconsProps> = ({
@@ -24,6 +25,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     isItemSelected,
     toggleItem,
     currentCategory,
+    isReadOnly = false,
 }) => {
     const { user } = useUserContext();
     const { isEditMode, setIsEditMode } = useAppContext();
@@ -39,6 +41,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     };
 
     const handleDeleteApp = (appId: string) => {
+        if (isReadOnly || !onDeleteApp) return;
         onDeleteApp(appId);
     };
 
@@ -48,6 +51,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     };
 
     const handleSubmitNewApp = (newApp: ITool) => {
+        if (isReadOnly || !onAddNewApp) return;
         onAddNewApp(newApp);
     };
 
@@ -80,7 +84,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                 />
                             </div>
                         ))}
-                        {user && (
+                        {!user && !isReadOnly && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}

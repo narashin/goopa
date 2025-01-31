@@ -15,8 +15,8 @@ import ZshPluginsPage from './ZshPluginsPage';
 
 interface AdvancedDevProps {
     apps: ITool[];
-    onAddNewApp: (newApp: ITool) => void;
-    onDeleteApp: (id: string) => void;
+    onAddNewApp?: (newApp: ITool) => void;
+    onDeleteApp?: (id: string) => void;
 }
 
 const AdvancedDevAppPage = ({

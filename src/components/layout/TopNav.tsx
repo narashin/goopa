@@ -13,6 +13,9 @@ import {
 import { useAppContext } from '../../contexts/AppContext';
 import { signInWithGoogle } from '../../lib/auth';
 import { auth } from '../../lib/firebase';
+import {
+    endUserPublish, getUserPublishStatus, updateUserPublishStatus,
+} from '../../lib/firestore';
 import { MenuType } from '../../types/menu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
@@ -23,6 +26,11 @@ export function TopNav() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(auth.currentUser);
     const { isEditMode, setIsEditMode } = useAppContext();
+
+    const [isPublished, setIsPublished] = useState(false);
+    const [publishUrl, setPublishUrl] = useState('');
+    const [latestPublishId, setLatestPublishId] = useState('');
+
     const router = useRouter();
     const pathname = usePathname();
 
@@ -33,6 +41,42 @@ export function TopNav() {
         });
         return () => unsubscribe();
     }, [setUser]);
+
+    useEffect(() => {
+        if (user) {
+            getUserPublishStatus(user.uid).then((status) => {
+                setIsPublished(status.isPublished);
+                setLatestPublishId(status.latestPublishId);
+                if (status.isPublished) {
+                    setPublishUrl(
+                        `/share/${user.uid}/${status.latestPublishId}`
+                    );
+                }
+            });
+        }
+    }, [user]);
+
+    const handlePublish = async () => {
+        if (!user) return;
+
+        try {
+            if (!isPublished) {
+                const newPublishId = await updateUserPublishStatus(
+                    user.uid,
+                    true
+                );
+                setLatestPublishId(newPublishId);
+                setPublishUrl(`/share/${user.uid}/${newPublishId}`);
+                setIsPublished(true);
+            } else {
+                await endUserPublish(user.uid, latestPublishId);
+                setPublishUrl('');
+                setIsPublished(false);
+            }
+        } catch (error) {
+            console.error('공유 상태 업데이트 중 오류 발생:', error);
+        }
+    };
 
     const debouncedSearch = useCallback(
         _.debounce((query: string) => {
@@ -69,6 +113,7 @@ export function TopNav() {
             await signOut(auth);
             setUser(null);
             setIsEditMode(false);
+            window.location.reload();
         } catch (error) {
             console.error('Error signing out with Google', error);
         }
@@ -184,17 +229,42 @@ export function TopNav() {
                                     <MenuItem>
                                         {({ active }) => (
                                             <button
-                                                onClick={() => {}}
+                                                onClick={handlePublish}
                                                 className={`${
                                                     active
                                                         ? 'bg-gray-100 text-gray-900'
                                                         : 'text-gray-700'
                                                 } block w-full px-4 py-2 text-left text-xs`}
                                             >
-                                                Publish
+                                                {isPublished
+                                                    ? 'Unpublish'
+                                                    : 'Publish'}
                                             </button>
                                         )}
                                     </MenuItem>
+                                    {isPublished && (
+                                        <MenuItem>
+                                            {({ active }) => (
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(
+                                                            `${window.location.origin}${publishUrl}`
+                                                        );
+                                                        alert(
+                                                            '공유 링크가 클립보드에 복사되었습니다!'
+                                                        );
+                                                    }}
+                                                    className={`${
+                                                        active
+                                                            ? 'bg-gray-100 text-gray-900'
+                                                            : 'text-gray-700'
+                                                    } block w-full px-4 py-2 text-left text-xs`}
+                                                >
+                                                    Copy Share Link
+                                                </button>
+                                            )}
+                                        </MenuItem>
+                                    )}
                                     <MenuItem>
                                         {({ active }) => (
                                             <button
