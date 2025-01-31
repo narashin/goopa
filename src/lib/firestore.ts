@@ -7,6 +7,49 @@ import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
 import { firestore } from './firebase';
 
+export const updateUserPublishStatus = async (
+    userId: string,
+    isPublished: boolean
+): Promise<void> => {
+    try {
+        const userSettingsRef = doc(firestore, 'users', userId, 'settings');
+
+        const publishData = {
+            isPublished: isPublished,
+            publishDate: isPublished ? new Date().toISOString() : '',
+        };
+
+        await setDoc(userSettingsRef, publishData, { merge: true });
+
+        console.log(`Updated User(${userId}) Publish Status`, publishData);
+    } catch (error) {
+        console.error('Error updating user publish status:', error);
+        throw error;
+    }
+};
+
+export const getUserPublishStatus = async (
+    userId: string
+): Promise<{ isPublished: boolean; publishDate: string }> => {
+    try {
+        const userSettingsRef = doc(firestore, 'users', userId, 'settings');
+        const docSnap = await getDoc(userSettingsRef);
+
+        if (!docSnap.exists()) {
+            return { isPublished: false, publishDate: '' };
+        }
+
+        const data = docSnap.data();
+        return {
+            isPublished: data.isPublished ?? false,
+            publishDate: data.publishDate ?? '',
+        };
+    } catch (error) {
+        console.error('Error fetching user publish status:', error);
+        throw error;
+    }
+};
+
 export const addAppToFirestore = async (
     userId: string,
     appData: ITool
