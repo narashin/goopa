@@ -1,11 +1,15 @@
+'use client';
 import React, { useState } from 'react';
 
 interface LaptopFrameProps {
     children: React.ReactNode;
-    isPublished: boolean;
+    isPublished?: boolean;
 }
 
-export function LaptopFrame({ children, isPublished }: LaptopFrameProps) {
+export function LaptopFrame({
+    children,
+    isPublished = false,
+}: LaptopFrameProps) {
     const [showTooltip, setShowTooltip] = useState(false);
     return (
         <div className="relative w-full max-w-[960px] mx-auto">

@@ -1,24 +1,55 @@
 import React from 'react';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function NotFound() {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="text-center">
-                <h1 className="text-6xl font-bold text-gray-800 mb-4">404</h1>
-                <h2 className="text-3xl font-semibold text-gray-600 mb-4">
-                    페이지를 찾을 수 없습니다
-                </h2>
-                <p className="text-xl text-gray-500 mb-8">
-                    죄송합니다. 요청하신 페이지를 찾을 수 없습니다.
-                </p>
-                <Link
-                    href="/"
-                    className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
-                >
-                    홈으로 돌아가기
-                </Link>
+        <div className="flex-1 p-4">
+            <div className="h-full flex flex-col items-center justify-between bg-[#C5C6BD] text-white font-sans p-4 rounded-3xl overflow-hidden">
+                <div className="text-center w-full max-w-2xl mx-auto relative flex flex-col min-h-full justify-between py-8">
+                    <div className="relative z-10">
+                        <h1 className="text-xl font-bold mb-4 text-[#1a1b26]">
+                            Page Not Found
+                        </h1>
+                        <p className="text-base mb-8 text-[#1a1b26]/80">
+                            {
+                                "Sorry, I couldn't find the page you're looking for."
+                            }
+                        </p>
+                    </div>
+
+                    <div className="relative w-full h-28">
+                        <Image
+                            src="/images/goopa-disappearing.PNG"
+                            alt="GOOPA disappearing"
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                    </div>
+
+                    <div className="relative mt-10 z-10">
+                        <Link
+                            href="/"
+                            className="px-3 py-1 bg-[#1a1b26] text-white rounded-lg hover:bg-[#1a1b26]/90 transition-colors duration-300 inline-flex items-center"
+                        >
+                            <svg
+                                className="w-4 h-4 mr-2"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                <polyline points="9 22 9 12 15 12 15 22" />
+                            </svg>
+                            Back to Home
+                        </Link>
+                    </div>
+                </div>
             </div>
         </div>
     );
