@@ -2,10 +2,10 @@
 
 import React, { useEffect } from 'react';
 
-import CategoryPageContent from '../../../components/pages/CategoryPageContent';
-import { useAppContext } from '../../../contexts/AppContext';
-import type { ITool } from '../../../types/app';
-import type { AppCategoryType } from '../../../types/category';
+import CategoryPageContent from '../../components/pages/CategoryPageContent';
+import { useAppContext } from '../../contexts/AppContext';
+import { ITool } from '../../types/app';
+import { AppCategoryType } from '../../types/category';
 
 interface CategoryPageClientProps {
     category: AppCategoryType;

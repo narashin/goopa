@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SearchResultsPage } from '../../../components/pages/SearchResultsPage';
+import { SearchResultsPage } from '../../components/pages/SearchResultsPage';
 
 type Params = Promise<{ q?: string }>;
 

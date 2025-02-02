@@ -25,13 +25,14 @@ export function GeneralAppsPage({
     apps,
     onAddNewApp,
     onDeleteApp,
-    isReadOnly = false,
+    isReadOnly,
 }: GeneralAppsPageProps) {
     const { user } = useUserContext();
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
+    console.log('user', user);
     const filteredApps = useMemo(
         () => apps.filter((app) => app.category === AppCategoryType.General),
         [apps]
@@ -92,7 +93,7 @@ export function GeneralAppsPage({
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
-                        {!user && !isReadOnly && (
+                        {user && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}

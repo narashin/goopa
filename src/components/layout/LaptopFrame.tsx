@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-export function LaptopFrame({ children }: { children: React.ReactNode }) {
+interface LaptopFrameProps {
+    children: React.ReactNode;
+    isPublished: boolean;
+}
+
+export function LaptopFrame({ children, isPublished }: LaptopFrameProps) {
+    const [showTooltip, setShowTooltip] = useState(false);
     return (
         <div className="relative w-full max-w-[960px] mx-auto">
             <div className="relative w-[150%] transform -translate-x-[16.67%]">
@@ -111,6 +117,26 @@ export function LaptopFrame({ children }: { children: React.ReactNode }) {
                         fill="#3E3D3D"
                     />
                 </svg>
+
+                {isPublished && (
+                    <div
+                        className="absolute top-[25.2%] left-[49.5%] w-[10] h-[10] bg-green-500 rounded-full animate-pulse"
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                        aria-describedby="publish-tooltip"
+                    >
+                        {showTooltip && (
+                            <div
+                                id="publish-tooltip"
+                                role="tooltip"
+                                className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap"
+                            >
+                                Public mode
+                                <div className="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Screen Content */}
                 <div className="absolute top-[26.9%] left-[24.85%] w-[50.3%] h-[40.6%] overflow-hidden">

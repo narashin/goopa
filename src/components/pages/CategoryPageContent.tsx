@@ -15,23 +15,31 @@ import ZshPluginsPage from './ZshPluginsPage';
 
 interface CategoryPageContentProps {
     category: AppCategoryType;
+    isReadOnly?: boolean;
 }
 
-const CategoryPageContent = ({ category }: CategoryPageContentProps) => {
+const CategoryPageContent = ({
+    category,
+    isReadOnly,
+}: CategoryPageContentProps) => {
     const { apps, addApp, deleteApp } = useAppContext();
 
     const handleAddNewApp = useCallback(
         async (newApp: ITool) => {
-            addApp(newApp);
+            if (!isReadOnly) {
+                addApp(newApp);
+            }
         },
-        [addApp]
+        [addApp, isReadOnly]
     );
 
     const handleDeleteApp = useCallback(
         async (appId: string) => {
-            deleteApp(appId);
+            if (!isReadOnly) {
+                deleteApp(appId);
+            }
         },
-        [deleteApp]
+        [deleteApp, isReadOnly]
     );
 
     const copyToClipboard = useCallback((text: string) => {
@@ -45,6 +53,7 @@ const CategoryPageContent = ({ category }: CategoryPageContentProps) => {
             apps,
             onAddNewApp: handleAddNewApp,
             onDeleteApp: handleDeleteApp,
+            isReadOnly,
         };
 
         switch (category) {

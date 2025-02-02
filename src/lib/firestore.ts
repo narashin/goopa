@@ -1,11 +1,21 @@
 import {
-    collection, deleteDoc, doc, FirestoreDataConverter, getDoc, getDocs, query,
-    setDoc, updateDoc, where,
+    collection,
+    deleteDoc,
+    doc,
+    FirestoreDataConverter,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    query,
+    setDoc,
+    updateDoc,
+    where,
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
+import { UserData } from './auth';
 import { firestore } from './firebase';
 
 export const addAppToFirestore = async (
@@ -194,34 +204,72 @@ export const deleteAppFromFirestore = async (userId: string, appId: string) => {
 /**
  * 공개 이력을 위한 타입
  */
-export interface PublishHistoryRecord {
+export interface PublishData {
     publishId: string;
     startedAt: string;
-    endedAt: string | null; // null이면 아직 공개 중
+    endedAt: string | null;
 }
 
-/**
- * 사용자 공개 상태 타입
- */
+export interface PublishDocData {
+    publishHistory: PublishData[];
+    lastPublishId: string;
+    isPublished: boolean;
+}
+
+export interface UserSettings {
+    publishDocData: PublishDocData;
+}
 export interface UserPublishStatus {
     isPublished: boolean;
-    publishHistory: PublishHistoryRecord[];
+    publishHistory: PublishData[];
     latestPublishId: string;
 }
 
-/**
- * 사용자의 공개 상태를 가져오는 함수
- * @param userId - 사용자 ID
- * @returns 공개 상태 정보 (isPublished, publishHistory, latestPublishId)
- */
+// customUserId로 uid를 찾는 함수
+export async function getUidByCustomUserId(
+    customUserId: string
+): Promise<string | null> {
+    if (!customUserId) {
+        console.log('customUserId가 제공되지 않았습니다.');
+        return null;
+    }
+
+    try {
+        const usersRef = collection(firestore, 'users');
+        const q = query(usersRef, where('customUserId', '==', customUserId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            console.log('customUserId에 해당하는 사용자를 찾을 수 없습니다.');
+            return null;
+        }
+
+        // 첫 번째 일치하는 문서의 ID (uid)를 반환
+        return querySnapshot.docs[0].id;
+    } catch (error) {
+        console.error('uid를 찾는 중 오류 발생:', error);
+        return null;
+    }
+}
+
 export const getUserPublishStatus = async (
-    userId: string
+    customUserId: string
 ): Promise<UserPublishStatus> => {
     try {
+        const user = await getUserByCustomUserId(customUserId);
+        if (!user) {
+            console.error('customUserId에 해당하는 사용자를 찾을 수 없습니다.');
+            return {
+                isPublished: false,
+                publishHistory: [],
+                latestPublishId: '',
+            };
+        }
+
         const userSettingsRef = doc(
             firestore,
             'users',
-            userId,
+            user.uid,
             'settings',
             'publish'
         );
@@ -247,96 +295,254 @@ export const getUserPublishStatus = async (
     }
 };
 
-/**
- * 사용자의 공개 상태를 업데이트하고, 새로운 publishId를 추가하는 함수
- * @param userId - 사용자 ID
- * @param isPublished - 공개 여부
- * @returns 생성된 publishId
- */
-export const updateUserPublishStatus = async (
-    userId: string,
-    isPublished: boolean
-): Promise<string> => {
+export async function getUserAllPublishData(
+    uid: string
+): Promise<UserData | null> {
+    if (!uid) {
+        return null;
+    }
+
     try {
-        const userSettingsRef = doc(
-            firestore,
-            'users',
-            userId,
-            'settings',
-            'publish'
-        );
-        const docSnap = await getDoc(userSettingsRef);
+        const userDocRef = doc(firestore, 'users', uid);
+        const userDocSnap = await getDoc(userDocRef);
 
-        let publishHistory: PublishHistoryRecord[] = [];
-
-        if (docSnap.exists()) {
-            publishHistory =
-                (docSnap.data()?.publishHistory as PublishHistoryRecord[]) ??
-                [];
+        if (!userDocSnap.exists()) {
+            return null;
         }
+
+        return userDocSnap.data() as UserData;
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        return null;
+    }
+}
+
+export async function getUserByCustomUserId(
+    customUserId: string
+): Promise<UserData | null> {
+    const usersRef = collection(firestore, 'users');
+    const q = query(usersRef, where('customUserId', '==', customUserId));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        console.log('No user found with customUserId:', customUserId);
+        return null;
+    }
+
+    const userData = querySnapshot.docs[0].data() as Omit<
+        UserData,
+        'isPublished' | 'lastPublishId'
+    >;
+    const publishHistory = userData.publishHistory || [];
+
+    const isPublished =
+        publishHistory.length > 0 &&
+        publishHistory[publishHistory.length - 1].endedAt === null;
+    const lastPublishId =
+        publishHistory.length > 0
+            ? publishHistory[publishHistory.length - 1].publishId
+            : undefined;
+
+    return {
+        ...userData,
+        isPublished,
+        lastPublishId,
+        publishHistory: publishHistory as PublishData[],
+    };
+}
+
+export async function getUserPublishDataByPublishId(
+    customUserId: string,
+    publishId: string
+): Promise<UserData | null> {
+    if (!customUserId || !publishId) {
+        console.log('customUserId 또는 publishId가 제공되지 않았습니다.');
+        return null;
+    }
+
+    const user = await getUserByCustomUserId(customUserId);
+    if (!user) {
+        console.error('customUserId에 해당하는 사용자를 찾을 수 없습니다.');
+        return {
+            isPublished: false,
+            publishHistory: [],
+            lastPublishId: '',
+            customUserId,
+            displayName: '',
+            createdAt: '',
+            email: '',
+            photoURL: '',
+            uid: '',
+        };
+    }
+    try {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (!userDocSnap.exists()) {
+            console.log('사용자를 찾을 수 없습니다.');
+            return null;
+        }
+
+        const userData = userDocSnap.data() as UserData;
+
+        console.log('User data:', JSON.stringify(userData, null, 2));
+
+        if (!Array.isArray(userData.publishHistory)) {
+            console.log('publishHistory가 배열이 아니거나 존재하지 않습니다.');
+            return null;
+        }
+
+        const currentPublish = userData.publishHistory.find(
+            (p: PublishData) => p.publishId === publishId
+        );
+
+        if (!currentPublish) {
+            console.log('해당 publishId에 대한 공유 설정이 없습니다.');
+            return null;
+        }
+
+        return {
+            customUserId: userData.customUserId,
+            displayName: userData.displayName,
+            createdAt: userData.createdAt,
+            email: userData.email,
+            photoURL: userData.photoURL,
+            uid: userData.uid,
+            publishHistory: userData.publishHistory,
+            lastPublishId: userData.lastPublishId,
+            isPublished: currentPublish.endedAt === null,
+        };
+    } catch (error) {
+        console.error('사용자 공유 데이터를 가져오는 중 오류 발생:', error);
+        return null;
+    }
+}
+
+export const publishUser = async (userUid: string): Promise<string | null> => {
+    try {
+        const userDocRef = doc(firestore, 'users', userUid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+            console.log('publishUser: 사용자 문서가 존재하지 않습니다.');
+            return null;
+        }
+
+        const userData = userDoc.data();
+        const publishHistory = userData?.publishHistory || [];
 
         // 새로운 publishId 생성
         const newPublishId = nanoid();
-        const newPublishData = {
+        const startedAt = new Date().toISOString();
+
+        // 이전 publish 종료 처리
+        if (publishHistory.length > 0) {
+            const lastPublish = publishHistory[publishHistory.length - 1];
+            if (lastPublish.endedAt === null) {
+                lastPublish.endedAt = startedAt;
+            }
+        }
+
+        // 새로운 publish 정보 추가
+        const newPublishInfo = {
             publishId: newPublishId,
-            startedAt: new Date().toISOString(),
-            endedAt: null, // 종료되지 않은 상태
+            startedAt,
+            endedAt: null,
         };
+        publishHistory.push(newPublishInfo);
 
-        const updatedHistory = [...publishHistory, newPublishData];
+        // Firestore 업데이트
+        await setDoc(
+            userDocRef,
+            {
+                publishHistory,
+                isPublished: true, // 명시적으로 isPublished 필드 추가
+                lastPublishId: newPublishId, // 명시적으로 lastPublishId 필드 추가
+            },
+            { merge: true }
+        );
 
-        // 기존 데이터를 유지하면서 새로운 공개 기록 추가
-        await updateDoc(userSettingsRef, {
-            isPublished,
-            publishHistory: updatedHistory,
-            latestPublishId: newPublishId, // 최신 publishId 유지
-        });
-
-        console.log(`Updated User(${userId}) Publish Status`, newPublishData);
         return newPublishId;
     } catch (error) {
-        console.error('Error updating user publish status:', error);
-        throw error;
+        console.error('Error publishing user:', error);
+        return null;
     }
 };
 
-/**
- * 특정 publishId를 종료하는 함수 (endedAt 업데이트)
- * @param userId - 사용자 ID
- * @param publishId - 종료할 publishId
- */
-export const endUserPublish = async (
-    userId: string,
-    publishId: string
-): Promise<void> => {
+export async function unpublishUser(uid: string): Promise<boolean> {
+    if (!uid) {
+        console.warn('⚠️ UID가 제공되지 않았습니다.');
+        return false;
+    }
+
     try {
-        const userSettingsRef = doc(
+        const publishDocRef = doc(
             firestore,
             'users',
-            userId,
+            uid,
             'settings',
             'publish'
         );
-        const docSnap = await getDoc(userSettingsRef);
+        const publishDoc = await getDoc(publishDocRef);
 
-        if (!docSnap.exists()) return;
+        if (!publishDoc.exists()) {
+            console.warn(
+                '⚠️ 퍼블리시 문서가 존재하지 않습니다. Unpublish 필요 없음.'
+            );
+            return false;
+        }
 
-        const publishHistory: PublishHistoryRecord[] =
-            docSnap.data()?.publishHistory ?? [];
+        const data = publishDoc.data();
+        if (!data || !data.publishHistory || data.publishHistory.length === 0) {
+            console.warn('⚠️ 퍼블리시 기록이 없습니다. Unpublish 필요 없음.');
+            return false;
+        }
 
-        const updatedHistory = publishHistory.map((entry) =>
-            entry.publishId === publishId
-                ? { ...entry, endedAt: new Date().toISOString() }
-                : entry
-        );
+        const now = new Date().toISOString();
+        const updatedHistory: PublishData[] = [...data.publishHistory];
+        const lastPublishEntry = updatedHistory[updatedHistory.length - 1];
 
-        await updateDoc(userSettingsRef, {
+        if (lastPublishEntry.endedAt === null) {
+            lastPublishEntry.endedAt = now;
+        }
+
+        await updateDoc(publishDocRef, {
             publishHistory: updatedHistory,
+            isPublished: false,
         });
 
-        console.log(`Ended publishId ${publishId} for user ${userId}`);
+        console.log(
+            `✅ 마지막 퍼블리시 항목의 endedAt이 업데이트되고 isPublished가 false로 설정되었습니다.`
+        );
+        return true;
     } catch (error) {
-        console.error('Error ending user publish:', error);
-        throw error;
+        console.error('❌ Firestore에서 Unpublish 실행 중 오류 발생:', error);
+        return false;
     }
+}
+
+export const subscribeToUserData = (
+    uid: string,
+    callback: (data: UserData | null) => void
+) => {
+    console.log('구독 시작:', uid);
+    const userDocRef = doc(firestore, 'users', uid);
+
+    return onSnapshot(
+        userDocRef,
+        (docSnapshot) => {
+            if (docSnapshot.exists()) {
+                const userData = docSnapshot.data() as UserData;
+                console.log('실시간 데이터 업데이트:', userData);
+                callback(userData);
+            } else {
+                console.log('사용자 문서가 존재하지 않습니다.');
+                callback(null);
+            }
+        },
+        (error) => {
+            console.error('사용자 데이터 구독 중 오류 발생:', error);
+        }
+    );
 };

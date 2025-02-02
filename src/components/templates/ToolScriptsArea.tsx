@@ -2,18 +2,19 @@ import React from 'react';
 
 import { ClipboardIcon } from '@heroicons/react/24/outline';
 
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ITool } from '../../types/app';
 
 interface ToolScriptsAreaProps {
     appCount: number;
     selectedItems: ITool[];
-    copyToClipboard: (text: string) => void;
+    copyToClipboard?: (text: string) => void;
 }
 
 const ToolScriptsArea: React.FC<ToolScriptsAreaProps> = ({
     appCount,
     selectedItems,
-    copyToClipboard,
+    copyToClipboard = useCopyToClipboard(),
 }) => {
     return (
         <div className="border-l border-white/10 pl-6 overflow-hidden flex flex-col">

@@ -1,121 +1,32 @@
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React from 'react';
 
-import { signOut } from 'firebase/auth';
-import * as _ from 'lodash';
-import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-
-import {
-    Menu, MenuButton, MenuItem, MenuItems, Transition,
-} from '@headlessui/react';
+import { usePathname } from 'next/navigation';
 
 import { useAppContext } from '../../contexts/AppContext';
-import { signInWithGoogle } from '../../lib/auth';
-import { auth } from '../../lib/firebase';
-import {
-    endUserPublish, getUserPublishStatus, updateUserPublishStatus,
-} from '../../lib/firestore';
-import { MenuType } from '../../types/menu';
+import { useAuth } from '../../hooks/useAuth';
+import { useSearch } from '../../hooks/useSearch';
+import { useShareHandler } from '../../hooks/useShareHandler';
+import { UserMenu } from '../templates/UserMenu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
 
 export function TopNav() {
-    const views: MenuType[] = ['home', 'general', 'dev', 'advanced'];
-    const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(auth.currentUser);
+    const { user, loading, handleSignIn, handleSignOut } = useAuth();
+    const { searchQuery, handleSearch, clearSearch } = useSearch(
+        user?.uid || ''
+    );
     const { isEditMode, setIsEditMode } = useAppContext();
-
-    const [isPublished, setIsPublished] = useState(false);
-    const [publishUrl, setPublishUrl] = useState('');
-    const [latestPublishId, setLatestPublishId] = useState('');
-
-    const router = useRouter();
+    const { publishUrl } = useShareHandler(user);
     const pathname = usePathname();
 
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            setUser(user);
-            setLoading(false);
-        });
-        return () => unsubscribe();
-    }, [setUser]);
+    const views = ['home', 'general', 'dev', 'advanced'];
 
-    useEffect(() => {
-        if (user) {
-            getUserPublishStatus(user.uid).then((status) => {
-                setIsPublished(status.isPublished);
-                setLatestPublishId(status.latestPublishId);
-                if (status.isPublished) {
-                    setPublishUrl(
-                        `/share/${user.uid}/${status.latestPublishId}`
-                    );
-                }
-            });
-        }
-    }, [user]);
-
-    const handlePublish = async () => {
-        if (!user) return;
-
-        try {
-            if (!isPublished) {
-                const newPublishId = await updateUserPublishStatus(
-                    user.uid,
-                    true
-                );
-                setLatestPublishId(newPublishId);
-                setPublishUrl(`/share/${user.uid}/${newPublishId}`);
-                setIsPublished(true);
-            } else {
-                await endUserPublish(user.uid, latestPublishId);
-                setPublishUrl('');
-                setIsPublished(false);
-            }
-        } catch (error) {
-            console.error('공유 상태 업데이트 중 오류 발생:', error);
-        }
-    };
-
-    const debouncedSearch = useCallback(
-        _.debounce((query: string) => {
-            if (query.trim()) {
-                router.push(`/search?q=${encodeURIComponent(query)}`);
-            } else {
-                router.push('/');
-            }
-        }, 300),
-        []
-    );
-
-    const handleSearch = (query: string) => {
-        setSearchQuery(query);
-        debouncedSearch(query);
-    };
-
-    const clearSearch = () => {
-        setSearchQuery('');
-        router.push('/');
-    };
-
-    const handleSignIn = async () => {
-        try {
-            const result = await signInWithGoogle();
-            setUser(result);
-        } catch (error) {
-            console.error('Error signing in with Google:', error);
-        }
-    };
-
-    const handleSignOut = async () => {
-        try {
-            await signOut(auth);
-            setUser(null);
-            setIsEditMode(false);
-            window.location.reload();
-        } catch (error) {
-            console.error('Error signing out with Google', error);
+    const generateLink = (category: string) => {
+        if (pathname?.startsWith('/share/')) {
+            return `${publishUrl}${category === 'home' ? '' : `/${category}`}`;
+        } else {
+            return category === 'home' ? '/' : `/${category}`;
         }
     };
 
@@ -123,175 +34,64 @@ export function TopNav() {
         setIsEditMode(!isEditMode);
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm border-b border-white/10 relative z-40">
-            <div className="flex items-center space-x-3">
-                <Logo isEditMode={isEditMode} />
-            </div>
+        <>
+            <div className="flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm border-b border-white/10 relative z-40">
+                {/* 로고 */}
+                <div className="flex items-center space-x-3">
+                    <Logo />
+                </div>
 
-            <div className="flex space-x-4 text-sm">
-                {views.map((view) => (
-                    <Link
-                        key={view}
-                        href={view === 'home' ? '/' : `/apps/${view}`}
-                    >
+                {/* 네비게이션 메뉴 */}
+                <div className="flex space-x-4 text-sm">
+                    {views.map((view) => (
+                        <Link key={view} href={generateLink(view)}>
+                            <button
+                                className={`px-3 h-8 rounded-md transition-colors ${
+                                    (view === 'home' && pathname === '/') ||
+                                    (view !== 'home' &&
+                                        pathname?.includes(`/${view}`))
+                                        ? 'text-white bg-white/10'
+                                        : 'text-white/70 hover:text-white'
+                                }`}
+                            >
+                                {view.charAt(0).toUpperCase() + view.slice(1)}
+                            </button>
+                        </Link>
+                    ))}
+                </div>
+
+                {/* 검색 입력 */}
+                <div className="flex items-center space-x-3 relative">
+                    <SearchInput
+                        disabled={true} // 개인화 기능 전까지 비활성화
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        onClear={clearSearch}
+                    />
+                </div>
+
+                {/* 사용자 메뉴 */}
+                <div className="flex items-center space-x-4">
+                    {user ? (
+                        <UserMenu
+                            handleSignOut={handleSignOut}
+                            isEditMode={isEditMode}
+                            toggleEditMode={toggleEditMode}
+                            user={user}
+                        />
+                    ) : (
                         <button
-                            className={`px-3 h-8 rounded-md transition-colors ${
-                                (view === 'home' && pathname === '/') ||
-                                (view !== 'home' &&
-                                    pathname?.includes(`/apps/${view}`))
-                                    ? 'text-white bg-white/10'
-                                    : 'text-white/70 hover:text-white'
-                            }`}
+                            className="ml-4 px-3 py-1.5 text-xs font-medium text-white bg-gray-800 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out shadow-sm"
+                            onClick={handleSignIn}
                         >
-                            {view
-                                .split('-')
-                                .map(
-                                    (word) =>
-                                        word.charAt(0).toUpperCase() +
-                                        word.slice(1)
-                                )
-                                .join(' ')}
+                            Sign in
                         </button>
-                    </Link>
-                ))}
+                    )}
+                </div>
             </div>
-            <div className="flex items-center space-x-3 relative">
-                {/* TODO: 개인화 전 까지 검색 막아두기 */}
-                <SearchInput
-                    disabled={true}
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    onClear={clearSearch}
-                />
-            </div>
-            <div className="flex items-center space-x-4">
-                {user ? (
-                    <Menu as="div" className="relative inline-block text-left">
-                        <div className="flex items-center">
-                            <MenuButton className="inline-flex w-full justify-center items-center">
-                                {user.photoURL ? (
-                                    <Image
-                                        src={user.photoURL}
-                                        alt="Profile"
-                                        width={32}
-                                        height={32}
-                                        className="rounded-full"
-                                    />
-                                ) : (
-                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
-                                        {user.displayName
-                                            ? user.displayName[0].toUpperCase()
-                                            : 'U'}
-                                    </div>
-                                )}
-                            </MenuButton>
-                        </div>
-                        <Transition
-                            as={Fragment}
-                            enter="transition ease-out duration-50"
-                            enterFrom="transform opacity-0 scale-95"
-                            enterTo="transform opacity-100 scale-100"
-                            leave="transition ease-in duration-75"
-                            leaveFrom="transform opacity-100 scale-100"
-                            leaveTo="transform opacity-0 scale-95"
-                        >
-                            <MenuItems className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <div className="py-1">
-                                    <MenuItem>
-                                        {({ active }) => (
-                                            <div className="w-full">
-                                                {isEditMode && (
-                                                    <div className="flex items-center px-4 py-2 text-xs text-gray-500">
-                                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                                        {"You're in Edit Mode"}
-                                                    </div>
-                                                )}
-                                                <button
-                                                    onClick={toggleEditMode}
-                                                    className={`${
-                                                        active
-                                                            ? 'bg-gray-100 text-gray-900'
-                                                            : 'text-gray-700'
-                                                    } block w-full px-4 py-2 text-left text-xs`}
-                                                >
-                                                    {isEditMode
-                                                        ? 'Edit Mode OFF'
-                                                        : 'Edit Mode ON'}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </MenuItem>
-                                    <MenuItem>
-                                        {({ active }) => (
-                                            <button
-                                                onClick={handlePublish}
-                                                className={`${
-                                                    active
-                                                        ? 'bg-gray-100 text-gray-900'
-                                                        : 'text-gray-700'
-                                                } block w-full px-4 py-2 text-left text-xs`}
-                                            >
-                                                {isPublished
-                                                    ? 'Unpublish'
-                                                    : 'Publish'}
-                                            </button>
-                                        )}
-                                    </MenuItem>
-                                    {isPublished && (
-                                        <MenuItem>
-                                            {({ active }) => (
-                                                <button
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(
-                                                            `${window.location.origin}${publishUrl}`
-                                                        );
-                                                        alert(
-                                                            '공유 링크가 클립보드에 복사되었습니다!'
-                                                        );
-                                                    }}
-                                                    className={`${
-                                                        active
-                                                            ? 'bg-gray-100 text-gray-900'
-                                                            : 'text-gray-700'
-                                                    } block w-full px-4 py-2 text-left text-xs`}
-                                                >
-                                                    Copy Share Link
-                                                </button>
-                                            )}
-                                        </MenuItem>
-                                    )}
-                                    <MenuItem>
-                                        {({ active }) => (
-                                            <button
-                                                onClick={handleSignOut}
-                                                className={`${
-                                                    active
-                                                        ? 'bg-gray-100 text-gray-900'
-                                                        : 'text-gray-700'
-                                                } block w-full px-4 py-2 text-left text-xs`}
-                                            >
-                                                Sign out
-                                            </button>
-                                        )}
-                                    </MenuItem>
-                                </div>
-                            </MenuItems>
-                        </Transition>
-                    </Menu>
-                ) : (
-                    <button
-                        className="ml-4 px-3 py-1.5 text-xs font-medium text-white bg-gray-800 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out shadow-sm"
-                        onClick={handleSignIn}
-                    >
-                        Sign in
-                    </button>
-                )}
-            </div>
-        </div>
+        </>
     );
 }

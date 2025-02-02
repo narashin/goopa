@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { fetchAppsFromFirestore } from '../../../lib/firestore';
-import { AppCategoryType } from '../../../types/category';
+import { fetchAppsFromFirestore } from '../../lib/firestore';
+import { AppCategoryType } from '../../types/category';
 import CategoryPageClient from './CategoryPageClient';
 
 type Params = Promise<{ category: AppCategoryType }>;

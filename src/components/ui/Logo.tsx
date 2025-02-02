@@ -3,13 +3,19 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { useAuth } from '../../hooks/useAuth';
+import { useShareHandler } from '../../hooks/useShareHandler';
+
 interface LogoProps {
     isEditMode?: boolean;
 }
 
 export function Logo({ isEditMode = false }: LogoProps) {
+    const { user } = useAuth();
+    const { publishUrl } = useShareHandler(user);
+
     return (
-        <Link href="/" className="block">
+        <Link href={publishUrl || '/'} className="block">
             <div
                 className={`w-32 h-8 overflow-hidden hover:opacity-90 transition-opacity ${isEditMode ? 'opacity-50' : ''}`}
             >

@@ -12,7 +12,7 @@ interface ZshPluginsPageProps {
     apps: ITool[];
     onAddNewApp?: (newApp: ITool) => void;
     onDeleteApp?: (id: string) => void;
-    copyToClipboard: (text: string) => void;
+    copyToClipboard?: (text: string) => void;
     isReadOnly?: boolean;
 }
 
