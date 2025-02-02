@@ -23,7 +23,6 @@ interface AppContextType {
     setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     toggleEditMode: () => void;
     updateApp: (updatedApp: ITool) => Promise<void>;
-    isPublishMode: boolean;
     fetchAppsByCustomUserId: (customUserId: string) => Promise<void>;
 }
 
@@ -46,8 +45,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     useEffect(() => {
-        localStorage.setItem('isEditMode', JSON.stringify(isEditMode));
-    }, [isEditMode]);
+        if (user) {
+            localStorage.setItem('isEditMode', JSON.stringify(isEditMode));
+        } else {
+            setIsEditMode(false);
+            localStorage.removeItem('isEditMode');
+        }
+    }, [isEditMode, user]);
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -136,8 +140,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const isPublishMode = !user && !isEditMode;
-
     return (
         <AppContext.Provider
             value={{
@@ -151,7 +153,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
                 updateApp,
                 deleteApp,
                 toggleEditMode,
-                isPublishMode,
                 fetchAppsByCustomUserId,
             }}
         >

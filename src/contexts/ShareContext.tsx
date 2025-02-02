@@ -2,13 +2,16 @@ import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { doc, onSnapshot } from 'firebase/firestore';
+import { usePathname } from 'next/navigation';
 
 import { useAuth } from '../hooks/useAuth';
 import { firestore } from '../lib/firebase';
+import { useAppContext } from './AppContext';
 
 interface ShareContextType {
     isPublished: boolean;
     setIsPublished: React.Dispatch<React.SetStateAction<boolean>>;
+    isPublishMode: boolean;
 }
 
 const ShareContext = createContext<ShareContextType | undefined>(undefined);
@@ -16,6 +19,13 @@ const ShareContext = createContext<ShareContextType | undefined>(undefined);
 export function ShareProvider({ children }: { children: React.ReactNode }) {
     const [isPublished, setIsPublished] = useState(false);
     const { user } = useAuth();
+    const { isEditMode } = useAppContext();
+
+    const pathname = usePathname();
+
+    const isPublishMode = Boolean(
+        pathname?.startsWith('/share/') && !isEditMode
+    );
 
     useEffect(() => {
         if (!user) return;
@@ -32,7 +42,9 @@ export function ShareProvider({ children }: { children: React.ReactNode }) {
     }, [user]);
 
     return (
-        <ShareContext.Provider value={{ isPublished, setIsPublished }}>
+        <ShareContext.Provider
+            value={{ isPublished, setIsPublished, isPublishMode }}
+        >
             {children}
         </ShareContext.Provider>
     );

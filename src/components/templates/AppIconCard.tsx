@@ -2,10 +2,14 @@ import type React from 'react';
 import { useCallback, useState } from 'react';
 
 import {
-    Cog6ToothIcon, InformationCircleIcon, MinusIcon, PlusIcon,
+    Cog6ToothIcon,
+    InformationCircleIcon,
+    MinusIcon,
+    PlusIcon,
 } from '@heroicons/react/24/outline';
 
 import { useAppContext } from '../../contexts/AppContext';
+import { useShare } from '../../contexts/ShareContext';
 import { useTooltip } from '../../contexts/TooltipContext';
 import { useUserContext } from '../../contexts/UserContext';
 import type { ITool } from '../../types/app';
@@ -29,7 +33,8 @@ export const AppIconCard: React.FC<AppCardProps> = ({
 }) => {
     const { user } = useUserContext();
     const { closeAllTooltips, setModalOpen } = useTooltip();
-    const { isEditMode, updateApp, isPublishMode } = useAppContext();
+    const { isEditMode, updateApp } = useAppContext();
+    const { isPublishMode } = useShare();
     const [selectedApp, setSelectedApp] = useState<ITool | null>(app || null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
