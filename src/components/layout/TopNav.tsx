@@ -11,6 +11,24 @@ import { UserMenu } from '../templates/UserMenu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
 
+function SkeletonNavItem() {
+    return (
+        <div className="w-16 h-8 bg-gray-700 rounded-md animate-pulse"></div>
+    );
+}
+
+function SkeletonSearchInput() {
+    return (
+        <div className="w-48 h-8 bg-gray-700 rounded-md animate-pulse"></div>
+    );
+}
+
+function SkeletonUserMenu() {
+    return (
+        <div className="w-8 h-8 bg-gray-700 rounded-full animate-pulse"></div>
+    );
+}
+
 export function TopNav() {
     const { user, loading, handleSignIn, handleSignOut } = useAuth();
     const router = useRouter();
@@ -43,7 +61,20 @@ export function TopNav() {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm border-b border-white/10 relative z-40">
+                <Logo isEditMode={false} />
+                <div className="flex space-x-4">
+                    {views.map((_, index) => (
+                        <SkeletonNavItem key={index} />
+                    ))}
+                </div>
+                <SkeletonSearchInput />
+                <SkeletonUserMenu />
+            </div>
+        );
+    }
 
     return (
         <>

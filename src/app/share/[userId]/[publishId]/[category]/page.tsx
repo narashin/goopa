@@ -2,7 +2,7 @@ import React from 'react';
 
 import { notFound } from 'next/navigation';
 
-import { fetchAppsFromFirestore, getUserByCustomUserId } from '@/lib/firestore';
+import { getAppsByCustomUserId, getUserByCustomUserId } from '@/lib/firestore';
 import type { AppCategoryType } from '@/types/category';
 
 import SharedCategoryPageClient from './SharedCategoryPageClient';
@@ -18,11 +18,15 @@ export default async function SharedCategoryPage({
 }: {
     params: Params;
 }) {
-    const { userId, publishId, category } = await new Promise<Params>(
-        (resolve) => resolve(params)
-    );
+    const {
+        userId: customUserId,
+        publishId,
+        category,
+    } = await new Promise<Params>((resolve) => resolve(params));
 
-    const userData = await getUserByCustomUserId(userId);
+    const userData = await getUserByCustomUserId(customUserId);
+    console.log('customUserId', customUserId);
+    console.log('userData', userData);
 
     if (!userData || !userData.isPublished) {
         notFound();
@@ -33,7 +37,8 @@ export default async function SharedCategoryPage({
         notFound();
     }
 
-    const initialApps = await fetchAppsFromFirestore(category);
+    const initialApps = await getAppsByCustomUserId(customUserId);
+    console.log(initialApps);
 
     try {
         return (
@@ -44,7 +49,7 @@ export default async function SharedCategoryPage({
             />
         );
     } catch (error) {
-        console.error('Error in SharedCategoryPage:', error);
+        console.log('Error', error);
         return notFound();
     }
 }

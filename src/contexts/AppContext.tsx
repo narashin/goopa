@@ -3,7 +3,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import {
-    addAppToFirestore, deleteAppFromFirestore, getAppsFromFirestore,
+    addAppToFirestore,
+    deleteAppFromFirestore,
+    getAppsByCustomUserId,
+    getAppsFromFirestore,
     updateAppInFirestore,
 } from '../lib/firestore';
 import { ITool } from '../types/app';
@@ -21,6 +24,7 @@ interface AppContextType {
     toggleEditMode: () => void;
     updateApp: (updatedApp: ITool) => Promise<void>;
     isPublishMode: boolean;
+    fetchAppsByCustomUserId: (customUserId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -119,6 +123,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
+    const fetchAppsByCustomUserId = async (customUserId: string) => {
+        setIsLoading(true);
+        try {
+            const appsData = await getAppsByCustomUserId(customUserId);
+            setApps(appsData);
+        } catch (error) {
+            console.error('customUserId로 앱 가져오기 중 오류 발생:', error);
+            setError('앱을 가져오는 중 오류가 발생했습니다.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const isPublishMode = !user && !isEditMode;
 
     return (
@@ -135,6 +152,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
                 deleteApp,
                 toggleEditMode,
                 isPublishMode,
+                fetchAppsByCustomUserId,
             }}
         >
             {children}

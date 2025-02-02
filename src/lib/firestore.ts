@@ -32,7 +32,7 @@ export const addAppToFirestore = async (
         const newAppDocRef = doc(appsCollectionRef, appData.id);
         const newApp: ITool = { ...appData };
         await setDoc(newAppDocRef, newApp);
-        console.log('App added successfully with ID:', newAppDocRef.id);
+
         return newApp;
     } catch (error) {
         console.error('Error adding app:', error);
@@ -82,35 +82,6 @@ export const updateApp = async (
     }
 };
 
-export const updateAppDescription = async (
-    userId: string,
-    appId: string,
-    description: string
-) => {
-    console.log('Updating app description:', { userId, appId, description });
-    try {
-        const appDocRef = doc(firestore, 'users', userId, 'apps', appId);
-        console.log('Document reference:', appDocRef.path);
-
-        // 문서가 존재하는지 확인
-        const docSnap = await getDoc(appDocRef);
-        console.log('Document exists:', docSnap.exists());
-
-        if (docSnap.exists()) {
-            await updateDoc(appDocRef, {
-                description: description,
-            });
-            console.log('App description updated successfully');
-        } else {
-            console.error('No document found to update');
-            throw new Error('No document found to update');
-        }
-    } catch (error) {
-        console.error('Error updating app description:', error);
-        throw error; // 원래 에러를 그대로 던집니다.
-    }
-};
-
 const appConverter: FirestoreDataConverter<ITool> = {
     toFirestore: (app: ITool) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -140,7 +111,6 @@ export const updateAppInFirestore = async (
         const { id, ...updateData } = updatedApp;
 
         await updateDoc(appDocRef, updateData);
-        console.log('App updated successfully');
     } catch (error) {
         console.error('Error updating app:', error);
         throw error;
@@ -168,20 +138,32 @@ export const fetchAppsFromFirestore = async (
     return appsList;
 };
 
-export const fetchAllAppsFromFirestore = async (): Promise<ITool[]> => {
+export const getAppsByCustomUserId = async (
+    customUserId: string
+): Promise<ITool[]> => {
     try {
-        const appsCollection = collection(firestore, 'apps');
-        const appsSnapshot = await getDocs(appsCollection);
-        const apps: ITool[] = [];
+        const usersRef = collection(firestore, 'users');
+        const q = query(usersRef, where('customUserId', '==', customUserId));
+        const querySnapshot = await getDocs(q);
 
-        appsSnapshot.forEach((doc) => {
-            const appData = doc.data() as ITool;
-            apps.push({ ...appData, id: doc.id });
-        });
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const userDoc = querySnapshot.docs[0];
+        const uid = userDoc.id;
+
+        // 사용자의 'apps' 하위 컬렉션에서 앱을 가져옵니다.
+        const userAppsRef = collection(firestore, 'users', uid, 'apps');
+        const appsSnapshot = await getDocs(userAppsRef);
+
+        const apps = appsSnapshot.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() }) as ITool
+        );
 
         return apps;
     } catch (error) {
-        console.error('앱 데이터를 가져오는 중 오류 발생:', error);
+        console.error('Error fetching apps by customUserId:', error);
         return [];
     }
 };
@@ -190,7 +172,6 @@ export const deleteAppFromFirestore = async (userId: string, appId: string) => {
     try {
         const appDocRef = doc(firestore, 'users', userId, 'apps', appId);
         await deleteDoc(appDocRef);
-        console.log('App deleted successfully');
     } catch (error) {
         console.error('Error deleting app:', error);
         throw error;
@@ -269,7 +250,6 @@ export async function getUidByCustomUserId(
     customUserId: string
 ): Promise<string | null> {
     if (!customUserId) {
-        console.log('customUserId가 제공되지 않았습니다.');
         return null;
     }
 
@@ -279,7 +259,6 @@ export async function getUidByCustomUserId(
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.log('customUserId에 해당하는 사용자를 찾을 수 없습니다.');
             return null;
         }
 
@@ -364,7 +343,6 @@ export async function getUserByCustomUserId(
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-        console.log('No user found with customUserId:', customUserId);
         return null;
     }
 
@@ -395,7 +373,6 @@ export async function getUserPublishDataByPublishId(
     publishId: string
 ): Promise<UserData | null> {
     if (!customUserId || !publishId) {
-        console.log('customUserId 또는 publishId가 제공되지 않았습니다.');
         return null;
     }
 
@@ -419,16 +396,12 @@ export async function getUserPublishDataByPublishId(
         const userDocSnap = await getDoc(userDocRef);
 
         if (!userDocSnap.exists()) {
-            console.log('사용자를 찾을 수 없습니다.');
             return null;
         }
 
         const userData = userDocSnap.data() as UserData;
 
-        console.log('User data:', JSON.stringify(userData, null, 2));
-
         if (!Array.isArray(userData.publishHistory)) {
-            console.log('publishHistory가 배열이 아니거나 존재하지 않습니다.');
             return null;
         }
 
@@ -437,7 +410,6 @@ export async function getUserPublishDataByPublishId(
         );
 
         if (!currentPublish) {
-            console.log('해당 publishId에 대한 공유 설정이 없습니다.');
             return null;
         }
 
@@ -464,7 +436,6 @@ export const publishUser = async (userUid: string): Promise<string | null> => {
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
-            console.log('publishUser: 사용자 문서가 존재하지 않습니다.');
             return null;
         }
 
@@ -551,9 +522,6 @@ export async function unpublishUser(uid: string): Promise<boolean> {
             isPublished: false,
         });
 
-        console.log(
-            `✅ 마지막 퍼블리시 항목의 endedAt이 업데이트되고 isPublished가 false로 설정되었습니다.`
-        );
         return true;
     } catch (error) {
         console.error('❌ Firestore에서 Unpublish 실행 중 오류 발생:', error);
@@ -565,7 +533,6 @@ export const subscribeToUserData = (
     uid: string,
     callback: (data: UserData | null) => void
 ) => {
-    console.log('구독 시작:', uid);
     const userDocRef = doc(firestore, 'users', uid);
 
     return onSnapshot(
