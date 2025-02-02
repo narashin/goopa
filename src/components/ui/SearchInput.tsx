@@ -4,7 +4,7 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface SearchInputProps {
     value: string;
-    disabled: boolean;
+    disabled?: boolean;
     onChange: (query: string) => void;
     onClear: () => void;
 }
@@ -22,7 +22,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
                 disabled={disabled}
                 type="text"
                 className="w-36 pl-8 pr-8 py-1.5 bg-white/10 border border-white/20 rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="will be soon😉"
+                placeholder="Search..."
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
             />

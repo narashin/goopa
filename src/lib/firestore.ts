@@ -197,6 +197,45 @@ export const deleteAppFromFirestore = async (userId: string, appId: string) => {
     }
 };
 
+export const searchApps = async (
+    searchQuery: string,
+    customUserId?: string
+): Promise<ITool[]> => {
+    let appsToSearch: ITool[] = [];
+
+    if (customUserId) {
+        // 특정 사용자의 앱만 검색
+        const user = await getUserByCustomUserId(customUserId);
+        if (user) {
+            const userAppsRef = collection(
+                firestore,
+                'users',
+                user.uid,
+                'apps'
+            );
+            const userAppsSnapshot = await getDocs(userAppsRef);
+            appsToSearch = userAppsSnapshot.docs.map(
+                (doc) => ({ id: doc.id, ...doc.data() }) as ITool
+            );
+        }
+    } else {
+        // 모든 앱 검색
+        const appsRef = collection(firestore, 'apps');
+        const appsSnapshot = await getDocs(appsRef);
+        appsToSearch = appsSnapshot.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() }) as ITool
+        );
+    }
+
+    return appsToSearch.filter((app) =>
+        [app.name, app.downloadUrl, app.description]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+    );
+};
+
 /*
  * ---------------------------------- Publish를 위한 Firestore 메서드
  */
@@ -534,10 +573,8 @@ export const subscribeToUserData = (
         (docSnapshot) => {
             if (docSnapshot.exists()) {
                 const userData = docSnapshot.data() as UserData;
-                console.log('실시간 데이터 업데이트:', userData);
                 callback(userData);
             } else {
-                console.log('사용자 문서가 존재하지 않습니다.');
                 callback(null);
             }
         },

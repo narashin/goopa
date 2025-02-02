@@ -2,7 +2,7 @@
 import React from 'react';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { useAppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,6 +14,7 @@ import { SearchInput } from '../ui/SearchInput';
 
 export function TopNav() {
     const { user, loading, handleSignIn, handleSignOut } = useAuth();
+    const router = useRouter();
     const { searchQuery, handleSearch, clearSearch } = useSearch(
         user?.uid || ''
     );
@@ -35,6 +36,13 @@ export function TopNav() {
         setIsEditMode(!isEditMode);
     };
 
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery) {
+            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+        }
+    };
+
     if (loading) return <div>Loading...</div>;
 
     return (
@@ -42,7 +50,7 @@ export function TopNav() {
             <div className="flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm border-b border-white/10 relative z-40">
                 {/* 로고 */}
                 <div className="flex items-center space-x-3">
-                    <Logo />
+                    <Logo isEditMode={isEditMode} />
                 </div>
 
                 {/* 네비게이션 메뉴 */}
@@ -65,14 +73,16 @@ export function TopNav() {
                 </div>
 
                 {/* 검색 입력 */}
-                <div className="flex items-center space-x-3 relative">
+                <form
+                    onSubmit={handleSearchSubmit}
+                    className="flex items-center space-x-3 relative"
+                >
                     <SearchInput
-                        disabled={true} // 개인화 기능 전까지 비활성화
                         value={searchQuery}
                         onChange={handleSearch}
                         onClear={clearSearch}
                     />
-                </div>
+                </form>
 
                 {/* 사용자 메뉴 */}
                 <div className="flex items-center space-x-4">

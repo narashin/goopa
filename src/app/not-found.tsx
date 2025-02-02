@@ -5,21 +5,21 @@ import Link from 'next/link';
 
 export default function NotFound() {
     return (
-        <div className="flex-1 p-4">
-            <div className="h-full flex flex-col items-center justify-between bg-[#C5C6BD] text-white font-sans p-4 rounded-3xl overflow-hidden">
-                <div className="text-center w-full max-w-2xl mx-auto relative flex flex-col min-h-full justify-between py-8">
+        <div className="flex-1 p-4 h-full">
+            <div className="h-full flex flex-col items-center justify-between bg-[#C5C6BD] text-white font-sans p-2 rounded-3xl overflow-hidden min-h-full">
+                <div className="text-center w-full max-w-2xl mx-auto relative flex flex-col min-h-full justify-between py-4">
                     <div className="relative z-10">
                         <h1 className="text-xl font-bold mb-4 text-[#1a1b26]">
                             Page Not Found
                         </h1>
                         <p className="text-base mb-8 text-[#1a1b26]/80">
                             {
-                                "Sorry, I couldn't find the page you're looking for."
+                                "Sorry, we couldn't find the page you're looking for."
                             }
                         </p>
                     </div>
 
-                    <div className="relative w-full h-28">
+                    <div className="relative w-full h-24">
                         <Image
                             src="/images/goopa-disappearing.PNG"
                             alt="GOOPA disappearing"
@@ -29,7 +29,7 @@ export default function NotFound() {
                         />
                     </div>
 
-                    <div className="relative mt-10 z-10">
+                    <div className="relative mt-6 z-10">
                         <Link
                             href="/"
                             className="px-3 py-1 bg-[#1a1b26] text-white rounded-lg hover:bg-[#1a1b26]/90 transition-colors duration-300 inline-flex items-center"

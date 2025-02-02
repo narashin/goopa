@@ -1,43 +1,46 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import _ from 'lodash';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { getAppsFromFirestore } from '../lib/firestore';
-import { ITool } from '../types/app';
+import { searchApps } from '../lib/firestore';
+import type { ITool } from '../types/app';
 
-export function useSearch(userId?: string) {
+export function useSearch(loggedInUserId?: string) {
     const [searchQuery, setSearchQuery] = useState('');
     const [results, setResults] = useState<ITool[]>([]);
     const router = useRouter();
+    const pathname = usePathname();
+
+    const isSharePage = pathname?.startsWith('/share/');
 
     useEffect(() => {
-        if (!userId) return;
+        const fetchSearchResults = async () => {
+            if (searchQuery === '') {
+                setResults([]);
+                return;
+            }
 
-        const fetchUserApps = async () => {
             try {
-                const apps = await getAppsFromFirestore(userId);
-
-                if (searchQuery.trim() === '') {
-                    setResults([]);
+                let searchResults;
+                if (isSharePage) {
+                    const customUserId = pathname?.split('/')[2];
+                    searchResults = await searchApps(searchQuery, customUserId);
                 } else {
-                    const filteredResults = apps.filter((app) =>
-                        [app.name, app.downloadUrl, app.description]
-                            .filter(Boolean)
-                            .join(' ')
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase())
+                    searchResults = await searchApps(
+                        searchQuery,
+                        loggedInUserId
                     );
-                    setResults(filteredResults);
                 }
+                setResults(searchResults);
             } catch (error) {
-                console.error('Error fetching apps:', error);
+                console.error('Error searching apps:', error);
                 setResults([]);
             }
         };
 
-        fetchUserApps();
-    }, [searchQuery, userId]);
+        fetchSearchResults();
+    }, [searchQuery, loggedInUserId, isSharePage, pathname]);
 
     const debouncedSearch = useCallback(
         _.debounce((query: string) => {

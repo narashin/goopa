@@ -1,16 +1,16 @@
 'use client';
 import React, { useState } from 'react';
 
+import { useShare } from '../../contexts/ShareContext';
+
 interface LaptopFrameProps {
     children: React.ReactNode;
-    isPublished?: boolean;
 }
 
-export function LaptopFrame({
-    children,
-    isPublished = false,
-}: LaptopFrameProps) {
+export function LaptopFrame({ children }: LaptopFrameProps) {
     const [showTooltip, setShowTooltip] = useState(false);
+    const { isPublished } = useShare();
+
     return (
         <div className="relative w-full max-w-[960px] mx-auto">
             <div className="relative w-[150%] transform -translate-x-[16.67%]">

@@ -1,6 +1,7 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 import {
     Menu,
@@ -29,23 +30,43 @@ export function UserMenu({
     isEditMode,
 }: UserMenuProps) {
     const [showModal, setShowModal] = useState(false);
-    const [isPublishAction, setIisPublishAction] = useState(false);
-    const { isPublished, publishUrl, handlePublish, handleUnPublish } =
-        useShareHandler(user);
+    const [isPublishAction, setIsPublishAction] = useState(false);
+    const {
+        isPublished: initialIsPublished,
+        publishUrl,
+        handlePublish,
+        handleUnPublish,
+    } = useShareHandler(user);
+    const [localIsPublished, setLocalIsPublished] =
+        useState(initialIsPublished);
+    const pathname = usePathname();
+
+    useEffect(() => {
+        setLocalIsPublished(initialIsPublished);
+    }, [initialIsPublished]);
+
+    const isShareUrl = (path: string | null) =>
+        path?.startsWith('/share/') ?? false;
 
     const handlePublishClick = () => {
-        setIisPublishAction(!isPublished);
+        setIsPublishAction(true);
         setShowModal(true);
     };
 
     const handleUnpublishClick = () => {
-        setIisPublishAction(false);
+        setIsPublishAction(false);
         setShowModal(true);
     };
 
     const handleConfirmPublish = async () => {
         const newPublishUrl = await handlePublish();
         if (newPublishUrl) {
+            setLocalIsPublished(true);
+            console.log(
+                'Publish success: isPublished',
+                user.isPublished,
+                localIsPublished
+            );
             return newPublishUrl;
         } else {
             errorToast('Failed to publish your Goopa.');
@@ -56,6 +77,7 @@ export function UserMenu({
     const handleConfirmUnpublish = async () => {
         const success = await handleUnPublish();
         if (success) {
+            setLocalIsPublished(false);
             successToast('Your Goopa has been unpublished.');
         } else {
             errorToast('Failed to unpublish your Goopa.');
@@ -108,7 +130,7 @@ export function UserMenu({
                     <MenuItems className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <div className="py-1">
                             {/* Publish 관련 섹션 */}
-                            {isPublished && !isEditMode && (
+                            {localIsPublished && !isEditMode && (
                                 <>
                                     <div className="px-4 py-2">
                                         <div className="flex items-center text-xs text-gray-500">
@@ -133,11 +155,31 @@ export function UserMenu({
                                 </>
                             )}
 
+                            {isShareUrl(pathname) && (
+                                <>
+                                    <MenuItem>
+                                        {({ active }) => (
+                                            <a
+                                                href="/"
+                                                className={`${
+                                                    active
+                                                        ? 'bg-gray-100 text-gray-900'
+                                                        : 'text-gray-700'
+                                                } block w-full px-4 py-2 text-left text-xs`}
+                                            >
+                                                Go to my goopa
+                                            </a>
+                                        )}
+                                    </MenuItem>
+                                    <div className="my-1 h-px bg-gray-200"></div>
+                                </>
+                            )}
+
                             <MenuItem disabled={isEditMode}>
                                 {({ active, disabled }) => (
                                     <button
                                         onClick={
-                                            isPublished
+                                            localIsPublished
                                                 ? handleUnpublishClick
                                                 : handlePublishClick
                                         }
@@ -150,7 +192,9 @@ export function UserMenu({
                                                   : 'text-gray-700'
                                         } block w-full px-4 py-2 text-left text-xs`}
                                     >
-                                        {isPublished ? 'Unpublish' : 'Publish'}
+                                        {localIsPublished
+                                            ? 'Unpublish'
+                                            : 'Publish'}
                                     </button>
                                 )}
                             </MenuItem>
