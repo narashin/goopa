@@ -7,7 +7,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearch } from '../../hooks/useSearch';
-import { useShareHandler } from '../../hooks/useShareHandler';
 import { UserMenu } from '../templates/UserMenu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
@@ -19,14 +18,15 @@ export function TopNav() {
         user?.uid || ''
     );
     const { isEditMode, setIsEditMode } = useAppContext();
-    const { publishUrl } = useShareHandler(user);
+    // const { publishUrl } = useShareHandler(user);
     const pathname = usePathname();
 
     const views = ['home', 'general', 'dev', 'advanced'];
 
     const generateLink = (category: string) => {
         if (pathname?.startsWith('/share/')) {
-            return `${publishUrl}${category === 'home' ? '' : `/${category}`}`;
+            const [, , customUserId, publishId] = pathname.split('/');
+            return `/share/${customUserId}/${publishId}${category === 'home' ? '' : `/${category}`}`;
         } else {
             return category === 'home' ? '/' : `/${category}`;
         }

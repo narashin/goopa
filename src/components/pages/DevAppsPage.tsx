@@ -4,9 +4,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
-import {
-    AddNewAppModal,
-} from '../../components/templates/modal/AddNewAppModal';
+import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAppContext } from '../../contexts/AppContext';
@@ -91,7 +89,7 @@ export function DevAppsPage({
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
-                        {!user && !isReadOnly && (
+                        {user && !isReadOnly && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}

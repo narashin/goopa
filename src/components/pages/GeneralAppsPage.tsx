@@ -4,9 +4,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
-import {
-    AddNewAppModal,
-} from '../../components/templates/modal/AddNewAppModal';
+import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAppContext } from '../../contexts/AppContext';
@@ -32,7 +30,6 @@ export function GeneralAppsPage({
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-    console.log('user', user);
     const filteredApps = useMemo(
         () => apps.filter((app) => app.category === AppCategoryType.General),
         [apps]
@@ -93,7 +90,7 @@ export function GeneralAppsPage({
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
-                        {user && (
+                        {user && !isReadOnly && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}

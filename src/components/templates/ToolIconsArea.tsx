@@ -84,7 +84,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                 />
                             </div>
                         ))}
-                        {!user && !isReadOnly && (
+                        {user && !isReadOnly && (
                             <AppIconCard
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}
