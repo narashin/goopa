@@ -1,4 +1,4 @@
-# Goopa
+# [Goopa](https://goopa.nara.dev)
 
 ![Goopa Logo](./public/images/goopa-logo.png)
 
