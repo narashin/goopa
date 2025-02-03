@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Goopa
 
-## Getting Started
+![Goopa Logo](./public/images/goopa-logo.png)
 
-First, run the development server:
+## Introduction / 소개
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Goopa is a web application designed to streamline the process of setting up and customizing your MacBook. It serves as a centralized platform where users can store and manage their preferred app configurations and tool settings.
+
+Goopa는 MacBook 설정 및 커스터마이징 과정을 간소화하기 위해 설계된 웹 애플리케이션입니다. 사용자가 선호하는 앱 구성과 도구 설정을 저장하고 관리할 수 있는 중앙 집중식 플랫폼 역할을 합니다.
+
+The key features of Goopa include:
+Goopa의 주요 기능은 다음과 같습니다:
+
+- Saving personal MacBook setup preferences / 개인 MacBook 설정 환경설정 저장
+- Storing configurations for frequently used apps and tools / 자주 사용하는 앱 및 도구의 구성 저장
+- Sharing setup profiles with other users / 다른 사용자와 설정 프로필 공유
+
+This project aims to simplify the often time-consuming task of configuring a new MacBook or reconfiguring after a system reset. By allowing users to save and share their setups, Goopa creates a community-driven resource for optimal MacBook configurations.
+
+이 프로젝트는 새로운 MacBook을 구성하거나 시스템 재설정 후 재구성하는 시간이 많이 소요되는 작업을 단순화하는 것을 목표로 합니다. 사용자가 자신의 설정을 저장하고 공유할 수 있게 함으로써, Goopa는 최적의 MacBook 구성을 위한 커뮤니티 기반 리소스를 만듭니다.
+
+Developed using Next.js, React, and Tailwind CSS, Goopa offers user-friendly interface to manage your MacBook setup efficiently.
+
+Next.js, React 및 Tailwind CSS를 사용하여 개발된 Goopa는 MacBook 설정을 효율적으로 관리할 수 있는 사용자 친화적인 인터페이스를 제공합니다.
+
+## Tech Stack / 기술 스택
+
+- [Next.js](https://nextjs.org/)
+- [React](https://reactjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+## TODO List / 할 일 목록
+
+- [ ] Implement bookmark functionality / 북마크 기능 구현
+    - [ ] Implement quick access to bookmarked configurations / 북마크된 구성에 빠르게 접근할 수 있는 기능 구현
+- [ ] Ensure app order preservation / 앱 순서 보존 보장
+    - [ ] Create a system to save user-defined app order / 사용자 정의 앱 순서를 저장하는 시스템 생성
+    - [ ] Display app list in the saved order / 저장된 순서대로 앱 목록 표시
+    - [ ] Allow users to reorder apps easily / 사용자가 쉽게 앱 순서를 변경할 수 있도록 함
+- [ ] Expand beyond computer categories / 컴퓨터 카테고리 외 확장
+    - [ ] Include categories for non-tech setups (e.g., workspace organization, productivity tools) / 비기술적 설정을 위한 카테고리 포함 (예: 작업 공간 구성, 생산성 도구)
+    - [ ] Develop a flexible category system for user-defined setups / 사용자 정의 설정을 위한 유연한 카테고리 시스템 개발
+- [ ] Enhance configuration sharing capabilities / 구성 공유 기능 향상
+- [ ] Optimize performance / 성능 최적화
+- [ ] Improve mobile responsive design / 모바일 반응형 디자인 개선
+
+## Getting Started / 시작하기
+
+### Prerequisites / 전제 조건
+
+- Node.js (version 14 or later / 버전 14 이상)
+- npm or yarn / npm 또는 yarn
+
+### Installation / 설치
+
+1. Clone the repository / 저장소 복제:
+
+```
+git clone [https://github.com/your-username/goopa.git](https://github.com/your-username/goopa.git)
+cd goopa
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies / 의존성 설치:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+or
 
-## Learn More
+```
+yarn install
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Running the Development Server / 개발 서버 실행
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+or
 
-## Deploy on Vercel
+```
+yarn dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+You can now access the application in your browser at `http://localhost:3000`.
+이제 브라우저에서 `http://localhost:3000`으로 애플리케이션에 접속할 수 있습니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Building and Deploying / 빌드 및 배포
+
+To create a production build / 프로덕션 빌드 생성:
+
+```
+npm run build
+```
+
+or
+
+```
+yarn build
+```
+
+To run the built application / 빌드된 애플리케이션 실행:
+
+```
+npm start
+```
+
+or
+
+```
+yarn start
+```
+
+## Contributing / 기여하기
+
+If you'd like to contribute to the project, please submit a pull request. For major changes, it's best to open an issue first to discuss the proposed changes.
+
+프로젝트에 기여하고 싶으시다면 풀 리퀘스트를 제출해 주세요. 주요 변경사항의 경우, 먼저 이슈를 열어 제안된 변경사항에 대해 논의하는 것이 좋습니다.
+
+## License / 라이선스
+
+This project is licensed under the [MIT License](LICENSE).
+이 프로젝트는 [MIT 라이선스](LICENSE)하에 있습니다.
