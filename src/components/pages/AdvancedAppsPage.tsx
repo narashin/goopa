@@ -32,9 +32,7 @@ const AdvancedDevAppPage = ({
     }, []);
 
     const copyToClipboard = useCallback((text: string) => {
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Copied to clipboard');
-        });
+        navigator.clipboard.writeText(text).then(() => {});
     }, []);
 
     const renderCategoryContent = useCallback(

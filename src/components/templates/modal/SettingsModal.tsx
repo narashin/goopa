@@ -9,6 +9,7 @@ import remarkGfm from 'remark-gfm';
 import { updateApp } from '../../../lib/firestore';
 import type { ITool } from '../../../types/app';
 import { AppCategoryType } from '../../../types/category';
+import { IconDisplay } from '../../ui/IconDisplay';
 
 interface SettingsModalProps {
     app: ITool;
@@ -94,10 +95,10 @@ export function SettingsModal({
                 {/* App info area */}
                 <div className="flex p-4 border-b border-gray-200">
                     <div className="w-16 h-16 mr-4">
-                        <img
-                            src={updatedApp.icon || '/placeholder.svg'}
-                            alt={`${updatedApp.name} icon`}
-                            className="w-full h-full object-contain"
+                        <IconDisplay
+                            icon={updatedApp.icon}
+                            name={updatedApp.name}
+                            onClick={() => {}}
                         />
                     </div>
                     <div className="flex-1">

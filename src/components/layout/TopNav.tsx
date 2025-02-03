@@ -1,12 +1,14 @@
 'use client';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
+import { debounce } from 'lodash';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { useAppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearch } from '../../hooks/useSearch';
+import { useShareHandler } from '../../hooks/useShareHandler';
 import { UserMenu } from '../templates/UserMenu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
@@ -31,14 +33,12 @@ function SkeletonUserMenu() {
 
 export function TopNav() {
     const { user, loading, handleSignIn, handleSignOut } = useAuth();
-    const router = useRouter();
-    const { searchQuery, handleSearch, clearSearch } = useSearch(
-        user?.uid || ''
-    );
     const { isEditMode, setIsEditMode } = useAppContext();
-    // const { publishUrl } = useShareHandler(user);
     const pathname = usePathname();
-
+    const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
+    const { isPublicMode } = useShareHandler(user);
+    const { handleSearch: performSearch } = useSearch(user?.uid, isPublicMode);
     const views = ['home', 'general', 'dev', 'advanced'];
 
     const generateLink = (category: string) => {
@@ -54,12 +54,49 @@ export function TopNav() {
         setIsEditMode(!isEditMode);
     };
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const debouncedSearch = useCallback(
+        debounce((query: string) => {
+            performSearch(query);
+        }, 300),
+        [performSearch]
+    );
+
+    useEffect(() => {
         if (searchQuery) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+            debouncedSearch(searchQuery);
         }
-    };
+    }, [searchQuery, debouncedSearch]);
+
+    const handleSearchChange = useCallback(
+        (query: string) => {
+            setSearchQuery(query);
+            if (query) {
+                if (isPublicMode) {
+                    const [, , customUserId, publishId] =
+                        pathname?.split('/') || [];
+                    router.push(
+                        `/share/${customUserId}/${publishId}/search?q=${encodeURIComponent(query)}`,
+                        { scroll: false }
+                    );
+                } else {
+                    router.push(`/search?q=${encodeURIComponent(query)}`, {
+                        scroll: false,
+                    });
+                }
+            }
+        },
+        [router, isPublicMode, pathname]
+    );
+
+    const handleClearSearch = useCallback(() => {
+        setSearchQuery('');
+        if (isPublicMode) {
+            const [, , customUserId, publishId] = pathname?.split('/') || [];
+            router.push(`/share/${customUserId}/${publishId}`);
+        } else {
+            router.push('/');
+        }
+    }, [router, isPublicMode, pathname]);
 
     if (loading) {
         return (
@@ -104,16 +141,13 @@ export function TopNav() {
                 </div>
 
                 {/* 검색 입력 */}
-                <form
-                    onSubmit={handleSearchSubmit}
-                    className="flex items-center space-x-3 relative"
-                >
+                <div className="flex items-center space-x-3 relative">
                     <SearchInput
                         value={searchQuery}
-                        onChange={handleSearch}
-                        onClear={clearSearch}
+                        onChange={handleSearchChange}
+                        onClear={handleClearSearch}
                     />
-                </form>
+                </div>
 
                 {/* 사용자 메뉴 */}
                 <div className="flex items-center space-x-4">

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { doc, onSnapshot } from 'firebase/firestore';
+import { usePathname } from 'next/navigation';
 
 import { errorToast, successToast } from '../components/ui/Toast';
 import { useShare } from '../contexts/ShareContext';
@@ -12,6 +13,8 @@ export function useShareHandler(user: UserData | null) {
     const { setIsPublished } = useShare();
     const [publishUrl, setPublishUrl] = useState<string>('');
     const [lastPublishId, setLastPublishId] = useState<string | null>(null);
+    const pathname = usePathname();
+    const isPublicMode = pathname?.startsWith('/share/');
 
     useEffect(() => {
         if (!user) return;
@@ -94,5 +97,6 @@ export function useShareHandler(user: UserData | null) {
         lastPublishId,
         handlePublish,
         handleUnPublish,
+        isPublicMode,
     };
 }

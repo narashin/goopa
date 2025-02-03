@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -12,6 +12,60 @@ interface SearchResultsPageProps {
     results: ITool[];
     searchQuery: string;
     isLoading: boolean;
+    onSearch: (query: string) => void;
+}
+
+const SearchResultsContent = React.memo(
+    ({
+        results,
+        isLoading,
+        searchQuery,
+        handleNavigation,
+    }: {
+        results: ITool[];
+        isLoading: boolean;
+        searchQuery: string;
+        handleNavigation: (app: ITool) => void;
+    }) => {
+        if (isLoading) {
+            return (
+                <div className="flex justify-center items-center h-32">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+                </div>
+            );
+        }
+
+        if (searchQuery && results.length === 0) {
+            return <p className="text-white/70">No search results found.</p>;
+        }
+
+        return (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {results.map((app) => (
+                    <AppIconCard
+                        key={app.id}
+                        app={app}
+                        onClick={() =>
+                            app.hasScript ? handleNavigation(app) : null
+                        }
+                        onDeleteApp={() => {
+                            console.log(
+                                'Delete app not implemented for search results'
+                            );
+                        }}
+                    />
+                ))}
+            </div>
+        );
+    }
+);
+
+SearchResultsContent.displayName = 'SearchResultsContent';
+interface SearchResultsPageProps {
+    results: ITool[];
+    searchQuery: string;
+    isLoading: boolean;
+    onSearch: (query: string) => void;
 }
 
 export function SearchResultsPage({
@@ -23,40 +77,24 @@ export function SearchResultsPage({
     const pathname = usePathname();
     const isSharePage = pathname?.startsWith('/share/');
 
-    const handleNavigation = (app: ITool) => {
-        console.log('Navigation triggered for app:', app);
-        if (app.hasScript) {
-            const category = AppCategoryType.Advanced;
-            if (isSharePage) {
-                const customUserId = pathname?.split('/')[2];
-                router.push(
-                    `/share/${customUserId}/${category.toLowerCase()}/${app.id}`
-                );
-            } else {
-                router.push(`/apps/${category.toLowerCase()}/${app.id}`);
+    const handleNavigation = useCallback(
+        (app: ITool) => {
+            if (app.hasScript) {
+                const category = AppCategoryType.Advanced;
+                if (isSharePage) {
+                    const customUserId = pathname?.split('/')[2];
+                    router.push(
+                        `/share/${customUserId}/${category.toLowerCase()}/${app.id}`
+                    );
+                } else {
+                    router.push(`/apps/${category.toLowerCase()}/${app.id}`);
+                }
             }
-        } else {
-            // Do nothing for apps without scripts
-            console.log('App does not have a script, no navigation required');
-        }
-    };
+        },
+        [isSharePage, pathname, router]
+    );
 
-    if (isLoading) {
-        return (
-            <div className="flex-1 p-4 overflow-auto">
-                <Card className="h-full bg-black/20 border-white/10 backdrop-blur-sm">
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-white/90 mb-6">
-                            검색 중...
-                        </h2>
-                        <div className="flex justify-center items-center h-32">
-                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-        );
-    }
+    const memoizedResults = useMemo(() => results, [results]);
 
     return (
         <div className="flex-1 p-4 overflow-auto">
@@ -64,43 +102,15 @@ export function SearchResultsPage({
                 <div className="p-6">
                     <h2 className="text-2xl font-bold text-white/90 mb-6">
                         {searchQuery
-                            ? `"${searchQuery}"에 대한 검색 결과`
-                            : '검색 결과'}
+                            ? `Search results for "${searchQuery}"`
+                            : 'Search results'}
                     </h2>
-                    {!searchQuery && (
-                        <p className="text-white/70">
-                            검색어를 입력하면 실시간으로 결과가 표시됩니다.
-                        </p>
-                    )}
-                    {searchQuery &&
-                    Array.isArray(results) &&
-                    results.length === 0 ? (
-                        <p className="text-white/70">
-                            {
-                                '검색 결과가 없습니다. 다른 검색어를 시도해보세요.'
-                            }
-                        </p>
-                    ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                            {Array.isArray(results) &&
-                                results.map((app) => (
-                                    <AppIconCard
-                                        key={app.id}
-                                        app={app}
-                                        onClick={() =>
-                                            app.hasScript
-                                                ? handleNavigation(app)
-                                                : null
-                                        }
-                                        onDeleteApp={() => {
-                                            console.log(
-                                                'Delete app not implemented for search results'
-                                            );
-                                        }}
-                                    />
-                                ))}
-                        </div>
-                    )}
+                    <SearchResultsContent
+                        results={memoizedResults}
+                        isLoading={isLoading}
+                        searchQuery={searchQuery}
+                        handleNavigation={handleNavigation}
+                    />
                 </div>
             </Card>
         </div>

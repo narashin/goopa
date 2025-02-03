@@ -20,6 +20,31 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+
 .neon-text-outline {
     color: #4ade80;
     text-shadow:
@@ -164,7 +189,7 @@ body {
     opacity: 1 !important;
     background-color: rgba(0, 0, 0, 0.05) !important;
 }
-/* 토스트 애니메이션 */
+
 @keyframes styled-toast-in {
     from {
         transform: translateY(100%);
@@ -190,3 +215,4 @@ body {
 .styled-toast {
     animation: macosToastIn 0.3s ease-out forwards, macosToastOut 0.3s ease-in forwards 2.7s;
 }
+

@@ -62,11 +62,7 @@ export function UserMenu({
         const newPublishUrl = await handlePublish();
         if (newPublishUrl) {
             setLocalIsPublished(true);
-            console.log(
-                'Publish success: isPublished',
-                user.isPublished,
-                localIsPublished
-            );
+
             return newPublishUrl;
         } else {
             errorToast('Failed to publish your Goopa.');
@@ -89,7 +85,7 @@ export function UserMenu({
         if (publishUrl) {
             const fullUrl = `${window.location.origin}${publishUrl}`;
             navigator.clipboard.writeText(fullUrl);
-            console.log('URL copied from handleCopyUrl:', fullUrl);
+
             successToast('🎉 Public URL copied to clipboard!');
         }
     };

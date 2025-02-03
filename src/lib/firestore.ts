@@ -182,17 +182,12 @@ export const searchAppsByCustomUserId = async (
     searchQuery: string,
     customUserId: string
 ): Promise<ITool[]> => {
-    console.log('searchAppsByCustomUserId 함수 호출됨:', {
-        searchQuery,
-        customUserId,
-    });
     try {
         const usersRef = collection(firestore, 'users');
         const q = query(usersRef, where('customUserId', '==', customUserId));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.log('사용자를 찾을 수 없음:', customUserId);
             return [];
         }
 
@@ -217,7 +212,6 @@ export const searchAppsByUserId = async (
     searchQuery: string,
     userId: string
 ): Promise<ITool[]> => {
-    console.log('searchAppsByUserId 함수 호출됨:', { searchQuery, userId });
     try {
         const userAppsRef = collection(firestore, 'users', userId, 'apps');
         const appsSnapshot = await getDocs(userAppsRef);
@@ -225,9 +219,9 @@ export const searchAppsByUserId = async (
         const apps = appsSnapshot.docs.map(
             (doc) => ({ id: doc.id, ...doc.data() }) as ITool
         );
-        console.log('총 결과:', apps);
+
         const filteredApps = filterApps(apps, searchQuery);
-        console.log('필터링된 결과:', filteredApps);
+
         return filteredApps;
     } catch (error) {
         console.error('Error searching apps by userId:', error);

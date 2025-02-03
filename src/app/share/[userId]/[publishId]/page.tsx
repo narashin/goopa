@@ -1,25 +1,19 @@
+// app/share/[userId]/[publishId]/page.tsx
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-import { SearchResultsPage } from '../../../../components/pages/SearchResultsPage';
-import { useAuth } from '../../../../hooks/useAuth';
-import { useSearch } from '../../../../hooks/useSearch';
+export default function RedirectToHome() {
+    const router = useRouter();
 
-export default function SearchPage() {
-    const searchParams = useSearchParams();
-    const query = searchParams?.get('q') || '';
-    const { user } = useAuth();
-    const { results, isLoading } = useSearch(user?.uid);
+    useEffect(() => {
+        const pathParts = window.location.pathname.split('/');
+        if (pathParts.length >= 4) {
+            const [, , userId, publishId] = pathParts;
+            router.replace(`/share/${userId}/${publishId}/home`);
+        }
+    }, [router]);
 
-    console.log('SearchPage rendering:', { query, results, isLoading });
-
-    return (
-        <SearchResultsPage
-            results={results}
-            searchQuery={query}
-            isLoading={isLoading}
-        />
-    );
+    return <div>Redirecting...</div>;
 }

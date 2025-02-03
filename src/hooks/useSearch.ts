@@ -1,31 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { debounce } from 'lodash';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { searchAppsByCustomUserId, searchAppsByUserId } from '../lib/firestore';
 import type { ITool } from '../types/app';
 
-export function useSearch(loggedInUserId?: string) {
+export function useSearch(loggedInUserId?: string, isPublicMode = false) {
+    const [searchQuery, setSearchQuery] = useState('');
     const [results, setResults] = useState<ITool[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [localSearchQuery, setLocalSearchQuery] = useState('');
     const pathname = usePathname();
     const router = useRouter();
-    const searchParams = useSearchParams();
-
-    const searchQuery = searchParams?.get('q') || '';
-
-    const isSharePage = pathname?.startsWith('/share/');
-
+    console.log('isPublicMode', isPublicMode);
     const fetchSearchResults = useCallback(
         async (query: string) => {
-            console.log('fetchSearchResults 실행:', {
-                query,
-                loggedInUserId,
-                isSharePage,
-            });
-            if (query.trim() === '' || !loggedInUserId) {
+            if (query.trim() === '') {
                 setResults([]);
                 return;
             }
@@ -33,43 +24,20 @@ export function useSearch(loggedInUserId?: string) {
             setIsLoading(true);
             try {
                 let searchResults: ITool[] = [];
-                if (isSharePage && pathname) {
-                    const customUserId = pathname.split('/')[2];
-                    if (!customUserId) {
-                        console.error('customUserId를 찾을 수 없습니다.');
-                        return;
-                    }
-                    console.log('searchAppsByCustomUserId 호출:', {
-                        query,
-                        customUserId,
-                    });
+                if (isPublicMode) {
+                    console.log('isPublicMode', isPublicMode);
+                    const customUserId = window.location.pathname.split('/')[2];
                     searchResults = await searchAppsByCustomUserId(
                         query,
                         customUserId
                     );
-                } else {
-                    console.log('searchAppsByUserId 호출:', {
-                        query,
-                        loggedInUserId,
-                    });
+                } else if (loggedInUserId) {
                     searchResults = await searchAppsByUserId(
                         query,
                         loggedInUserId
                     );
                 }
-                console.log('검색 결과:', searchResults);
                 setResults(searchResults);
-
-                // URL 업데이트
-                if (pathname) {
-                    const newSearchParams = new URLSearchParams(
-                        searchParams?.toString() || ''
-                    );
-                    newSearchParams.set('q', query);
-                    router.push(`${pathname}?${newSearchParams.toString()}`, {
-                        scroll: false,
-                    });
-                }
             } catch (error) {
                 console.error('Error searching apps:', error);
                 setResults([]);
@@ -77,7 +45,7 @@ export function useSearch(loggedInUserId?: string) {
                 setIsLoading(false);
             }
         },
-        [loggedInUserId, isSharePage, pathname, router, searchParams]
+        [loggedInUserId, isPublicMode]
     );
 
     const debouncedFetchSearchResults = useMemo(
@@ -96,16 +64,31 @@ export function useSearch(loggedInUserId?: string) {
     }, [searchQuery, loggedInUserId, debouncedFetchSearchResults]);
 
     const handleSearch = useCallback(
-        (query: string) => {
-            console.log('handleSearch 호출:', query);
-            setLocalSearchQuery(query);
-            debouncedFetchSearchResults(query);
+        async (query: string) => {
+            setSearchQuery(query);
+            if (!query.trim() || !loggedInUserId) {
+                setResults([]);
+                return;
+            }
+
+            setIsLoading(true);
+            try {
+                const searchResults = await searchAppsByUserId(
+                    query,
+                    loggedInUserId
+                );
+                setResults(searchResults);
+            } catch (error) {
+                console.error('Error searching apps:', error);
+                setResults([]);
+            } finally {
+                setIsLoading(false);
+            }
         },
-        [debouncedFetchSearchResults]
+        [loggedInUserId]
     );
 
     const clearSearch = useCallback(() => {
-        console.log('clearSearch 호출');
         setLocalSearchQuery('');
         setResults([]);
         if (pathname) {
@@ -113,12 +96,6 @@ export function useSearch(loggedInUserId?: string) {
         }
     }, [pathname, router]);
 
-    console.log('useSearch 훅 상태:', {
-        localSearchQuery,
-        results,
-        isLoading,
-        loggedInUserId,
-    });
     return {
         searchQuery: localSearchQuery,
         results,

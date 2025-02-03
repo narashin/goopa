@@ -26,7 +26,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                 if (newPublishUrl) {
                     const fullUrl = `${window.location.origin}${newPublishUrl}`;
                     await navigator.clipboard.writeText(fullUrl);
-                    console.log('URL copied to clipboard:', fullUrl);
+
                     toast.success('🎉 Public URL copied to clipboard!', {
                         position: 'top-right',
                         autoClose: 3000,

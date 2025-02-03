@@ -1,7 +1,9 @@
 import { nanoid } from 'nanoid';
 
 import {
-    ObjectCannedACL, PutObjectCommand, S3Client,
+    ObjectCannedACL,
+    PutObjectCommand,
+    S3Client,
 } from '@aws-sdk/client-s3';
 
 const s3Client = new S3Client({
@@ -27,7 +29,6 @@ export const uploadToS3 = async (file: File): Promise<string> => {
     try {
         const command = new PutObjectCommand(params);
         const data = await s3Client.send(command);
-        console.log('S3 upload successful:', data);
 
         return `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
     } catch (error) {

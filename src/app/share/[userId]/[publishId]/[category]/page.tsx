@@ -25,20 +25,16 @@ export default async function SharedCategoryPage({
     } = await new Promise<Params>((resolve) => resolve(params));
 
     const userData = await getUserByCustomUserId(customUserId);
-    console.log('customUserId', customUserId);
-    console.log('userData', userData);
 
     if (!userData || !userData.isPublished) {
         notFound();
     }
 
     if (userData.lastPublishId !== publishId) {
-        console.log('PublishId mismatch');
         notFound();
     }
 
     const initialApps = await getAppsByCustomUserId(customUserId);
-    console.log(initialApps);
 
     try {
         return (
@@ -49,7 +45,6 @@ export default async function SharedCategoryPage({
             />
         );
     } catch (error) {
-        console.log('Error', error);
         return notFound();
     }
 }

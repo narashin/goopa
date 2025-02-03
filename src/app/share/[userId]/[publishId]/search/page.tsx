@@ -2,21 +2,20 @@
 
 import React, { useEffect } from 'react';
 
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
-import { SearchResultsPage } from '../../components/pages/SearchResultsPage';
-import { useAuth } from '../../hooks/useAuth';
-import { useSearch } from '../../hooks/useSearch';
-import { useShareHandler } from '../../hooks/useShareHandler';
+import { SearchResultsPage } from '../../../../../components/pages/SearchResultsPage';
+import { useSearch } from '../../../../../hooks/useSearch';
 
-export default function SearchPage() {
+export default function SharedSearchPage() {
     const searchParams = useSearchParams();
     const query = searchParams?.get('q') || '';
-    const { user } = useAuth();
+    const pathname = usePathname();
+    const customUserId = pathname?.split('/')[2];
     const { results, isLoading, handleSearch, searchQuery } = useSearch(
-        user?.uid
+        customUserId,
+        true
     );
-    const isPublicMode = useShareHandler(user);
 
     useEffect(() => {
         if (query !== searchQuery) {
@@ -24,12 +23,7 @@ export default function SearchPage() {
         }
     }, [query, searchQuery, handleSearch]);
 
-    console.log('SearchPage rendering:', {
-        query,
-        results,
-        isLoading,
-        isPublicMode,
-    });
+    console.log('SharedSearchPage rendering:', { query, results, isLoading });
 
     return (
         <SearchResultsPage

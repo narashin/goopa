@@ -22,7 +22,6 @@ export const CopyToClipboardProvider: React.FC<
         navigator.clipboard
             .writeText(text)
             .then(() => {
-                console.log('Text copied to clipboard');
                 // TODO: Show a toast message
             })
             .catch((err) => {
