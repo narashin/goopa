@@ -47,3 +47,5 @@ export const useCopyToClipboard = () => {
 };
 
 export default CopyToClipboardProvider;
+
+export { CopyToClipboardContext };

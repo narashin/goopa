@@ -7,22 +7,14 @@ import type { AppCategoryType } from '@/types/category';
 
 import SharedCategoryPageClient from './SharedCategoryPageClient';
 
-interface Params {
+type Params = Promise<{
     userId: string;
     publishId: string;
     category: AppCategoryType;
-}
+}>;
 
-export default async function SharedCategoryPage({
-    params,
-}: {
-    params: Params;
-}) {
-    const {
-        userId: customUserId,
-        publishId,
-        category,
-    } = await new Promise<Params>((resolve) => resolve(params));
+export default async function SharedCategoryPage(props: { params: Params }) {
+    const { userId: customUserId, publishId, category } = await props.params;
 
     const userData = await getUserByCustomUserId(customUserId);
 

@@ -13,7 +13,7 @@ export function useSearch(loggedInUserId?: string, isPublicMode = false) {
     const [localSearchQuery, setLocalSearchQuery] = useState('');
     const pathname = usePathname();
     const router = useRouter();
-    console.log('isPublicMode', isPublicMode);
+
     const fetchSearchResults = useCallback(
         async (query: string) => {
             if (query.trim() === '') {
@@ -25,7 +25,6 @@ export function useSearch(loggedInUserId?: string, isPublicMode = false) {
             try {
                 let searchResults: ITool[] = [];
                 if (isPublicMode) {
-                    console.log('isPublicMode', isPublicMode);
                     const customUserId = window.location.pathname.split('/')[2];
                     searchResults = await searchAppsByCustomUserId(
                         query,

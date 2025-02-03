@@ -7,13 +7,8 @@ import CategoryPageClient from './CategoryPageClient';
 type Params = Promise<{ category: AppCategoryType }>;
 
 export default async function CategoryPage(props: { params: Params }) {
-    const params = await props.params;
-    const initialApps = await fetchAppsFromFirestore(params.category);
+    const { category } = await props.params;
+    const initialApps = await fetchAppsFromFirestore(category);
 
-    return (
-        <CategoryPageClient
-            category={params.category}
-            initialApps={initialApps}
-        />
-    );
+    return <CategoryPageClient category={category} initialApps={initialApps} />;
 }
