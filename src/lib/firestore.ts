@@ -178,43 +178,76 @@ export const deleteAppFromFirestore = async (userId: string, appId: string) => {
     }
 };
 
-export const searchApps = async (
+export const searchAppsByCustomUserId = async (
     searchQuery: string,
-    customUserId?: string
+    customUserId: string
 ): Promise<ITool[]> => {
-    let appsToSearch: ITool[] = [];
+    console.log('searchAppsByCustomUserId 함수 호출됨:', {
+        searchQuery,
+        customUserId,
+    });
+    try {
+        const usersRef = collection(firestore, 'users');
+        const q = query(usersRef, where('customUserId', '==', customUserId));
+        const querySnapshot = await getDocs(q);
 
-    if (customUserId) {
-        // 특정 사용자의 앱만 검색
-        const user = await getUserByCustomUserId(customUserId);
-        if (user) {
-            const userAppsRef = collection(
-                firestore,
-                'users',
-                user.uid,
-                'apps'
-            );
-            const userAppsSnapshot = await getDocs(userAppsRef);
-            appsToSearch = userAppsSnapshot.docs.map(
-                (doc) => ({ id: doc.id, ...doc.data() }) as ITool
-            );
+        if (querySnapshot.empty) {
+            console.log('사용자를 찾을 수 없음:', customUserId);
+            return [];
         }
-    } else {
-        // 모든 앱 검색
-        const appsRef = collection(firestore, 'apps');
-        const appsSnapshot = await getDocs(appsRef);
-        appsToSearch = appsSnapshot.docs.map(
+
+        const userDoc = querySnapshot.docs[0];
+        const uid = userDoc.id;
+
+        const userAppsRef = collection(firestore, 'users', uid, 'apps');
+        const appsSnapshot = await getDocs(userAppsRef);
+
+        const apps = appsSnapshot.docs.map(
             (doc) => ({ id: doc.id, ...doc.data() }) as ITool
         );
-    }
 
-    return appsToSearch.filter((app) =>
-        [app.name, app.downloadUrl, app.description]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-    );
+        return filterApps(apps, searchQuery);
+    } catch (error) {
+        console.error('Error searching apps by customUserId:', error);
+        return [];
+    }
+};
+
+export const searchAppsByUserId = async (
+    searchQuery: string,
+    userId: string
+): Promise<ITool[]> => {
+    console.log('searchAppsByUserId 함수 호출됨:', { searchQuery, userId });
+    try {
+        const userAppsRef = collection(firestore, 'users', userId, 'apps');
+        const appsSnapshot = await getDocs(userAppsRef);
+
+        const apps = appsSnapshot.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() }) as ITool
+        );
+        console.log('총 결과:', apps);
+        const filteredApps = filterApps(apps, searchQuery);
+        console.log('필터링된 결과:', filteredApps);
+        return filteredApps;
+    } catch (error) {
+        console.error('Error searching apps by userId:', error);
+        return [];
+    }
+};
+
+const filterApps = (apps: ITool[], searchQuery: string): ITool[] => {
+    const lowercaseQuery = searchQuery.toLowerCase();
+    return apps.filter((app) => {
+        const nameMatch = app.name.toLowerCase().includes(lowercaseQuery);
+        const descriptionMatch =
+            app.description &&
+            app.description.toLowerCase().includes(lowercaseQuery);
+        const urlMatch =
+            app.downloadUrl &&
+            app.downloadUrl.toLowerCase().includes(lowercaseQuery);
+
+        return nameMatch || descriptionMatch || urlMatch;
+    });
 };
 
 /*

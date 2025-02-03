@@ -35,10 +35,6 @@ export function GeneralAppsPage({
         [apps]
     );
 
-    const handleAppClick = useCallback((url: string) => {
-        window.open(url, '_blank', 'noopener,noreferrer');
-    }, []);
-
     const handleAddNewApp = useCallback(() => {
         if (isReadOnly || !onAddNewApp) return;
 
@@ -84,9 +80,7 @@ export function GeneralAppsPage({
                             <AppIconCard
                                 key={app.id}
                                 app={app}
-                                onClick={() =>
-                                    handleAppClick(app.downloadUrl ?? '')
-                                }
+                                onClick={() => {}}
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}

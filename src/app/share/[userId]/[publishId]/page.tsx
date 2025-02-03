@@ -1,20 +1,25 @@
-// app/share/[userId]/[publishId]/page.tsx
 'use client';
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
-export default function RedirectToHome() {
-    const router = useRouter();
+import { SearchResultsPage } from '../../../../components/pages/SearchResultsPage';
+import { useAuth } from '../../../../hooks/useAuth';
+import { useSearch } from '../../../../hooks/useSearch';
 
-    useEffect(() => {
-        // 현재 경로에서 userId와 publishId를 추출하여 home으로 이동
-        const pathParts = window.location.pathname.split('/');
-        if (pathParts.length >= 4) {
-            const [, , userId, publishId] = pathParts;
-            router.replace(`/share/${userId}/${publishId}/home`);
-        }
-    }, [router]);
+export default function SearchPage() {
+    const searchParams = useSearchParams();
+    const query = searchParams?.get('q') || '';
+    const { user } = useAuth();
+    const { results, isLoading } = useSearch(user?.uid);
 
-    return <div>Redirecting...</div>;
+    console.log('SearchPage rendering:', { query, results, isLoading });
+
+    return (
+        <SearchResultsPage
+            results={results}
+            searchQuery={query}
+            isLoading={isLoading}
+        />
+    );
 }

@@ -24,13 +24,9 @@ export function SearchResultsPage({
     const isSharePage = pathname?.startsWith('/share/');
 
     const handleNavigation = (app: ITool) => {
-        if (app.downloadUrl) {
-            window.open(app.downloadUrl, '_blank', 'noopener,noreferrer');
-        } else {
-            const category = app.hasScript
-                ? AppCategoryType.Advanced
-                : app.category;
-
+        console.log('Navigation triggered for app:', app);
+        if (app.hasScript) {
+            const category = AppCategoryType.Advanced;
             if (isSharePage) {
                 const customUserId = pathname?.split('/')[2];
                 router.push(
@@ -39,22 +35,11 @@ export function SearchResultsPage({
             } else {
                 router.push(`/apps/${category.toLowerCase()}/${app.id}`);
             }
+        } else {
+            // Do nothing for apps without scripts
+            console.log('App does not have a script, no navigation required');
         }
     };
-
-    if (!searchQuery) {
-        return (
-            <div className="flex-1 p-4 overflow-auto">
-                <Card className="h-full bg-black/20 border-white/10 backdrop-blur-sm">
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-white/90 mb-6">
-                            검색어를 입력해주세요
-                        </h2>
-                    </div>
-                </Card>
-            </div>
-        );
-    }
 
     if (isLoading) {
         return (
@@ -64,6 +49,9 @@ export function SearchResultsPage({
                         <h2 className="text-2xl font-bold text-white/90 mb-6">
                             검색 중...
                         </h2>
+                        <div className="flex justify-center items-center h-32">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+                        </div>
                     </div>
                 </Card>
             </div>
@@ -75,20 +63,42 @@ export function SearchResultsPage({
             <Card className="h-full bg-black/20 border-white/10 backdrop-blur-sm">
                 <div className="p-6">
                     <h2 className="text-2xl font-bold text-white/90 mb-6">
-                        &quot;{searchQuery}&quot;에 대한 검색 결과
+                        {searchQuery
+                            ? `"${searchQuery}"에 대한 검색 결과`
+                            : '검색 결과'}
                     </h2>
-                    {results.length === 0 ? (
-                        <p className="text-white/70">검색 결과가 없습니다</p>
+                    {!searchQuery && (
+                        <p className="text-white/70">
+                            검색어를 입력하면 실시간으로 결과가 표시됩니다.
+                        </p>
+                    )}
+                    {searchQuery &&
+                    Array.isArray(results) &&
+                    results.length === 0 ? (
+                        <p className="text-white/70">
+                            {
+                                '검색 결과가 없습니다. 다른 검색어를 시도해보세요.'
+                            }
+                        </p>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                            {results.map((app) => (
-                                <AppIconCard
-                                    key={app.id}
-                                    app={app}
-                                    onClick={() => handleNavigation(app)}
-                                    onDeleteApp={() => {}}
-                                />
-                            ))}
+                            {Array.isArray(results) &&
+                                results.map((app) => (
+                                    <AppIconCard
+                                        key={app.id}
+                                        app={app}
+                                        onClick={() =>
+                                            app.hasScript
+                                                ? handleNavigation(app)
+                                                : null
+                                        }
+                                        onDeleteApp={() => {
+                                            console.log(
+                                                'Delete app not implemented for search results'
+                                            );
+                                        }}
+                                    />
+                                ))}
                         </div>
                     )}
                 </div>
