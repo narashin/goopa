@@ -44,7 +44,7 @@ export default async function SharedCategoryPage({
                 userData={userData}
             />
         );
-    } catch (error) {
+    } catch {
         return notFound();
     }
 }
