@@ -83,14 +83,14 @@ export function DevAppsPage({
                             <AppIconCard
                                 key={app.id}
                                 app={app}
-                                onClick={() =>
-                                    handleAppClick(app.downloadUrl ?? '')
-                                }
+                                isStarred={false}
+                                onClick={() => handleAppClick(app.url ?? '')}
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
                         {user && !isReadOnly && (
                             <AppIconCard
+                                isStarred={false}
                                 isAddNewAppCard
                                 onClick={handleAddNewApp}
                                 onDeleteApp={() => {}}

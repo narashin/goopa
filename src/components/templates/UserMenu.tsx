@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import {
@@ -223,6 +224,20 @@ export function UserMenu({
                                 )}
                             </MenuItem>
 
+                            <MenuItem>
+                                {({ active }) => (
+                                    <Link
+                                        href="/starred-apps"
+                                        className={`${
+                                            active
+                                                ? 'bg-gray-100 text-gray-900'
+                                                : 'text-gray-700'
+                                        } block w-full px-4 py-2 text-left text-xs`}
+                                    >
+                                        Starred Apps 🌟
+                                    </Link>
+                                )}
+                            </MenuItem>
                             {/* Divider */}
                             <div className="my-1 h-px bg-gray-200"></div>
 

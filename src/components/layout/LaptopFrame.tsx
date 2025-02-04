@@ -143,7 +143,7 @@ export function LaptopFrame({ children }: LaptopFrameProps) {
                 )}
 
                 {/* Screen Content */}
-                <div className="absolute top-[26.9%] left-[24.85%] w-[50.3%] h-[40.6%] overflow-hidden">
+                <div className="absolute top-[26.9%] left-[24.85%] w-[50.3%] h-[40.6%]">
                     {children}
                 </div>
             </div>

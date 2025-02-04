@@ -8,7 +8,7 @@ import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal'
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAppContext } from '../../contexts/AppContext';
-import { useUserContext } from '../../contexts/UserContext';
+import { useAuth } from '../../hooks/useAuth';
 import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
 
@@ -25,7 +25,7 @@ export function GeneralAppsPage({
     onDeleteApp,
     isReadOnly,
 }: GeneralAppsPageProps) {
-    const { user } = useUserContext();
+    const { user } = useAuth();
     const { isEditMode, setIsEditMode } = useAppContext();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -80,6 +80,7 @@ export function GeneralAppsPage({
                             <AppIconCard
                                 key={app.id}
                                 app={app}
+                                isStarred={false}
                                 onClick={() => {}}
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
@@ -87,6 +88,7 @@ export function GeneralAppsPage({
                         {user && !isReadOnly && (
                             <AppIconCard
                                 isAddNewAppCard
+                                isStarred={false}
                                 onClick={handleAddNewApp}
                                 onDeleteApp={() => {}}
                             />

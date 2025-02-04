@@ -1,15 +1,19 @@
 import {
     collection,
     deleteDoc,
+    deleteField,
     doc,
+    DocumentData,
     FirestoreDataConverter,
     getDoc,
     getDocs,
+    increment,
     onSnapshot,
     query,
     setDoc,
     updateDoc,
     where,
+    writeBatch,
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
@@ -20,7 +24,7 @@ import { firestore } from './firebase';
 
 export const addAppToFirestore = async (
     userId: string,
-    appData: ITool
+    appData: Omit<ITool, 'starCount'>
 ): Promise<ITool> => {
     try {
         const appsCollectionRef = collection(
@@ -30,7 +34,7 @@ export const addAppToFirestore = async (
             'apps'
         );
         const newAppDocRef = doc(appsCollectionRef, appData.id);
-        const newApp: ITool = { ...appData };
+        const newApp: ITool = { ...appData, starCount: 0 };
         await setDoc(newAppDocRef, newApp);
 
         return newApp;
@@ -116,24 +120,35 @@ export const updateAppInFirestore = async (
         throw error;
     }
 };
-
 export const fetchAppsFromFirestore = async (
     category: AppCategoryType
 ): Promise<ITool[]> => {
-    const appsRef = collection(firestore, 'apps');
-    const q = query(appsRef, where('category', '==', category));
+    const usersRef = collection(firestore, 'users');
+    const userSnapshots = await getDocs(usersRef);
 
-    const querySnapshot = await getDocs(q);
-    const appsList: ITool[] = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            name: data.name,
-            category: data.category,
-            icon: data.icon,
-            downloadUrl: data.downloadUrl,
-        };
-    });
+    const appsList: ITool[] = [];
+
+    for (const userDoc of userSnapshots.docs) {
+        const userId = userDoc.id;
+        const appsRef = collection(firestore, 'users', userId, 'apps');
+        const q = query(appsRef, where('category', '==', category));
+
+        const querySnapshot = await getDocs(q);
+        const userApps: ITool[] = querySnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                category: data.category,
+                userId: userId,
+                icon: data.icon,
+                url: data.url,
+                starCount: data.starCount || 0,
+            };
+        });
+
+        appsList.push(...userApps);
+    }
 
     return appsList;
 };
@@ -153,7 +168,6 @@ export const getAppsByCustomUserId = async (
         const userDoc = querySnapshot.docs[0];
         const uid = userDoc.id;
 
-        // 사용자의 'apps' 하위 컬렉션에서 앱을 가져옵니다.
         const userAppsRef = collection(firestore, 'users', uid, 'apps');
         const appsSnapshot = await getDocs(userAppsRef);
 
@@ -237,8 +251,7 @@ const filterApps = (apps: ITool[], searchQuery: string): ITool[] => {
             app.description &&
             app.description.toLowerCase().includes(lowercaseQuery);
         const urlMatch =
-            app.downloadUrl &&
-            app.downloadUrl.toLowerCase().includes(lowercaseQuery);
+            app.url && app.url.toLowerCase().includes(lowercaseQuery);
 
         return nameMatch || descriptionMatch || urlMatch;
     });
@@ -576,4 +589,198 @@ export const subscribeToUserData = (
             console.error('사용자 데이터 구독 중 오류 발생:', error);
         }
     );
+};
+
+// ----------------- Star 관련
+export const addStarToApp = async (userId: string, appId: string) => {
+    console.log(`Adding star for user ${userId} to app ${appId}`);
+
+    const userAppsCollection = collection(firestore, 'users', userId, 'apps');
+    const appRef = doc(userAppsCollection, appId);
+
+    try {
+        const appDoc = await getDoc(appRef);
+        console.log('App document path:', appRef.path);
+        console.log('App document exists:', appDoc.exists());
+
+        if (!appDoc.exists()) {
+            console.error(
+                `App document with id ${appId} does not exist in user's apps collection!`
+            );
+            console.log('Firestore instance:', firestore);
+            throw new Error(`앱을 찾을 수 없습니다. (ID: ${appId})`);
+        }
+
+        console.log('App document data:', appDoc.data());
+
+        const batch = writeBatch(firestore);
+
+        // 사용자의 별표 정보 추가
+        const userStarRef = doc(
+            collection(firestore, 'users', userId, 'starredApps'),
+            appId
+        );
+        batch.set(userStarRef, { appId });
+
+        // 앱 문서 업데이트
+        const currentData = appDoc.data() as ITool;
+        const currentStarCount = currentData.starCount || 0;
+        console.log('Current star count:', currentStarCount);
+
+        batch.update(appRef, {
+            starCount: increment(1),
+            [`starredBy.${userId}`]: true,
+        });
+
+        await batch.commit();
+
+        console.log('Star added successfully!');
+        return true;
+    } catch (error) {
+        console.error('Error details:', {
+            userId,
+            appId,
+            error,
+            firestoreInstance: !!firestore,
+            documentPath: appRef.path,
+        });
+        throw error;
+    }
+};
+
+export const removeStarFromApp = async (userId: string, appId: string) => {
+    const userAppsCollection = collection(firestore, 'users', userId, 'apps');
+    const appRef = doc(userAppsCollection, appId);
+    const userStarRef = doc(
+        collection(firestore, 'users', userId, 'starredApps'),
+        appId
+    );
+
+    try {
+        const batch = writeBatch(firestore);
+
+        batch.delete(userStarRef);
+        batch.update(appRef, {
+            starCount: increment(-1),
+            [`starredBy.${userId}`]: deleteField(),
+        });
+
+        await batch.commit();
+        console.log('Star removed successfully!');
+        return true;
+    } catch (error) {
+        console.error('Error removing star:', error);
+        throw error;
+    }
+};
+
+export const getStarredAppsByUser = async (
+    userId: string
+): Promise<ITool[]> => {
+    const starredAppsCollection = collection(
+        firestore,
+        'users',
+        userId,
+        'starredApps'
+    );
+    const userAppsCollection = collection(firestore, 'users', userId, 'apps');
+
+    try {
+        const querySnapshot = await getDocs(starredAppsCollection);
+        const starredApps = await Promise.all(
+            querySnapshot.docs.map(async (starredDoc) => {
+                const appRef = doc(userAppsCollection, starredDoc.id);
+                const appDoc = await getDoc(appRef);
+                const appData = appDoc.data() as DocumentData | undefined;
+
+                if (!appData) {
+                    throw new Error(
+                        `App data not found for id: ${starredDoc.id}`
+                    );
+                }
+
+                return {
+                    id: starredDoc.id,
+                    name: appData.name,
+                    category: appData.category,
+                    userId: appData.userId,
+                    icon: appData.icon,
+                    tooltip: appData.tooltip,
+                    url: appData.url,
+                    starCount: appData.starCount || 0,
+                } as ITool;
+            })
+        );
+        return starredApps;
+    } catch (error) {
+        console.error('Error getting starred apps:', error);
+        throw error;
+    }
+};
+
+export const getStarCountForApp = async (
+    userId: string,
+    appId: string
+): Promise<number> => {
+    if (!userId || !appId) {
+        console.error('Invalid userId or appId provided to getStarCountForApp');
+        return 0;
+    }
+
+    const appRef = doc(collection(firestore, 'users', userId, 'apps'), appId);
+
+    try {
+        const appDoc = await getDoc(appRef);
+        if (!appDoc.exists()) {
+            console.warn(
+                `App document not found for userId: ${userId}, appId: ${appId}`
+            );
+            return 0;
+        }
+        return appDoc.data()?.starCount || 0;
+    } catch (error) {
+        console.error('Error getting star count:', error);
+        return 0;
+    }
+};
+
+export const hasUserStarredApp = async (userId: string, appId: string) => {
+    const userStarRef = doc(
+        collection(firestore, 'users', userId, 'starredApps'),
+        appId
+    );
+
+    try {
+        const docSnap = await getDoc(userStarRef);
+        return docSnap.exists();
+    } catch (error) {
+        console.error('Error checking if user starred app:', error);
+        throw error;
+    }
+};
+
+export const debugFirestoreCollection = async (
+    userId: string,
+    collectionName: string
+) => {
+    const collectionRef = collection(
+        firestore,
+        'users',
+        userId,
+        collectionName
+    );
+    try {
+        const querySnapshot = await getDocs(collectionRef);
+        console.log(
+            `Documents in ${collectionName} collection for user ${userId}:`
+        );
+        querySnapshot.forEach((doc) => {
+            console.log(doc.id, ' => ', doc.data());
+        });
+    } catch (error) {
+        console.error(
+            `Error fetching ${collectionName} collection for user ${userId}:`,
+            error
+        );
+    }
 };

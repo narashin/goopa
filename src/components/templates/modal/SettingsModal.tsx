@@ -97,7 +97,6 @@ export function SettingsModal({
                         <IconDisplay
                             icon={updatedApp.icon}
                             name={updatedApp.name}
-                            onClick={() => {}}
                         />
                     </div>
                     <div className="flex-1">
@@ -110,8 +109,8 @@ export function SettingsModal({
                                     </p>
                                     <input
                                         type="text"
-                                        name="downloadUrl"
-                                        value={updatedApp.downloadUrl || ''}
+                                        name="url"
+                                        value={updatedApp.url || ''}
                                         onChange={handleInputChange}
                                         placeholder="Download URL"
                                         className="flex-1 p-1 text-sm border rounded"
@@ -158,7 +157,7 @@ export function SettingsModal({
                         ) : (
                             <>
                                 <p className="text-sm text-gray-600">
-                                    URL: {updatedApp.downloadUrl || 'N/A'}
+                                    URL: {updatedApp.url || 'N/A'}
                                 </p>
                                 {updatedApp.tooltip && (
                                     <p className="text-sm text-gray-600">

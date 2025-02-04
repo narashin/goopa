@@ -79,6 +79,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                 <AppIconCard
                                     key={tool.id}
                                     app={tool}
+                                    isStarred={false}
                                     onClick={() => toggleSelectedItem(tool)}
                                     onDeleteApp={() => handleDeleteApp(tool.id)}
                                 />
@@ -87,6 +88,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                         {user && !isReadOnly && (
                             <AppIconCard
                                 isAddNewAppCard
+                                isStarred={false}
                                 onClick={handleAddNewApp}
                                 onDeleteApp={() => {}}
                             />
