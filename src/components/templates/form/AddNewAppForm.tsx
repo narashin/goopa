@@ -1,12 +1,12 @@
-import type React from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+'use client';
 
-import { nanoid } from 'nanoid';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
 import { useDropzone } from 'react-dropzone';
 
 import { uploadToS3 } from '../../../lib/s3';
-import type { ITool } from '../../../types/app';
 import { AppCategoryType } from '../../../types/category';
+import { ITool } from '../../../types/item';
 
 // fieldConfig에 대한 타입 정의
 type FieldConfig = {
@@ -18,7 +18,7 @@ type FieldConfig = {
 };
 
 interface AddNewAppFormProps {
-    onSubmit: (newApp: ITool) => void;
+    onSubmit: (newApp: Omit<ITool, 'id' | 'starCount' | 'userId'>) => void;
     onClose: () => void;
     currentCategory: AppCategoryType;
 }
@@ -32,12 +32,11 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [iconPreview, setIconPreview] = useState<string | null>(null);
     const [category, setCategory] = useState<AppCategoryType>(currentCategory);
-    const [downloadUrl, setDownloadUrl] = useState('');
+    const [url, setDownloadUrl] = useState('');
     const [tooltip, setTooltip] = useState('');
     const [installCommand, setInstallCommand] = useState('');
     const [zshrcCommand, setZshrcCommand] = useState('');
-    const [formTouched, setFormTouched] = useState(false); // Added state for form touch
-
+    const [formTouched, setFormTouched] = useState(false);
     const [errors, setErrors] = useState<Record<string, boolean>>({});
 
     const categoryOptions = [
@@ -125,7 +124,6 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
     const validateField = (field: string, value: string) => {
         if (formTouched && fieldConfig[category].required.includes(field)) {
-            // Updated validation
             setErrors((prev) => ({ ...prev, [field]: value.trim() === '' }));
         }
     };
@@ -136,7 +134,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 field === 'name'
                     ? name
                     : field === 'downloadUrl'
-                      ? downloadUrl
+                      ? url
                       : field === 'installCommand'
                         ? installCommand
                         : field === 'zshrcCommand'
@@ -145,7 +143,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
             validateField(field, value);
         });
-    }, [category]);
+    }, [category, url, installCommand, zshrcCommand, name]);
 
     const isFormValid = useMemo(() => {
         return fieldConfig[category].required.every((field) => {
@@ -153,7 +151,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 field === 'name'
                     ? name
                     : field === 'downloadUrl'
-                      ? downloadUrl
+                      ? url
                       : field === 'installCommand'
                         ? installCommand
                         : field === 'zshrcCommand'
@@ -162,16 +160,16 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
             return value.trim() !== '' && !errors[field];
         });
-    }, [errors, category, name, downloadUrl, installCommand, zshrcCommand]);
+    }, [errors, category, name, url, installCommand, zshrcCommand]);
 
     const handleBlur = (field: string, value: string) => {
-        setFormTouched(true); // Set form as touched on blur
+        setFormTouched(true);
         validateField(field, value);
     };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setFormTouched(true); // Set form as touched before validation
+        setFormTouched(true);
         const newErrors: Record<string, boolean> = {};
 
         fieldConfig[category].required.forEach((field) => {
@@ -179,7 +177,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 field === 'name'
                     ? name
                     : field === 'downloadUrl'
-                      ? downloadUrl
+                      ? url
                       : field === 'installCommand'
                         ? installCommand
                         : '';
@@ -204,19 +202,17 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
             }
         }
 
-        const newApp: ITool = {
-            id: nanoid(),
+        const newItem: Omit<ITool, 'id' | 'starCount' | 'userId'> = {
             name,
             category,
-            ...(iconUrl && { icon: iconUrl }),
-            ...(tooltip && { tooltip }),
-            ...(installCommand && { installCommand }),
-            ...(zshrcCommand && { zshrcCommand }),
-            ...(downloadUrl && { downloadUrl }),
+            icon: iconUrl || undefined,
+            tooltip: tooltip || undefined,
+            installCommand: installCommand || undefined,
+            zshrcCommand: zshrcCommand || undefined,
+            url: url || undefined,
         };
 
-        onSubmit(newApp);
-        onClose();
+        onSubmit(newItem);
     };
 
     const inputClassName = (hasError: boolean) =>
@@ -255,12 +251,11 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                     required={isRequired}
                     className={inputClassName(!!errors[field])}
                 />
-                {formTouched &&
-                    errors[field] && ( // Updated error message display
-                        <p className="text-red-500 text-xs mt-1">
-                            {label} is required.
-                        </p>
-                    )}
+                {formTouched && errors[field] && (
+                    <p className="text-red-500 text-xs mt-1">
+                        {label} is required.
+                    </p>
+                )}
             </div>
         );
     };
@@ -271,7 +266,11 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 <div className="col-span-1">
                     <div
                         {...getRootProps()}
-                        className={`w-32 h-32 border-2 border-dashed ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex flex-col items-center justify-center 
+                        className={`w-32 h-32 border-2 border-dashed ${
+                            isDragActive
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-300'
+                        } rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex flex-col items-center justify-center 
                         transition-colors duration-200 mx-auto`}
                     >
                         <input {...getInputProps()} />
@@ -349,7 +348,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
             {renderField(
                 'downloadUrl',
                 'URL',
-                downloadUrl,
+                url,
                 (e) => setDownloadUrl(e.target.value),
                 'url'
             )}

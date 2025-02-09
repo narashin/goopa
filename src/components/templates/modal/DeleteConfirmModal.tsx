@@ -1,7 +1,7 @@
 import type React from 'react';
 import ReactDOM from 'react-dom';
 
-import { ITool } from '../../../types/app';
+import { ITool } from '../../../types/item';
 
 interface DeleteConfirmModalProps {
     app: ITool;

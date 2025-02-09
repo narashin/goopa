@@ -17,9 +17,10 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
-import { UserData } from './auth';
+import { ITool } from '../types/item';
+import { AuthenticatedUserData, UserData } from '../types/user';
+import { userConverter } from './auth';
 import { firestore } from './firebase';
 
 export const addAppToFirestore = async (
@@ -27,12 +28,8 @@ export const addAppToFirestore = async (
     appData: Omit<ITool, 'starCount'>
 ): Promise<ITool> => {
     try {
-        const appsCollectionRef = collection(
-            firestore,
-            'users',
-            userId,
-            'apps'
-        );
+        const userDocRef = doc(firestore, 'users', userId);
+        const appsCollectionRef = collection(userDocRef, 'apps');
         const newAppDocRef = doc(appsCollectionRef, appData.id);
         const newApp: ITool = { ...appData, starCount: 0 };
         await setDoc(newAppDocRef, newApp);
@@ -48,7 +45,8 @@ export const getAppsFromFirestore = async (
     userId: string
 ): Promise<ITool[]> => {
     try {
-        const appsCollection = collection(firestore, 'users', userId, 'apps');
+        const userDocRef = doc(firestore, 'users', userId);
+        const appsCollection = collection(userDocRef, 'apps');
         const appsSnapshot = await getDocs(appsCollection);
         const apps: ITool[] = [];
 
@@ -61,28 +59,6 @@ export const getAppsFromFirestore = async (
     } catch (error) {
         console.error('Error fetching apps from Firestore: ', error);
         return [];
-    }
-};
-
-type UpdateData = Partial<Omit<ITool, 'id'>>;
-
-export const updateApp = async (
-    userId: string,
-    updatedApp: ITool
-): Promise<void> => {
-    try {
-        const appRef = doc(firestore, 'users', userId, 'apps', updatedApp.id);
-
-        const filteredAppData: UpdateData = Object.fromEntries(
-            Object.entries(updatedApp).filter(
-                ([key, value]) => key !== 'id' && value !== undefined
-            )
-        ) as UpdateData;
-
-        await updateDoc(appRef, filteredAppData);
-    } catch (error) {
-        console.error('Error updating app:', error);
-        throw error;
     }
 };
 
@@ -120,37 +96,67 @@ export const updateAppInFirestore = async (
         throw error;
     }
 };
-export const fetchAppsFromFirestore = async (
-    category: AppCategoryType
+
+export const getAppsByCategoryAndUserIdFromFirestore = async (
+    category: AppCategoryType,
+    userId: string
 ): Promise<ITool[]> => {
-    const usersRef = collection(firestore, 'users');
-    const userSnapshots = await getDocs(usersRef);
+    try {
+        const userDocRef = doc(firestore, 'users', userId);
+        const appsCollection = collection(userDocRef, 'apps');
+        const querySnapshot = await getDocs(
+            query(appsCollection, where('category', '==', category))
+        );
 
-    const appsList: ITool[] = [];
-
-    for (const userDoc of userSnapshots.docs) {
-        const userId = userDoc.id;
-        const appsRef = collection(firestore, 'users', userId, 'apps');
-        const q = query(appsRef, where('category', '==', category));
-
-        const querySnapshot = await getDocs(q);
-        const userApps: ITool[] = querySnapshot.docs.map((doc) => {
+        const apps: ITool[] = querySnapshot.docs.map((doc) => {
             const data = doc.data();
-            return {
-                id: doc.id,
-                name: data.name,
-                category: data.category,
-                userId: userId,
-                icon: data.icon,
-                url: data.url,
-                starCount: data.starCount || 0,
-            };
+            return { id: doc.id, ...data } as ITool;
         });
 
-        appsList.push(...userApps);
+        return apps;
+    } catch (error) {
+        console.error('Error fetching apps by category and userId:', error);
+        return [];
+    }
+};
+
+export const getAppsByCategoryAndCustomUserIdFromFirestore = async (
+    category: AppCategoryType,
+    customUserId: string
+): Promise<ITool[]> => {
+    const usersRef = collection(firestore, 'users');
+    const userQuery = query(
+        usersRef,
+        where('customUserId', '==', customUserId)
+    );
+    const userSnapshot = await getDocs(userQuery);
+
+    if (userSnapshot.empty) {
+        console.error('User not found with the given customUserId');
+        return [];
     }
 
-    return appsList;
+    const userId = userSnapshot.docs[0].id;
+
+    const appsRef = collection(firestore, 'users', userId, 'apps');
+    const appsQuery = query(appsRef, where('category', '==', category));
+
+    const querySnapshot = await getDocs(appsQuery);
+    const userApps: ITool[] = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            name: data.name,
+            category: data.category,
+            userId: userId,
+            icon: data.icon,
+            url: data.url,
+            isShared: data.isShared || false,
+            starCount: data.starCount || 0,
+        };
+    });
+
+    return userApps;
 };
 
 export const getAppsByCustomUserId = async (
@@ -258,34 +264,33 @@ const filterApps = (apps: ITool[], searchQuery: string): ITool[] => {
 };
 
 /*
- * ---------------------------------- Publish를 위한 Firestore 메서드
+ * ---------------------------------- Share를 위한 Firestore 메서드
  */
 
 /**
  * 공개 이력을 위한 타입
  */
-export interface PublishData {
-    publishId: string;
+export interface ShareGoopaData {
+    ShareId: string;
     startedAt: string;
     endedAt: string | null;
 }
 
-export interface PublishDocData {
-    publishHistory: PublishData[];
-    lastPublishId: string;
-    isPublished: boolean;
+export interface ShareDocData {
+    ShareHistory: ShareGoopaData[];
+    lastShareId: string;
+    isShared: boolean;
 }
 
 export interface UserSettings {
-    publishDocData: PublishDocData;
+    ShareDocData: ShareDocData;
 }
-export interface UserPublishStatus {
-    isPublished: boolean;
-    publishHistory: PublishData[];
-    latestPublishId: string;
+export interface UserShareStatus {
+    isShared: boolean;
+    ShareHistory: ShareGoopaData[];
+    lastShareId: string;
 }
 
-// customUserId로 uid를 찾는 함수
 export async function getUidByCustomUserId(
     customUserId: string
 ): Promise<string | null> {
@@ -310,17 +315,17 @@ export async function getUidByCustomUserId(
     }
 }
 
-export const getUserPublishStatus = async (
+export const getUserShareStatus = async (
     customUserId: string
-): Promise<UserPublishStatus> => {
+): Promise<UserShareStatus> => {
     try {
         const user = await getUserByCustomUserId(customUserId);
         if (!user) {
             console.error('customUserId에 해당하는 사용자를 찾을 수 없습니다.');
             return {
-                isPublished: false,
-                publishHistory: [],
-                latestPublishId: '',
+                isShared: false,
+                ShareHistory: [],
+                lastShareId: '',
             };
         }
 
@@ -329,31 +334,31 @@ export const getUserPublishStatus = async (
             'users',
             user.uid,
             'settings',
-            'publish'
+            'Share'
         );
         const docSnap = await getDoc(userSettingsRef);
 
         if (!docSnap.exists()) {
             return {
-                isPublished: false,
-                publishHistory: [],
-                latestPublishId: '',
+                isShared: false,
+                ShareHistory: [],
+                lastShareId: '',
             };
         }
 
         const data = docSnap.data();
         return {
-            isPublished: data.isPublished ?? false,
-            publishHistory: data.publishHistory ?? [],
-            latestPublishId: data.latestPublishId ?? '',
+            isShared: data.isShared ?? false,
+            ShareHistory: data.ShareHistory ?? [],
+            lastShareId: data.latestShareId ?? '',
         };
     } catch (error) {
-        console.error('Error fetching user publish status:', error);
+        console.error('Error fetching user Share status:', error);
         throw error;
     }
 };
 
-export async function getUserAllPublishData(
+export async function getUserAllShareData(
     uid: string
 ): Promise<UserData | null> {
     if (!uid) {
@@ -377,8 +382,10 @@ export async function getUserAllPublishData(
 
 export async function getUserByCustomUserId(
     customUserId: string
-): Promise<UserData | null> {
-    const usersRef = collection(firestore, 'users');
+): Promise<AuthenticatedUserData | null> {
+    const usersRef = collection(firestore, 'users').withConverter(
+        userConverter
+    );
     const q = query(usersRef, where('customUserId', '==', customUserId));
     const querySnapshot = await getDocs(q);
 
@@ -386,83 +393,70 @@ export async function getUserByCustomUserId(
         return null;
     }
 
-    const userData = querySnapshot.docs[0].data() as Omit<
-        UserData,
-        'isPublished' | 'lastPublishId'
-    >;
-    const publishHistory = userData.publishHistory || [];
+    const userData = querySnapshot.docs[0].data();
 
-    const isPublished =
-        publishHistory.length > 0 &&
-        publishHistory[publishHistory.length - 1].endedAt === null;
-    const lastPublishId =
-        publishHistory.length > 0
-            ? publishHistory[publishHistory.length - 1].publishId
-            : undefined;
+    if (userData.isAnonymous) {
+        console.error('익명 사용자는 customUserId를 가질 수 없습니다.');
+        return null;
+    }
 
-    return {
-        ...userData,
-        isPublished,
-        lastPublishId,
-        publishHistory: publishHistory as PublishData[],
-    };
+    const authenticatedUserData = userData as AuthenticatedUserData;
+
+    return authenticatedUserData;
 }
 
-export async function getUserPublishDataByPublishId(
+export async function getUserShareDataByShareId(
     customUserId: string,
-    publishId: string
-): Promise<UserData | null> {
-    if (!customUserId || !publishId) {
+    ShareId: string
+): Promise<AuthenticatedUserData | null> {
+    if (!customUserId || !ShareId) {
         return null;
     }
 
     const user = await getUserByCustomUserId(customUserId);
     if (!user) {
         console.error('customUserId에 해당하는 사용자를 찾을 수 없습니다.');
-        return {
-            isPublished: false,
-            publishHistory: [],
-            lastPublishId: '',
-            customUserId,
-            displayName: '',
-            createdAt: '',
-            email: '',
-            photoURL: '',
-            uid: '',
-        };
+        return null;
     }
+
     try {
-        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDocRef = doc(firestore, 'users', user.uid).withConverter(
+            userConverter
+        );
         const userDocSnap = await getDoc(userDocRef);
 
         if (!userDocSnap.exists()) {
             return null;
         }
 
-        const userData = userDocSnap.data() as UserData;
+        const userData = userDocSnap.data();
 
-        if (!Array.isArray(userData.publishHistory)) {
+        if (userData.isAnonymous) {
+            console.error('익명 사용자는 공유 데이터를 가질 수 없습니다.');
             return null;
         }
 
-        const currentPublish = userData.publishHistory.find(
-            (p: PublishData) => p.publishId === publishId
+        const authenticatedUserData = userData as AuthenticatedUserData;
+
+        if (!Array.isArray(authenticatedUserData.ShareHistory)) {
+            console.error('ShareHistory가 배열이 아닙니다.');
+            return null;
+        }
+
+        const currentShare = authenticatedUserData.ShareHistory.find(
+            (p: ShareGoopaData) => p.ShareId === ShareId
         );
 
-        if (!currentPublish) {
+        if (!currentShare) {
+            console.error(
+                '해당 ShareId를 가진 공유 데이터를 찾을 수 없습니다.'
+            );
             return null;
         }
 
         return {
-            customUserId: userData.customUserId,
-            displayName: userData.displayName,
-            createdAt: userData.createdAt,
-            email: userData.email,
-            photoURL: userData.photoURL,
-            uid: userData.uid,
-            publishHistory: userData.publishHistory,
-            lastPublishId: userData.lastPublishId,
-            isPublished: currentPublish.endedAt === null,
+            ...authenticatedUserData,
+            isShared: currentShare.endedAt === null,
         };
     } catch (error) {
         console.error('사용자 공유 데이터를 가져오는 중 오류 발생:', error);
@@ -470,102 +464,101 @@ export async function getUserPublishDataByPublishId(
     }
 }
 
-export const publishUser = async (userUid: string): Promise<string | null> => {
+export const shareUser = async (userUid: string): Promise<string> => {
     try {
         const userDocRef = doc(firestore, 'users', userUid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
-            return null;
+            throw new Error('User document does not exist');
         }
 
         const userData = userDoc.data();
-        const publishHistory = userData?.publishHistory || [];
+        const shareHistory = userData?.shareHistory || [];
 
-        // 새로운 publishId 생성
-        const newPublishId = nanoid();
+        // 새로운 shareId 생성
+        const newShareId = nanoid();
         const startedAt = new Date().toISOString();
 
-        // 이전 publish 종료 처리
-        if (publishHistory.length > 0) {
-            const lastPublish = publishHistory[publishHistory.length - 1];
-            if (lastPublish.endedAt === null) {
-                lastPublish.endedAt = startedAt;
+        // 이전 share 종료 처리
+        if (shareHistory.length > 0) {
+            const lastShare = shareHistory[shareHistory.length - 1];
+            if (lastShare.endedAt === null) {
+                lastShare.endedAt = startedAt;
             }
         }
 
-        // 새로운 publish 정보 추가
-        const newPublishInfo = {
-            publishId: newPublishId,
+        // 새로운 share 정보 추가
+        const newShareInfo = {
+            shareId: newShareId,
             startedAt,
             endedAt: null,
         };
-        publishHistory.push(newPublishInfo);
+        shareHistory.push(newShareInfo);
 
         // Firestore 업데이트
         await setDoc(
             userDocRef,
             {
-                publishHistory,
-                isPublished: true, // 명시적으로 isPublished 필드 추가
-                lastPublishId: newPublishId, // 명시적으로 lastPublishId 필드 추가
+                shareHistory,
+                isShared: true,
+                lastShareId: newShareId,
             },
             { merge: true }
         );
 
-        return newPublishId;
+        return newShareId;
     } catch (error) {
-        console.error('Error publishing user:', error);
-        return null;
+        console.error('Error sharing user:', error);
+        throw error; // 에러를 throw하여 호출자가 처리할 수 있도록 함
     }
 };
 
-export async function unpublishUser(uid: string): Promise<boolean> {
-    if (!uid) {
-        console.warn('⚠️ UID가 제공되지 않았습니다.');
-        return false;
+export async function unshareUser(userId: string): Promise<void> {
+    if (!userId) {
+        throw new Error('UID가 제공되지 않았습니다.');
     }
 
     try {
-        const publishDocRef = doc(
+        const shareDocRef = doc(
             firestore,
             'users',
-            uid,
+            userId,
             'settings',
-            'publish'
+            'share'
         );
-        const publishDoc = await getDoc(publishDocRef);
+        const shareDoc = await getDoc(shareDocRef);
 
-        if (!publishDoc.exists()) {
+        if (!shareDoc.exists()) {
             console.warn(
-                '⚠️ 퍼블리시 문서가 존재하지 않습니다. Unpublish 필요 없음.'
+                '⚠️ 공유 문서가 존재하지 않습니다. Unshare 필요 없음.'
             );
-            return false;
+            return;
         }
 
-        const data = publishDoc.data();
-        if (!data || !data.publishHistory || data.publishHistory.length === 0) {
-            console.warn('⚠️ 퍼블리시 기록이 없습니다. Unpublish 필요 없음.');
-            return false;
+        const data = shareDoc.data();
+        if (!data || !data.shareHistory || data.shareHistory.length === 0) {
+            console.warn('⚠️ 공유 기록이 없습니다. Unshare 필요 없음.');
+            return;
         }
 
         const now = new Date().toISOString();
-        const updatedHistory: PublishData[] = [...data.publishHistory];
-        const lastPublishEntry = updatedHistory[updatedHistory.length - 1];
+        const updatedHistory: ShareGoopaData[] = [...data.shareHistory];
+        const lastShareEntry = updatedHistory[updatedHistory.length - 1];
 
-        if (lastPublishEntry.endedAt === null) {
-            lastPublishEntry.endedAt = now;
+        if (lastShareEntry.endedAt === null) {
+            lastShareEntry.endedAt = now;
         }
 
-        await updateDoc(publishDocRef, {
-            publishHistory: updatedHistory,
-            isPublished: false,
+        await updateDoc(shareDocRef, {
+            shareHistory: updatedHistory,
+            isShared: false,
         });
 
-        return true;
+        console.log('✅ 성공적으로 unshare 되었습니다.');
     } catch (error) {
-        console.error('❌ Firestore에서 Unpublish 실행 중 오류 발생:', error);
-        return false;
+        console.error('❌ Firestore에서 Unshare 실행 중 오류 발생:', error);
+        throw error; // 에러를 throw하여 호출자가 처리할 수 있도록 함
     }
 }
 

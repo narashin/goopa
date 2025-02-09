@@ -7,23 +7,23 @@ import Image from 'next/image';
 import { ClipboardIcon } from '@heroicons/react/24/outline';
 
 import { categoryColors, categoryOrder } from '../../constants/category';
-import type { ITool } from '../../types/app';
 import { SubCategoryType } from '../../types/category';
-import AdditionalAppsPage from './AdditionalToolsPage';
+import { ITool } from '../../types/item';
+import AdditionalAppsPage from './AdditionalAppsPage';
 import RequirementAppsPage from './RequirementAppsPage';
 import ZshPluginsPage from './ZshPluginsPage';
 
-interface AdvancedDevProps {
+interface AdvancedAppsProps {
     apps: ITool[];
     onAddNewApp?: (newApp: ITool) => void;
     onDeleteApp?: (id: string) => void;
 }
 
-const AdvancedDevAppPage = ({
+const AdvancedAppsPage = ({
     apps,
     onAddNewApp,
     onDeleteApp,
-}: AdvancedDevProps) => {
+}: AdvancedAppsProps) => {
     const [selectedCategory, setSelectedCategory] =
         useState<SubCategoryType | null>(null);
 
@@ -155,4 +155,4 @@ const AdvancedDevAppPage = ({
     );
 };
 
-export default React.memo(AdvancedDevAppPage);
+export default React.memo(AdvancedAppsPage);

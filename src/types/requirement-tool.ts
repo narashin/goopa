@@ -1,3 +1,3 @@
-import { ITool } from './app';
+import { ITool } from './item';
 
 export type RequirementToolType = ITool;

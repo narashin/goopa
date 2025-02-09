@@ -4,12 +4,12 @@ import { useCallback, useState } from 'react';
 import { MinusIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
-import { useAppContext } from '../../contexts/AppContext';
-import { useShare } from '../../contexts/ShareContext';
-import { useTooltip } from '../../contexts/TooltipContext';
-import { useUserContext } from '../../contexts/UserContext';
+import { useAuth } from '../../hooks/useAuth';
+import { useItems } from '../../hooks/useItem';
 import { useStarApp } from '../../hooks/useStarApp';
-import type { ITool } from '../../types/app';
+import { useShareStore } from '../../stores/shareStore';
+import { useTooltipStore } from '../../stores/tooltipStore';
+import { ITool } from '../../types/item';
 import { IconDisplay } from '../ui/IconDisplay';
 import { Tooltip } from '../ui/Tooltip';
 import { ConfirmModal } from './modal/ConfirmModal';
@@ -31,10 +31,10 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     isAddNewAppCard = false,
     onDeleteApp,
 }) => {
-    const { user } = useUserContext();
-    const { closeAllTooltips, setModalOpen } = useTooltip();
-    const { isEditMode, updateApp } = useAppContext();
-    const { isPublishMode } = useShare();
+    const { user, isEditMode } = useAuth();
+    const { closeAllTooltips, setModalOpen } = useTooltipStore();
+    const { updateItem: updateApp } = useItems();
+    const { isShared } = useShareStore();
     const [selectedApp, setSelectedApp] = useState<ITool | null>(app || null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
@@ -116,7 +116,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         e.stopPropagation();
         toggleStar();
     };
-    const canViewSettings = isPublishMode || (!isPublishMode && !isEditMode);
+    const canViewSettings = isShared || (!isShared && !isEditMode);
 
     return (
         <div
@@ -195,11 +195,10 @@ export const AppIconCard: React.FC<AppCardProps> = ({
             >
                 {isAddNewAppCard ? 'Add new app' : selectedApp?.name}
             </span>
-            {showSettingsModal && selectedApp && (
+            {showSettingsModal && selectedApp && user && (
                 <SettingsModal
-                    app={selectedApp}
+                    initialApp={selectedApp}
                     readOnly={canViewSettings && !isEditMode}
-                    user={user}
                     onClose={handleCloseSettingsModal}
                     onSave={(selectedApp) => {
                         handleUpdateApp(selectedApp);

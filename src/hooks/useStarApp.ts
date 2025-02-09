@@ -6,7 +6,7 @@ import {
     hasUserStarredApp,
     removeStarFromApp,
 } from '../lib/firestore';
-import type { ITool } from '../types/app';
+import { ITool } from '../types/item';
 import { useAuth } from './useAuth';
 
 export function useStarApp(app: ITool | null) {

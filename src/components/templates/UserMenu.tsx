@@ -1,274 +1,176 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import type React from 'react'; // Added import for React
+import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
-import {
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    Transition,
-} from '@headlessui/react';
+import { Menu, Transition } from '@headlessui/react';
 
-import { useShareHandler } from '../../hooks/useShareHandler';
-import { UserData } from '../../lib/auth';
-import { errorToast, successToast } from '../ui/Toast';
-import { PublishModal } from './modal/PublishModal';
+import { useShare } from '../../hooks/useShare';
+import type { AuthenticatedUserData } from '../../types/user';
 
 interface UserMenuProps {
-    user: UserData;
+    user: AuthenticatedUserData;
     handleSignOut: () => void;
     toggleEditMode: () => void;
     isEditMode: boolean;
 }
 
-export function UserMenu({
+export const UserMenu: React.FC<UserMenuProps> = ({
     user,
     handleSignOut,
     toggleEditMode,
     isEditMode,
-}: UserMenuProps) {
-    const [showModal, setShowModal] = useState(false);
-    const [isPublishAction, setIsPublishAction] = useState(false);
-    const {
-        isPublished: initialIsPublished,
-        publishUrl,
-        handlePublish,
-        handleUnPublish,
-    } = useShareHandler(user);
-    const [localIsPublished, setLocalIsPublished] =
-        useState(initialIsPublished);
-    const pathname = usePathname();
+}) => {
+    const { shareData, handleShare, handleUnshare } = useShare(user.uid);
+    const [localIsShared, setLocalIsShared] = useState(
+        shareData?.isShared ?? false
+    );
 
     useEffect(() => {
-        setLocalIsPublished(initialIsPublished);
-    }, [initialIsPublished]);
+        setLocalIsShared(shareData?.isShared ?? false);
+    }, [shareData?.isShared]);
 
-    const isShareUrl = (path: string | null) =>
-        path?.startsWith('/share/') ?? false;
-
-    const handlePublishClick = () => {
-        setIsPublishAction(true);
-        setShowModal(true);
-    };
-
-    const handleUnpublishClick = () => {
-        setIsPublishAction(false);
-        setShowModal(true);
-    };
-
-    const handleConfirmPublish = async () => {
-        const newPublishUrl = await handlePublish();
-        if (newPublishUrl) {
-            setLocalIsPublished(true);
-
-            return newPublishUrl;
-        } else {
-            errorToast('Failed to publish your Goopa.');
+    const handleShareClick = useCallback(async () => {
+        if (user.uid) {
+            try {
+                await handleShare(user.uid);
+                setLocalIsShared(true);
+                // TODO: Add a success toast or notification
+            } catch (error) {
+                console.error('Error sharing:', error);
+                // TODO: Add an error toast or notification
+            }
         }
-        return null;
-    };
+    }, [handleShare, user.uid]);
 
-    const handleConfirmUnpublish = async () => {
-        const success = await handleUnPublish();
-        if (success) {
-            setLocalIsPublished(false);
-            successToast('Your Goopa has been unpublished.');
-        } else {
-            errorToast('Failed to unpublish your Goopa.');
+    const handleUnshareClick = useCallback(async () => {
+        if (user.uid) {
+            try {
+                await handleUnshare(user.uid);
+                setLocalIsShared(false);
+                // TODO: Add a success toast or notification
+            } catch (error) {
+                console.error('Error unsharing:', error);
+                // TODO: Add an error toast or notification
+            }
         }
-        return success;
-    };
+    }, [handleUnshare, user.uid]);
 
-    const handleCopyUrl = () => {
-        if (publishUrl) {
-            const fullUrl = `${window.location.origin}${publishUrl}`;
+    const handleCopyUrl = useCallback(() => {
+        if (shareData?.shareUrl) {
+            const fullUrl = `${window.location.origin}${shareData.shareUrl}`;
             navigator.clipboard.writeText(fullUrl);
-
-            successToast('🎉 Public URL copied to clipboard!');
+            // TODO: Add a toast or notification here
+            console.log('🎉 Public URL copied to clipboard!');
         }
-    };
+    }, [shareData?.shareUrl]);
 
     return (
-        <>
-            <Menu as="div" className="relative inline-block text-left">
-                <div className="flex items-center">
-                    <MenuButton className="inline-flex w-full justify-center items-center">
-                        {user.photoURL ? (
-                            <Image
-                                src={user.photoURL}
-                                alt="Profile"
-                                width={32}
-                                height={32}
-                                className="rounded-full border border-white/20 shadow-sm"
-                            />
-                        ) : (
-                            <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 border border-white/20 shadow-sm">
-                                {user.displayName
-                                    ? user.displayName[0].toUpperCase()
-                                    : 'U'}
-                            </div>
-                        )}
-                    </MenuButton>
-                </div>
+        <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="relative inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                {user.photoURL ? (
+                    <div className="w-full h-full">
+                        <Image
+                            src={user.photoURL || '/placeholder.svg'}
+                            alt="Profile"
+                            width={32}
+                            height={32}
+                            className="rounded-full border border-white/20 shadow-sm"
+                        />
+                    </div>
+                ) : (
+                    <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+                        {user.displayName
+                            ? user.displayName[0].toUpperCase()
+                            : 'U'}
+                    </div>
+                )}
+            </Menu.Button>
 
-                {/* 메뉴 리스트 */}
-                <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-50"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95"
-                >
-                    <MenuItems className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <div className="py-1">
-                            {/* Publish 관련 섹션 */}
-                            {localIsPublished && !isEditMode && (
-                                <>
-                                    <div className="px-4 py-2">
-                                        <div className="flex items-center text-xs text-gray-500">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                            {'Your Goopa in public read mode'}
-                                        </div>
+            <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+            >
+                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="px-4 py-2 text-sm">
+                        {localIsShared && (
+                            <>
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            onClick={handleCopyUrl}
+                                            className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                        >
+                                            Copy Public URL 📋
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                                <div className="px-4 py-2">
+                                    <div className="flex items-center text-xs text-gray-500">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                        Your Goopa is public
                                     </div>
-                                    <MenuItem>
-                                        {({ active }) => (
-                                            <button
-                                                onClick={handleCopyUrl}
-                                                className={`${
-                                                    active
-                                                        ? 'bg-gray-100 text-gray-900'
-                                                        : 'text-gray-700'
-                                                } block w-full px-4 py-2 text-left text-xs`}
-                                            >
-                                                Public URL Copy 📋
-                                            </button>
-                                        )}
-                                    </MenuItem>
-                                </>
-                            )}
-
-                            {isShareUrl(pathname) && (
-                                <>
-                                    <MenuItem>
-                                        {({ active }) => (
-                                            <a
-                                                href="/"
-                                                className={`${
-                                                    active
-                                                        ? 'bg-gray-100 text-gray-900'
-                                                        : 'text-gray-700'
-                                                } block w-full px-4 py-2 text-left text-xs`}
-                                            >
-                                                Go to my goopa
-                                            </a>
-                                        )}
-                                    </MenuItem>
-                                    <div className="my-1 h-px bg-gray-200"></div>
-                                </>
-                            )}
-
-                            <MenuItem disabled={isEditMode}>
-                                {({ active, disabled }) => (
-                                    <button
-                                        onClick={
-                                            localIsPublished
-                                                ? handleUnpublishClick
-                                                : handlePublishClick
-                                        }
-                                        disabled={isEditMode}
-                                        className={`${
-                                            disabled
-                                                ? 'text-gray-400 cursor-not-allowed'
-                                                : active
-                                                  ? 'bg-gray-100 text-gray-900'
-                                                  : 'text-gray-700'
-                                        } block w-full px-4 py-2 text-left text-xs`}
-                                    >
-                                        {localIsPublished
-                                            ? 'Unpublish'
-                                            : 'Publish'}
-                                    </button>
-                                )}
-                            </MenuItem>
-
-                            {/* Divider */}
-                            <div className="my-1 h-px bg-gray-200"></div>
-
-                            {/* Edit Mode 섹션 */}
-                            {isEditMode && (
-                                <div className="flex items-center px-4 py-2 text-xs text-gray-500">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                    {"You're in Edit Mode"}
                                 </div>
-                            )}
+                            </>
+                        )}
 
-                            <MenuItem>
+                        <Menu.Item>
+                            {({ active }) => (
+                                <button
+                                    onClick={
+                                        localIsShared
+                                            ? handleUnshareClick
+                                            : handleShareClick
+                                    }
+                                    className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                >
+                                    {localIsShared ? 'Unpublish' : 'Publish'}
+                                </button>
+                            )}
+                        </Menu.Item>
+                        {isEditMode ? (
+                            <Menu.Item>
                                 {({ active }) => (
                                     <button
                                         onClick={toggleEditMode}
-                                        className={`${
-                                            active
-                                                ? 'bg-gray-100 text-gray-900'
-                                                : 'text-gray-700'
-                                        } block w-full px-4 py-2 text-left text-xs`}
+                                        className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                                     >
-                                        {isEditMode
-                                            ? 'Edit Mode OFF'
-                                            : 'Edit Mode ON'}
+                                        Exit Edit Mode
                                     </button>
                                 )}
-                            </MenuItem>
-
-                            <MenuItem>
-                                {({ active }) => (
-                                    <Link
-                                        href="/starred-apps"
-                                        className={`${
-                                            active
-                                                ? 'bg-gray-100 text-gray-900'
-                                                : 'text-gray-700'
-                                        } block w-full px-4 py-2 text-left text-xs`}
-                                    >
-                                        Starred Apps 🌟
-                                    </Link>
-                                )}
-                            </MenuItem>
-                            {/* Divider */}
-                            <div className="my-1 h-px bg-gray-200"></div>
-
-                            {/* Sign out 섹션 */}
-                            <MenuItem>
+                            </Menu.Item>
+                        ) : (
+                            <Menu.Item>
                                 {({ active }) => (
                                     <button
-                                        onClick={handleSignOut}
-                                        className={`${
-                                            active
-                                                ? 'bg-gray-100 text-gray-900'
-                                                : 'text-gray-700'
-                                        } block w-full px-4 py-2 text-left text-xs`}
+                                        onClick={toggleEditMode}
+                                        className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                                     >
-                                        Sign out
+                                        Enter Edit Mode
                                     </button>
                                 )}
-                            </MenuItem>
-                        </div>
-                    </MenuItems>
-                </Transition>
-            </Menu>
-
-            <PublishModal
-                isOpen={showModal}
-                onClose={() => setShowModal(false)}
-                onPublish={handleConfirmPublish}
-                onUnpublish={handleConfirmUnpublish}
-                isPublishAction={isPublishAction}
-                publishUrl={publishUrl}
-            />
-        </>
+                            </Menu.Item>
+                        )}
+                    </div>
+                    <div className="py-1">
+                        <Menu.Item>
+                            {({ active }) => (
+                                <button
+                                    onClick={handleSignOut}
+                                    className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm text-red-500`}
+                                >
+                                    Sign out
+                                </button>
+                            )}
+                        </Menu.Item>
+                    </div>
+                </Menu.Items>
+            </Transition>
+        </Menu>
     );
-}
+};

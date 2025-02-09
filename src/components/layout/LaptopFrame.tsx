@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 
-import { useShare } from '../../contexts/ShareContext';
+import { useUserShare } from '../../hooks/useUserShare';
 
 interface LaptopFrameProps {
     children: React.ReactNode;
@@ -9,7 +9,7 @@ interface LaptopFrameProps {
 
 export function LaptopFrame({ children }: LaptopFrameProps) {
     const [showTooltip, setShowTooltip] = useState(false);
-    const { isPublished } = useShare();
+    const { isUserShared } = useUserShare();
 
     return (
         <div className="relative w-full max-w-[960px] mx-auto">
@@ -122,7 +122,7 @@ export function LaptopFrame({ children }: LaptopFrameProps) {
                     />
                 </svg>
 
-                {isPublished && (
+                {isUserShared && (
                     <div
                         className="absolute top-[25.2%] left-[49.5%] w-[10] h-[10] bg-green-500 rounded-full animate-pulse"
                         onMouseEnter={() => setShowTooltip(true)}
@@ -143,7 +143,7 @@ export function LaptopFrame({ children }: LaptopFrameProps) {
                 )}
 
                 {/* Screen Content */}
-                <div className="absolute top-[26.9%] left-[24.85%] w-[50.3%] h-[40.6%]">
+                <div className="absolute top-[26.9%] left-[24.85%] w-[50.3%] h-[40.6%] overflow-hidden">
                     {children}
                 </div>
             </div>

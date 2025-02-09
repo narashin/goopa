@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { searchAppsByCustomUserId, searchAppsByUserId } from '../lib/firestore';
-import type { ITool } from '../types/app';
+import { ITool } from '../types/item';
 
 export function useSearch(loggedInUserId?: string, isPublicMode = false) {
     const [searchQuery, setSearchQuery] = useState('');

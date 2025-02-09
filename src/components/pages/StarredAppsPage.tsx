@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { AppIconCard } from '../../components/templates/AppIconCard';
 import { useAuth } from '../../hooks/useAuth';
 import { getStarredAppsByUser } from '../../lib/firestore';
-import type { ITool } from '../../types/app';
-import { Skeleton } from '../ui/Skeleton';
+import { ITool } from '../../types/item';
+import { Skeleton } from '../ui/skeletons/Skeleton';
 
 export default function StarredAppsPage() {
     const { user } = useAuth();

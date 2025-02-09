@@ -2,33 +2,31 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import { User } from 'firebase/auth';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { updateApp } from '../../../lib/firestore';
-import type { ITool } from '../../../types/app';
+import { useItems } from '../../../hooks/useItem';
 import { AppCategoryType } from '../../../types/category';
+import { ITool } from '../../../types/item';
 import { IconDisplay } from '../../ui/IconDisplay';
 
 interface SettingsModalProps {
-    app: ITool;
-    readOnly?: boolean;
+    readOnly: boolean;
     onClose: () => void;
-    onSave: (updatedApp: ITool) => void;
-    user: User | null;
-    onUpdate: (updatedApp: ITool) => void;
+    onSave: (app: ITool) => void;
+    onUpdate: (app: ITool) => void;
+    initialApp: ITool;
 }
 
 export function SettingsModal({
     readOnly = false,
-    app,
+    initialApp,
     onClose,
     onSave,
-    user,
     onUpdate,
 }: SettingsModalProps) {
-    const [updatedApp, setUpdatedApp] = useState<ITool>({ ...app });
+    const [updatedApp, setUpdatedApp] = useState(initialApp);
+    const { updateItem } = useItems();
     const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
     const [contentHeight, setContentHeight] = useState<number>(400);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -38,8 +36,8 @@ export function SettingsModal({
     }, []);
 
     useEffect(() => {
-        setUpdatedApp({ ...app });
-    }, [app]);
+        setUpdatedApp({ ...initialApp });
+    }, [initialApp]);
 
     useEffect(() => {
         if (contentRef.current) {
@@ -58,13 +56,8 @@ export function SettingsModal({
     const handleSave = async () => {
         if (readOnly) return;
 
-        if (!user || !user.uid) {
-            console.error('User not logged in or user.uid is not available.');
-            return;
-        }
-
         try {
-            await updateApp(user.uid, updatedApp);
+            await updateItem(updatedApp);
             onUpdate(updatedApp);
             onSave(updatedApp);
             onClose();
@@ -87,7 +80,8 @@ export function SettingsModal({
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                     <h2 className="text-center flex-grow text-sm font-semibold text-gray-700">
-                        {app.name} {readOnly ? 'Information' : 'Settings'}
+                        {initialApp.name}{' '}
+                        {readOnly ? 'Information' : 'Settings'}
                     </h2>
                 </div>
 

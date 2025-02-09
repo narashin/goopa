@@ -1,7 +1,6 @@
 import { AppCategoryType } from '../types/category';
-import { ZshPluginType } from '../types/zsh-plugin';
 
-export const zshPlugins: ZshPluginType[] = [
+export const zshPlugins = [
     {
         id: 'zsh-autosuggestions',
         name: 'zsh-autosuggestions',

@@ -1,57 +1,40 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
-import { useAppContext } from '../../contexts/AppContext';
-import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
-import AdditionalAppsPage from './AdditionalToolsPage';
-import AdvancedDevAppPage from './AdvancedAppsPage';
-import { DevAppsPage } from './DevAppsPage';
-import { GeneralAppsPage } from './GeneralAppsPage';
+import type { ITool } from '../../types/item';
+import AdditionalAppsPage from './AdditionalAppsPage';
+import AdvancedAppsPage from './AdvancedAppsPage';
+import DevAppsPage from './DevAppsPage';
+import GeneralAppsPage from './GeneralAppsPage';
 import { HomePage } from './HomePage';
 import RequirementAppsPage from './RequirementAppsPage';
 import ZshPluginsPage from './ZshPluginsPage';
 
 interface CategoryPageContentProps {
     category: AppCategoryType;
-    isReadOnly?: boolean;
+    items: ITool[];
+    isEditMode: boolean;
+    isReadOnly: boolean;
+    onAddNewApp: (newApp: ITool) => Promise<void>;
+    onDeleteApp: (appId: string) => Promise<void>;
+    copyToClipboard: (text: string) => void;
 }
 
 const CategoryPageContent = ({
     category,
+    items,
     isReadOnly,
+    onAddNewApp,
+    onDeleteApp,
+    copyToClipboard,
 }: CategoryPageContentProps) => {
-    const { apps, addApp, deleteApp } = useAppContext();
-
-    const handleAddNewApp = useCallback(
-        async (newApp: ITool) => {
-            if (!isReadOnly) {
-                addApp(newApp);
-            }
-        },
-        [addApp, isReadOnly]
-    );
-
-    const handleDeleteApp = useCallback(
-        async (appId: string) => {
-            if (!isReadOnly) {
-                deleteApp(appId);
-            }
-        },
-        [deleteApp, isReadOnly]
-    );
-
-    const copyToClipboard = useCallback((text: string) => {
-        navigator.clipboard.writeText(text).then(() => {});
-    }, []);
-
     const categoryContent = useMemo(() => {
         const commonProps = {
-            apps,
-            onAddNewApp: handleAddNewApp,
-            onDeleteApp: handleDeleteApp,
-            isReadOnly,
+            apps: items,
+            onAddNewApp,
+            onDeleteApp,
         };
 
         switch (category) {
@@ -62,7 +45,7 @@ const CategoryPageContent = ({
             case AppCategoryType.Dev:
                 return <DevAppsPage {...commonProps} />;
             case AppCategoryType.Advanced:
-                return <AdvancedDevAppPage {...commonProps} />;
+                return <AdvancedAppsPage {...commonProps} />;
             case AppCategoryType.Requirement:
                 return (
                     <RequirementAppsPage
@@ -87,7 +70,14 @@ const CategoryPageContent = ({
             default:
                 return <div>Category not found.</div>;
         }
-    }, [category, apps, handleAddNewApp, copyToClipboard]);
+    }, [
+        category,
+        items,
+        onAddNewApp,
+        onDeleteApp,
+        copyToClipboard,
+        isReadOnly,
+    ]);
 
     return categoryContent;
 };

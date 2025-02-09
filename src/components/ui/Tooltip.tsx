@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { Popover, Transition } from '@headlessui/react';
 
-import { useTooltip } from '../../contexts/TooltipContext';
+import { useTooltipStore } from '../../stores/tooltipStore';
 
 interface TooltipProps {
     content: React.ReactNode;
@@ -12,7 +12,8 @@ interface TooltipProps {
 
 export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const { isAnyTooltipOpen, openTooltip, closeAllTooltips } = useTooltip();
+    const { isAnyTooltipOpen, openTooltip, closeAllTooltips } =
+        useTooltipStore();
 
     useEffect(() => {
         if (!isAnyTooltipOpen) {

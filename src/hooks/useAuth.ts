@@ -1,51 +1,67 @@
-import { useEffect, useState } from 'react';
+'use client';
 
-import { signOut } from 'firebase/auth';
+import { useEffect } from 'react';
 
-import { useAppContext } from '../contexts/AppContext';
-import { getUser, signInWithGoogle, UserData } from '../lib/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+
+import { useQueryClient } from '@tanstack/react-query';
+
 import { auth } from '../lib/firebase';
+import {
+    useAuthQuery,
+    useSignInMutation,
+    useSignOutMutation,
+} from '../queries/authQueries';
+import { useAuthStore } from '../stores/authStore';
 
 export function useAuth() {
-    const [user, setUser] = useState<UserData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const { setIsEditMode } = useAppContext();
+    const queryClient = useQueryClient();
+    const router = useRouter();
+    const { data: user, isLoading } = useAuthQuery();
+    const signIn = useSignInMutation();
+    const signOut = useSignOutMutation();
+    const isEditMode = useAuthStore((state) => state.isEditMode);
+    const setIsEditMode = useAuthStore((state) => state.setIsEditMode);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-            if (firebaseUser) {
-                try {
-                    const userData = await getUser(firebaseUser.uid);
-                    setUser(userData);
-                } catch (error) {
-                    console.error('Error fetching user data:', error);
-                }
+        const unsubscribe = onAuthStateChanged(auth, (newUser) => {
+            queryClient.setQueryData(['user'], newUser);
+            if (!newUser) {
+                router.push('/');
             }
-            setLoading(false);
         });
-
         return () => unsubscribe();
-    }, []);
+    }, [queryClient]);
 
     const handleSignIn = async () => {
         try {
-            const userData = await signInWithGoogle();
-            setUser(userData);
+            await signIn.mutateAsync();
         } catch (error) {
-            console.error('Error signing in with Google:', error);
+            console.error('Error:', error);
         }
     };
 
     const handleSignOut = async () => {
         try {
-            await signOut(auth);
-            setUser(null);
-            setIsEditMode(false);
-            window.location.reload();
+            await signOut.mutateAsync();
+            router.push('/');
         } catch (error) {
-            console.error('Error signing out with Google', error);
+            console.error('Error:', error);
         }
     };
 
-    return { user, loading, handleSignIn, handleSignOut };
+    const setUser = (newUser: User | null) => {
+        queryClient.setQueryData(['user'], newUser);
+    };
+
+    return {
+        user,
+        loading: isLoading,
+        handleSignIn,
+        handleSignOut,
+        isEditMode,
+        setIsEditMode,
+        setUser,
+    };
 }

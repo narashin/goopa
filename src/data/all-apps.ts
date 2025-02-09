@@ -1,13 +1,12 @@
 import { devApps } from '@/data/dev-apps';
 import { generalApps } from '@/data/general-apps';
 
-import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
 import { additionalTools } from './additional-tools';
 import { requirementTools } from './requirement-tool';
 import { zshPlugins } from './zsh-plugins';
 
-export const allApps: ITool[] = [
+export const allApps = [
     ...generalApps,
     ...devApps,
     ...requirementTools.map((tool) => ({

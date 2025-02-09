@@ -1,59 +1,87 @@
-import type React from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+'use client';
 
-import { doc, onSnapshot } from 'firebase/firestore';
+import type React from 'react';
+import { createContext, useContext, useEffect, useMemo } from 'react';
+
 import { usePathname } from 'next/navigation';
 
 import { useAuth } from '../hooks/useAuth';
-import { firestore } from '../lib/firebase';
-import { useAppContext } from './AppContext';
+import { useShare } from '../hooks/useShare';
+import type { ShareGoopaData } from '../lib/firestore';
+import { useShareStore } from '../stores/shareStore';
 
 interface ShareContextType {
-    isPublished: boolean;
-    setIsPublished: React.Dispatch<React.SetStateAction<boolean>>;
-    isPublishMode: boolean;
+    isShared: boolean;
+    shareUrl: string;
+    lastShareId: string | null;
+    isShareMode: boolean;
+    shareHistory: ShareGoopaData[];
+    handleShare: (uid: string) => Promise<void>;
+    handleUnshare: (uid: string) => Promise<void>;
 }
 
 const ShareContext = createContext<ShareContextType | undefined>(undefined);
 
 export function ShareProvider({ children }: { children: React.ReactNode }) {
-    const [isPublished, setIsPublished] = useState(false);
-    const { user } = useAuth();
-    const { isEditMode } = useAppContext();
-
+    const { user, isEditMode } = useAuth();
     const pathname = usePathname();
+    const shareStore = useShareStore();
+    const {
+        isShared,
+        shareUrl,
+        lastShareId,
+        shareData,
+        handleShare,
+        handleUnshare,
+    } = useShare(user?.uid || null);
 
-    const isPublishMode = Boolean(
-        pathname?.startsWith('/share/') && !isEditMode
+    const isShareMode = useMemo(
+        () => Boolean(pathname?.startsWith('/share/') && !isEditMode),
+        [pathname, isEditMode]
     );
 
     useEffect(() => {
-        if (!user) return;
+        shareStore.setShareMode(isShareMode);
+    }, [isShareMode, shareStore]);
 
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
-            if (docSnapshot.exists()) {
-                const userData = docSnapshot.data();
-                setIsPublished(userData.isPublished || false);
-            }
-        });
+    useEffect(() => {
+        if (shareData) {
+            shareStore.setShareHistory(shareData.shareHistory || []);
+        }
+    }, [shareData, shareStore]);
 
-        return () => unsubscribe();
-    }, [user]);
+    const contextValue = useMemo(
+        () => ({
+            isShared,
+            shareUrl,
+            lastShareId,
+            isShareMode,
+            shareHistory: shareStore.shareHistory,
+            handleShare,
+            handleUnshare,
+        }),
+        [
+            isShared,
+            shareUrl,
+            lastShareId,
+            isShareMode,
+            shareStore.shareHistory,
+            handleShare,
+            handleUnshare,
+        ]
+    );
 
     return (
-        <ShareContext.Provider
-            value={{ isPublished, setIsPublished, isPublishMode }}
-        >
+        <ShareContext.Provider value={contextValue}>
             {children}
         </ShareContext.Provider>
     );
 }
 
-export function useShare() {
+export function useShareContext() {
     const context = useContext(ShareContext);
     if (context === undefined) {
-        throw new Error('useShare must be used within a ShareProvider');
+        throw new Error('useShareContext must be used within a ShareProvider');
     }
     return context;
 }

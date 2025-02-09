@@ -1,7 +1,11 @@
+'use client';
+
 import type React from 'react';
 import ReactDOM from 'react-dom';
 
 import { toast } from 'react-toastify';
+
+import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 
 interface PublishModalProps {
     isOpen: boolean;
@@ -19,23 +23,18 @@ export const PublishModal: React.FC<PublishModalProps> = ({
     onUnpublish,
     isPublishAction,
 }) => {
+    const copyToClipboard = useCopyToClipboard();
+
     const handleConfirm = async () => {
         try {
             if (isPublishAction) {
                 const newPublishUrl = await onPublish();
                 if (newPublishUrl) {
                     const fullUrl = `${window.location.origin}${newPublishUrl}`;
-                    await navigator.clipboard.writeText(fullUrl);
-
-                    toast.success('🎉 Public URL copied to clipboard!', {
-                        position: 'top-right',
-                        autoClose: 3000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    copyToClipboard(
+                        fullUrl,
+                        '🎉 Public URL copied to clipboard!'
+                    );
                 }
             } else {
                 const success = await onUnpublish();

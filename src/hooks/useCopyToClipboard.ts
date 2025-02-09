@@ -1,13 +1,11 @@
-import { useContext } from 'react';
+'use client';
 
-import { CopyToClipboardContext } from '../contexts/CopyToClipboardContext';
+import { useCallback } from 'react';
+
+import { copyToClipboard } from '../lib/utils';
 
 export const useCopyToClipboard = () => {
-    const context = useContext(CopyToClipboardContext);
-    if (context === undefined) {
-        throw new Error(
-            'useCopyToClipboard must be used within a CopyToClipboardProvider'
-        );
-    }
-    return context.copyToClipboard;
+    return useCallback((text: string, message?: string) => {
+        copyToClipboard(text, message);
+    }, []);
 };

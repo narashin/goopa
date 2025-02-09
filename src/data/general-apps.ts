@@ -1,7 +1,6 @@
-import { ITool } from '../types/app';
 import { AppCategoryType } from '../types/category';
 
-export const generalApps: ITool[] = [
+export const generalApps = [
     {
         id: 'chrome',
         name: 'Chrome',

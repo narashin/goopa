@@ -1,53 +1,71 @@
 'use client';
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { notFound } from 'next/navigation';
 
-import CategoryPageContent from '@/components/pages/CategoryPageContent';
-import { useAppContext } from '@/contexts/AppContext';
-import { ITool } from '@/types/app';
-import { AppCategoryType } from '@/types/category';
+import type { AppCategoryType } from '@/types/category';
+import type { ITool } from '@/types/item';
+import type { AuthenticatedUserData } from '@/types/user';
 
-import { UserData } from '../../../../../lib/auth';
-import { subscribeToUserData } from '../../../../../lib/firestore';
+import CategoryPageContent from '../../../../../components/pages/CategoryPageContent';
+import { useUserByCustomUserId } from '../../../../../queries/authQueries';
+import { useItemsByCustomUserId } from '../../../../../queries/itemQueries';
 
 interface SharedCategoryPageClientProps {
     category: AppCategoryType;
-    initialApps: ITool[];
-    userData: UserData;
+    customUserId: string;
+    shareId: string;
 }
 
 export default function SharedCategoryPageClient({
     category,
-    initialApps,
-    userData: initialUserData,
+    customUserId,
+    shareId,
 }: SharedCategoryPageClientProps) {
-    const { apps, setApps } = useAppContext();
-    const [userData, setUserData] = useState(initialUserData);
+    const { data: user, isLoading: isUserLoading } =
+        useUserByCustomUserId(customUserId);
+    const { data: items, isLoading } = useItemsByCustomUserId(customUserId);
 
-    useEffect(() => {
-        if (initialApps.length > 0 && apps.length === 0) {
-            setApps(initialApps);
-        }
+    const authenticatedUser = user as AuthenticatedUserData | null;
+    const toolItems = items as ITool[] | undefined;
 
-        const unsubscribe = subscribeToUserData(
-            initialUserData.uid,
-            (updatedUserData) => {
-                if (updatedUserData) {
-                    setUserData(updatedUserData);
-                    if (!updatedUserData.isPublished) {
-                        setApps([]);
-                    }
-                }
-            }
-        );
-
-        return () => unsubscribe();
-    }, [initialApps, apps.length, setApps, initialUserData.uid]);
-
-    if (!userData.isPublished) {
-        return notFound();
+    if (isLoading || isUserLoading) {
+        return <div>로딩 중...</div>;
     }
-    return <CategoryPageContent category={category} isReadOnly={true} />;
+
+    if (
+        !authenticatedUser ||
+        authenticatedUser.isAnonymous ||
+        !authenticatedUser.isShared ||
+        !authenticatedUser.lastShareId ||
+        authenticatedUser.lastShareId !== shareId
+    ) {
+        notFound();
+    }
+
+    const handleAddNewApp = async () => {
+        console.warn('Adding new apps is not allowed in read-only mode');
+    };
+
+    const handleDeleteApp = async () => {
+        console.warn('Deleting apps is not allowed in read-only mode');
+    };
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('Copied to clipboard');
+        });
+    };
+
+    return (
+        <CategoryPageContent
+            category={category}
+            items={toolItems ?? []}
+            isEditMode={false}
+            isReadOnly={true}
+            onAddNewApp={handleAddNewApp}
+            onDeleteApp={handleDeleteApp}
+            copyToClipboard={copyToClipboard}
+        />
+    );
 }

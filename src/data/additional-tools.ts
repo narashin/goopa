@@ -1,7 +1,6 @@
-import { AdditionalToolType } from '../types/additional-tool';
 import { AppCategoryType } from '../types/category';
 
-export const additionalTools: AdditionalToolType[] = [
+export const additionalTools = [
     {
         id: 'fzf',
         name: 'fzf',

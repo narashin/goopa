@@ -1,86 +1,140 @@
 import { getRedirectResult, signInWithPopup, User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import {
+    doc,
+    FirestoreDataConverter,
+    getDoc,
+    setDoc,
+} from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
+import {
+    AnonymousUserData,
+    AuthenticatedUserData,
+    UserData,
+} from '../types/user';
 import { auth, firestore, googleProvider } from './firebase';
-import { PublishData } from './firestore';
 
-export interface UserData {
-    createdAt: string;
-    customUserId: string;
-    displayName: string;
-    email: string;
-    isPublished?: boolean;
-    lastPublishId?: string;
-    photoURL: string;
-    publishHistory: PublishData[];
-    uid: string;
-}
+export const userConverter: FirestoreDataConverter<UserData> = {
+    toFirestore: (userData: UserData) => {
+        if (!userData.isAnonymous) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { ShareHistory, ...dataToStore } = userData;
+            return dataToStore;
+        }
+        return userData;
+    },
+    fromFirestore: (snapshot, options) => {
+        const data = snapshot.data(options);
+        if (data.isAnonymous) {
+            return {
+                uid: snapshot.id,
+                isAnonymous: true,
+                createdAt: data.createdAt,
+            } as AnonymousUserData;
+        } else {
+            return {
+                ...data,
+                uid: snapshot.id,
+                isAnonymous: false,
+                ShareHistory: data.ShareHistory || [],
+            } as AuthenticatedUserData;
+        }
+    },
+};
 
-const mapFirebaseUserToUserData = async (user: User): Promise<UserData> => {
-    const userRef = doc(firestore, 'users', user.uid);
-    const userSnapshot = await getDoc(userRef);
-
-    if (userSnapshot.exists()) {
-        return userSnapshot.data() as UserData;
-    }
-
-    // Firestore에 사용자 정보가 없으면 새로 생성
-    const customUserId = nanoid();
-    const userData: UserData = {
+const createUserData = (user: User): AuthenticatedUserData => {
+    return {
         uid: user.uid,
-        customUserId,
+        isAnonymous: false,
+        customUserId: nanoid(),
         displayName: user.displayName || '',
         email: user.email || '',
+        isShared: false,
         photoURL: user.photoURL || '',
         createdAt: new Date(new Date().getTime() + 9 * 60 * 60 * 1000)
             .toISOString()
             .replace('Z', '+09:00'),
-        publishHistory: [],
+        ShareHistory: [],
+        emailVerified: user.emailVerified,
+        metadata: {
+            creationTime: user.metadata.creationTime || '',
+            lastSignInTime: user.metadata.lastSignInTime || '',
+        },
     };
-
-    await setDoc(userRef, userData);
-    return userData;
 };
 
-// 🔹 Google 로그인 (Firestore 저장 후 `UserData` 반환)
-export const signInWithGoogle = async (): Promise<UserData> => {
+export const signInWithGoogle = async (): Promise<AuthenticatedUserData> => {
     try {
         const result = await signInWithPopup(auth, googleProvider);
-        return await mapFirebaseUserToUserData(result.user);
+        const userRef = doc(firestore, 'users', result.user.uid).withConverter(
+            userConverter
+        );
+        const userSnapshot = await getDoc(userRef);
+
+        if (!userSnapshot.exists()) {
+            const newUserData = createUserData(result.user);
+            await setDoc(userRef, newUserData);
+            return newUserData;
+        }
+
+        return userSnapshot.data() as AuthenticatedUserData;
     } catch (error) {
         console.error('Error during Google sign-in:', error);
         throw new Error('Authentication failed');
     }
 };
 
-// 🔹 Google Redirect 처리 (Firestore 저장 후 `UserData` 반환)
-export const handleGoogleRedirect = async (): Promise<UserData | null> => {
+export const signOutWithGoogle = async (): Promise<void> => {
     try {
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-            return await mapFirebaseUserToUserData(result.user);
-        }
-        return null;
+        await auth.signOut();
     } catch (error) {
-        console.error('Error handling Google redirect:', error);
-        throw new Error('Authentication failed');
+        console.error('Error during Google sign-out:', error);
+        throw new Error('Sign-out failed');
     }
 };
 
-// 🔹 Firestore에서 `UserData` 가져오기
+export const handleGoogleRedirect =
+    async (): Promise<AuthenticatedUserData | null> => {
+        try {
+            const result = await getRedirectResult(auth);
+            if (result?.user) {
+                const userRef = doc(
+                    firestore,
+                    'users',
+                    result.user.uid
+                ).withConverter(userConverter);
+                const userSnapshot = await getDoc(userRef);
+
+                if (!userSnapshot.exists()) {
+                    const newUserData = createUserData(result.user);
+                    await setDoc(userRef, newUserData);
+                    return newUserData;
+                }
+
+                return userSnapshot.data() as AuthenticatedUserData;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error handling Google redirect:', error);
+            throw new Error('Authentication failed');
+        }
+    };
+
 export const getUser = async (uid: string): Promise<UserData> => {
-    const userRef = doc(firestore, 'users', uid);
+    const userRef = doc(firestore, 'users', uid).withConverter(userConverter);
     const userSnapshot = await getDoc(userRef);
 
     if (!userSnapshot.exists()) {
         throw new Error('User not found');
     }
 
-    return userSnapshot.data() as UserData;
+    return userSnapshot.data();
 };
 
 export const getCustomUserId = async (uid: string): Promise<string> => {
     const user = await getUser(uid);
+    if (user.isAnonymous) {
+        throw new Error('Anonymous users do not have a customUserId');
+    }
     return user.customUserId;
 };

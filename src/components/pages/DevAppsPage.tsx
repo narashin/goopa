@@ -7,10 +7,9 @@ import { AppIconCard } from '../../components/templates/AppIconCard';
 import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
-import { useAppContext } from '../../contexts/AppContext';
-import { useUserContext } from '../../contexts/UserContext';
-import type { ITool } from '../../types/app';
+import { useAuth } from '../../hooks/useAuth';
 import { AppCategoryType } from '../../types/category';
+import { ITool } from '../../types/item';
 
 interface DevAppsPageProps {
     apps: ITool[];
@@ -25,8 +24,7 @@ export function DevAppsPage({
     onDeleteApp,
     isReadOnly = false,
 }: DevAppsPageProps) {
-    const { user } = useUserContext();
-    const { isEditMode, setIsEditMode } = useAppContext();
+    const { user, isEditMode, setIsEditMode } = useAuth();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 

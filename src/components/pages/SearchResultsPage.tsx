@@ -5,8 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { AppIconCard } from '../../components/templates/AppIconCard';
 import { Card } from '../../components/ui/Card';
-import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
+import { ITool } from '../../types/item';
 
 interface SearchResultsPageProps {
     results: ITool[];

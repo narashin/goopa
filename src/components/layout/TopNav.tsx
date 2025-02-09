@@ -5,40 +5,34 @@ import { debounce } from 'lodash';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { useAppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearch } from '../../hooks/useSearch';
-import { useShareHandler } from '../../hooks/useShareHandler';
+import { useShare } from '../../hooks/useShare';
+import { AuthenticatedUserData } from '../../types/user';
 import { UserMenu } from '../templates/UserMenu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
-
-function SkeletonNavItem() {
-    return (
-        <div className="w-16 h-8 bg-gray-700 rounded-md animate-pulse"></div>
-    );
-}
-
-function SkeletonSearchInput() {
-    return (
-        <div className="w-48 h-8 bg-gray-700 rounded-md animate-pulse"></div>
-    );
-}
-
-function SkeletonUserMenu() {
-    return (
-        <div className="w-8 h-8 bg-gray-700 rounded-full animate-pulse"></div>
-    );
-}
+import { SkeletonNavItem } from '../ui/skeletons/SkeletonNavItem';
+import { SkeletonSearchInput } from '../ui/skeletons/SkeletonSearchInput';
+import { SkeletonUserMenu } from '../ui/skeletons/SkeletonUserMenu';
 
 export function TopNav() {
-    const { user, loading, handleSignIn, handleSignOut } = useAuth();
-    const { isEditMode, setIsEditMode } = useAppContext();
+    const {
+        user,
+        loading,
+        handleSignIn,
+        handleSignOut,
+        isEditMode,
+        setIsEditMode,
+    } = useAuth();
     const pathname = usePathname();
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
-    const { isPublicMode } = useShareHandler(user);
-    const { handleSearch: performSearch } = useSearch(user?.uid, isPublicMode);
+    const { shareData } = useShare(user?.uid ?? null);
+    const { handleSearch: performSearch } = useSearch(
+        user?.uid,
+        shareData?.isShared
+    );
     const views = ['home', 'general', 'dev', 'advanced'];
 
     const generateLink = (category: string) => {
@@ -71,7 +65,7 @@ export function TopNav() {
         (query: string) => {
             setSearchQuery(query);
             if (query) {
-                if (isPublicMode) {
+                if (shareData?.isShared) {
                     const [, , customUserId, publishId] =
                         pathname?.split('/') || [];
                     router.push(
@@ -85,18 +79,18 @@ export function TopNav() {
                 }
             }
         },
-        [router, isPublicMode, pathname]
+        [router, shareData?.isShared, pathname]
     );
 
     const handleClearSearch = useCallback(() => {
         setSearchQuery('');
-        if (isPublicMode) {
+        if (shareData?.isShared) {
             const [, , customUserId, publishId] = pathname?.split('/') || [];
             router.push(`/share/${customUserId}/${publishId}`);
         } else {
             router.push('/');
         }
-    }, [router, isPublicMode, pathname]);
+    }, [router, shareData?.isShared, pathname]);
 
     if (loading) {
         return (
@@ -122,7 +116,7 @@ export function TopNav() {
                 </div>
 
                 {/* 네비게이션 메뉴 */}
-                <div className="flex space-x-4 text-sm">
+                <div className="flex space-x-4 text-sm overflow-x-auto scrollbar-hide">
                     {views.map((view) => (
                         <Link key={view} href={generateLink(view)}>
                             <button
@@ -150,13 +144,13 @@ export function TopNav() {
                 </div>
 
                 {/* 사용자 메뉴 */}
-                <div className="flex items-center space-x-4">
-                    {user ? (
+                <div className="flex items-center space-x-2 flex-shrink-0">
+                    {user && !user.isAnonymous ? (
                         <UserMenu
                             handleSignOut={handleSignOut}
                             isEditMode={isEditMode}
                             toggleEditMode={toggleEditMode}
-                            user={user}
+                            user={user as AuthenticatedUserData}
                         />
                     ) : (
                         <button

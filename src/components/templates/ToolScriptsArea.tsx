@@ -3,7 +3,7 @@ import React from 'react';
 import { ClipboardIcon } from '@heroicons/react/24/outline';
 
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { ITool } from '../../types/app';
+import { ITool } from '../../types/item';
 
 interface ToolScriptsAreaProps {
     appCount: number;

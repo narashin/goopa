@@ -1,6 +1,6 @@
 import { AppCategoryType } from './category';
 
-export interface App {
+export interface Item {
     id: string;
     name: string;
     icon?: string;
@@ -12,7 +12,7 @@ export interface App {
     updatedAt?: string;
 }
 
-export interface ITool extends App {
+export interface ITool extends Item {
     installCommand?: string;
     zshrcCommand?: string;
     description?: string;

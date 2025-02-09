@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+'use client';
 
-import { useAppContext } from '../../contexts/AppContext';
-import { useUserContext } from '../../contexts/UserContext';
-import { ITool } from '../../types/app';
-import { AppCategoryType } from '../../types/category';
+import type React from 'react';
+import { useState } from 'react';
+
+import { useAuth } from '../../hooks/useAuth';
+import type { AppCategoryType } from '../../types/category';
+import type { ITool } from '../../types/item';
 import { AppIconCard } from './AppIconCard';
 import { AddNewAppModal } from './modal/AddNewAppModal';
 import { ConfirmModal } from './modal/ConfirmModal';
@@ -27,8 +29,8 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     currentCategory,
     isReadOnly = false,
 }) => {
-    const { user } = useUserContext();
-    const { isEditMode, setIsEditMode } = useAppContext();
+    const { user } = useAuth();
+    const { isEditMode, setIsEditMode } = useAuth();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 

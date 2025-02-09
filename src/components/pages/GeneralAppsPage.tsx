@@ -7,26 +7,23 @@ import { AppIconCard } from '../../components/templates/AppIconCard';
 import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
 import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
-import { useAppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../hooks/useAuth';
-import type { ITool } from '../../types/app';
 import { AppCategoryType } from '../../types/category';
+import { ITool } from '../../types/item';
 
 interface GeneralAppsPageProps {
     apps: ITool[];
     onAddNewApp?: (newApp: ITool) => void;
     onDeleteApp?: (id: string) => void;
-    isReadOnly?: boolean;
+    isEditMode?: boolean;
 }
 
 export function GeneralAppsPage({
     apps,
     onAddNewApp,
     onDeleteApp,
-    isReadOnly,
 }: GeneralAppsPageProps) {
-    const { user } = useAuth();
-    const { isEditMode, setIsEditMode } = useAppContext();
+    const { user, isEditMode, setIsEditMode } = useAuth();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
@@ -36,7 +33,7 @@ export function GeneralAppsPage({
     );
 
     const handleAddNewApp = useCallback(() => {
-        if (isReadOnly || !onAddNewApp) return;
+        if (!isEditMode || !onAddNewApp) return;
 
         if (isEditMode) {
             setIsAddModalOpen(true);
@@ -47,7 +44,7 @@ export function GeneralAppsPage({
 
     const handleDeleteApp = useCallback(
         (appId: string) => {
-            if (isReadOnly || !onDeleteApp) return;
+            if (!isEditMode || !onDeleteApp) return;
             onDeleteApp(appId);
         },
         [onDeleteApp]
@@ -60,7 +57,7 @@ export function GeneralAppsPage({
 
     const handleSubmitNewApp = useCallback(
         (newApp: ITool) => {
-            if (isReadOnly || !onAddNewApp) return;
+            if (!isEditMode || !onAddNewApp) return;
             onAddNewApp(newApp);
             setIsAddModalOpen(false);
         },
@@ -85,7 +82,7 @@ export function GeneralAppsPage({
                                 onDeleteApp={() => handleDeleteApp(app.id)}
                             />
                         ))}
-                        {user && !isReadOnly && (
+                        {user && isEditMode && (
                             <AppIconCard
                                 isAddNewAppCard
                                 isStarred={false}

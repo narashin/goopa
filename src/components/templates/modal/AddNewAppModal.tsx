@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import { useUserContext } from '../../../contexts/UserContext';
-import { addAppToFirestore } from '../../../lib/firestore';
-import { ITool } from '../../../types/app';
+import { useAuth } from '../../../hooks/useAuth';
+import { useItems } from '../../../hooks/useItem';
 import { AppCategoryType } from '../../../types/category';
+import { ITool } from '../../../types/item';
 import { AddNewAppForm } from '../form/AddNewAppForm';
 
 interface AddNewAppModalProps {
@@ -20,19 +20,30 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
     currentCategory,
     onSubmit,
 }) => {
-    const { user } = useUserContext();
+    const { user } = useAuth();
+    const { addItem } = useItems();
     const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
     useEffect(() => {
         setModalRoot(document.body);
     }, []);
 
-    const handleFormSubmit = async (newApp: ITool) => {
+    const handleFormSubmit = async (
+        newApp: Omit<ITool, 'id' | 'starCount' | 'userId'>
+    ) => {
         if (user) {
-            await addAppToFirestore(user.uid, newApp);
+            try {
+                await addItem(newApp);
+                onSubmit(newApp as ITool); // 타입 단언을 사용합니다. 실제로는 id가 생성되어 반환될 것입니다.
+                onClose();
+            } catch (error) {
+                console.error('앱 추가 실패:', error);
+                // 여기에 에러 처리 로직을 추가할 수 있습니다 (예: 사용자에게 알림)
+            }
+        } else {
+            console.error('사용자가 인증되지 않았습니다');
+            // 사용자가 인증되지 않은 경우의 처리를 추가할 수 있습니다
         }
-        onSubmit(newApp);
-        onClose();
     };
 
     if (!isOpen) return null;
