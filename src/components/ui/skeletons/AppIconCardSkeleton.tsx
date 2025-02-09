@@ -2,7 +2,7 @@ import type React from 'react';
 
 import { Skeleton } from './Skeleton';
 
-export const SkeletonAppIconCard: React.FC = () => {
+export const AppIconCardSkeleton: React.FC = () => {
     return (
         <div className="flex flex-col items-center space-y-2">
             <div className="relative">

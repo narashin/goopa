@@ -12,9 +12,9 @@ import { AuthenticatedUserData } from '../../types/user';
 import { UserMenu } from '../templates/UserMenu';
 import { Logo } from '../ui/Logo';
 import { SearchInput } from '../ui/SearchInput';
-import { SkeletonNavItem } from '../ui/skeletons/SkeletonNavItem';
-import { SkeletonSearchInput } from '../ui/skeletons/SkeletonSearchInput';
-import { SkeletonUserMenu } from '../ui/skeletons/SkeletonUserMenu';
+import { NavItemSkeleton } from '../ui/skeletons/NavItemSkeleton';
+import { SearchInputSkeleton } from '../ui/skeletons/SearchInputSkeleton';
+import { UserMenuSkeleton } from '../ui/skeletons/UserMenuSkeleton';
 
 export function TopNav() {
     const {
@@ -98,11 +98,11 @@ export function TopNav() {
                 <Logo isEditMode={false} />
                 <div className="flex space-x-4">
                     {views.map((_, index) => (
-                        <SkeletonNavItem key={index} />
+                        <NavItemSkeleton key={index} />
                     ))}
                 </div>
-                <SkeletonSearchInput />
-                <SkeletonUserMenu />
+                <SearchInputSkeleton />
+                <UserMenuSkeleton />
             </div>
         );
     }

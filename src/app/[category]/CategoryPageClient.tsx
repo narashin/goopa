@@ -5,7 +5,7 @@ import React, { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import CategoryPageContent from '../../components/pages/CategoryPageContent';
-import { SkeletonAppIconCard } from '../../components/ui/skeletons/SkeleotonAppIconCard';
+import { AppIconCardSkeleton } from '../../components/ui/skeletons/AppIconCardSkeleton';
 import { useAuth } from '../../hooks/useAuth';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useItems } from '../../hooks/useItem';
@@ -64,7 +64,7 @@ export default function CategoryPageClient({
         return (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
                 {[...Array(10)].map((_, index) => (
-                    <SkeletonAppIconCard key={index} />
+                    <AppIconCardSkeleton key={index} />
                 ))}
             </div>
         );
