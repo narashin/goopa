@@ -2,26 +2,22 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import { useAuth } from '../../../hooks/useAuth';
-import { useItems } from '../../../hooks/useItem';
-import { AppCategoryType } from '../../../types/category';
 import { ITool } from '../../../types/item';
+import { errorToast } from '../../ui/Toast';
 import { AddNewAppForm } from '../form/AddNewAppForm';
 
 interface AddNewAppModalProps {
     isOpen: boolean;
-    onClose: () => void;
-    currentCategory: AppCategoryType;
+    onClose: (e?: React.MouseEvent) => void;
     onSubmit: (newApp: ITool) => void;
 }
 
 export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
     isOpen,
     onClose,
-    currentCategory,
     onSubmit,
 }) => {
     const { user } = useAuth();
-    const { addItem } = useItems();
     const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
     useEffect(() => {
@@ -33,16 +29,14 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
     ) => {
         if (user) {
             try {
-                await addItem(newApp);
-                onSubmit(newApp as ITool); // 타입 단언을 사용합니다. 실제로는 id가 생성되어 반환될 것입니다.
+                await onSubmit(newApp as ITool);
                 onClose();
             } catch (error) {
-                console.error('앱 추가 실패:', error);
-                // 여기에 에러 처리 로직을 추가할 수 있습니다 (예: 사용자에게 알림)
+                console.error('Failed to add app', error);
+                errorToast('Failed to add app');
             }
         } else {
-            console.error('사용자가 인증되지 않았습니다');
-            // 사용자가 인증되지 않은 경우의 처리를 추가할 수 있습니다
+            errorToast('User is not authenticated');
         }
     };
 
@@ -69,7 +63,6 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
                     <AddNewAppForm
                         onSubmit={handleFormSubmit}
                         onClose={onClose}
-                        currentCategory={currentCategory}
                     />
                 </div>
             </div>

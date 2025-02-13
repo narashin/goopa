@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
-import { AddNewAppModal } from '../../components/templates/modal/AddNewAppModal';
-import { ConfirmModal } from '../../components/templates/modal/ConfirmModal';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../hooks/useAuth';
 import { AppCategoryType } from '../../types/category';
@@ -13,9 +11,8 @@ import { ITool } from '../../types/item';
 
 interface GeneralAppsPageProps {
     apps: ITool[];
-    onAddNewApp?: (newApp: ITool) => void;
-    onDeleteApp?: (id: string) => void;
-    isEditMode?: boolean;
+    onAddNewApp: (newApp: Omit<ITool, 'id'>) => Promise<void>;
+    onDeleteApp: (id: string) => Promise<void>;
 }
 
 export function GeneralAppsPage({
@@ -23,45 +20,11 @@ export function GeneralAppsPage({
     onAddNewApp,
     onDeleteApp,
 }: GeneralAppsPageProps) {
-    const { user, isEditMode, setIsEditMode } = useAuth();
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const { user, isEditMode } = useAuth();
 
     const filteredApps = useMemo(
         () => apps.filter((app) => app.category === AppCategoryType.General),
         [apps]
-    );
-
-    const handleAddNewApp = useCallback(() => {
-        if (!isEditMode || !onAddNewApp) return;
-
-        if (isEditMode) {
-            setIsAddModalOpen(true);
-        } else {
-            setIsConfirmModalOpen(true);
-        }
-    }, [isEditMode]);
-
-    const handleDeleteApp = useCallback(
-        (appId: string) => {
-            if (!isEditMode || !onDeleteApp) return;
-            onDeleteApp(appId);
-        },
-        [onDeleteApp]
-    );
-
-    const handleConfirmEditMode = useCallback(() => {
-        setIsEditMode(true);
-        setIsConfirmModalOpen(false);
-    }, [setIsEditMode]);
-
-    const handleSubmitNewApp = useCallback(
-        (newApp: ITool) => {
-            if (!isEditMode || !onAddNewApp) return;
-            onAddNewApp(newApp);
-            setIsAddModalOpen(false);
-        },
-        [onAddNewApp]
     );
 
     return (
@@ -70,7 +33,7 @@ export function GeneralAppsPage({
                 <div className="p-6">
                     <AppboardHeader
                         title="General Apps"
-                        description="🎉 일단 이거부터"
+                        description="🎉 일단 이거부터 설치하세요!"
                     />
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                         {filteredApps.map((app) => (
@@ -79,36 +42,24 @@ export function GeneralAppsPage({
                                 app={app}
                                 isStarred={false}
                                 onClick={() => {}}
-                                onDeleteApp={() => handleDeleteApp(app.id)}
+                                onDeleteApp={onDeleteApp}
+                                onAddNewApp={onAddNewApp}
                             />
                         ))}
                         {user && isEditMode && (
                             <AppIconCard
                                 isAddNewAppCard
                                 isStarred={false}
-                                onClick={handleAddNewApp}
+                                onClick={() => {}}
                                 onDeleteApp={() => {}}
+                                onAddNewApp={onAddNewApp}
                             />
                         )}
                     </div>
                 </div>
             </Card>
-
-            <AddNewAppModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                onSubmit={handleSubmitNewApp}
-                currentCategory={AppCategoryType.General}
-            />
-            <ConfirmModal
-                isOpen={isConfirmModalOpen}
-                onClose={() => setIsConfirmModalOpen(false)}
-                onConfirm={handleConfirmEditMode}
-                title="🔄 Switch to Edit Mode"
-                message={`You can only add new apps in Edit mode.\nWould you like to switch to Edit mode?`}
-            />
         </div>
     );
 }
 
-export default React.memo(GeneralAppsPage);
+export default GeneralAppsPage;

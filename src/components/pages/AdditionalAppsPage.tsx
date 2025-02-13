@@ -10,18 +10,14 @@ import { ITool } from '../../types/item';
 
 interface AdditionalAppsPageProps {
     apps: ITool[];
-    onAddNewApp?: (newApp: ITool) => void;
-    onDeleteApp?: (id: string) => void;
-    copyToClipboard?: (text: string) => void;
-    isReadOnly?: boolean;
+    onAddNewApp: (newApp: Omit<ITool, 'id'>) => Promise<void>;
+    onDeleteApp: (id: string) => Promise<void>;
 }
 
 const AdditionalAppsPage: React.FC<AdditionalAppsPageProps> = ({
     apps,
     onAddNewApp,
     onDeleteApp,
-    copyToClipboard,
-    isReadOnly = false,
 }) => {
     const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
 
@@ -52,13 +48,11 @@ const AdditionalAppsPage: React.FC<AdditionalAppsPageProps> = ({
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
                     currentCategory={AppCategoryType.Additional}
-                    isReadOnly={isReadOnly}
                 />
 
                 <ToolScriptsArea
                     appCount={filteredApps.length}
                     selectedItems={selectedItems}
-                    copyToClipboard={copyToClipboard}
                 />
             </div>
         </Card>

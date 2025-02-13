@@ -10,8 +10,8 @@ import { ITool } from '../../types/item';
 
 interface RequirementAppsPageProps {
     apps: ITool[];
-    onAddNewApp?: (newApp: ITool) => void;
-    onDeleteApp?: (id: string) => void;
+    onAddNewApp: (newApp: Omit<ITool, 'id'>) => Promise<void>;
+    onDeleteApp: (id: string) => Promise<void>;
     copyToClipboard?: (text: string) => void;
     isReadOnly?: boolean;
 }
@@ -21,7 +21,6 @@ const RequirementAppsPage: React.FC<RequirementAppsPageProps> = ({
     onAddNewApp,
     onDeleteApp,
     copyToClipboard,
-    isReadOnly = false,
 }) => {
     const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
 
@@ -54,7 +53,6 @@ const RequirementAppsPage: React.FC<RequirementAppsPageProps> = ({
                     isItemSelected={isItemSelected}
                     toggleItem={toggleItem}
                     currentCategory={AppCategoryType.Requirement}
-                    isReadOnly={isReadOnly}
                 />
 
                 <ToolScriptsArea

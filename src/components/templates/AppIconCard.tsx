@@ -12,6 +12,7 @@ import { useTooltipStore } from '../../stores/tooltipStore';
 import { ITool } from '../../types/item';
 import { IconDisplay } from '../ui/IconDisplay';
 import { Tooltip } from '../ui/Tooltip';
+import { AddNewAppModal } from './modal/AddNewAppModal';
 import { ConfirmModal } from './modal/ConfirmModal';
 import { DeleteConfirmModal } from './modal/DeleteConfirmModal';
 import { SettingsModal } from './modal/SettingsModal';
@@ -20,6 +21,7 @@ interface AppCardProps {
     app?: ITool;
     onClick: (e: React.MouseEvent) => void;
     isAddNewAppCard?: boolean;
+    onAddNewApp?: (newApp: Omit<ITool, 'id'>) => Promise<void>;
     onDeleteApp: (id: string) => void;
     isStarred?: boolean;
     starCount?: number;
@@ -30,6 +32,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     onClick,
     isAddNewAppCard = false,
     onDeleteApp,
+    onAddNewApp,
 }) => {
     const { user, isEditMode } = useAuth();
     const { closeAllTooltips, setModalOpen } = useTooltipStore();
@@ -38,6 +41,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     const [selectedApp, setSelectedApp] = useState<ITool | null>(app || null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+    const [showAddNewAppModal, setShowAddNewAppModal] = useState(false);
     const starAppHook = useStarApp(app || null);
     const {
         isStarred = false,
@@ -54,7 +58,9 @@ export const AppIconCard: React.FC<AppCardProps> = ({
             if (showDeleteConfirmModal || showSettingsModal) {
                 return;
             }
-            if (isAddNewAppCard || !app?.url) {
+            if (isAddNewAppCard) {
+                setShowAddNewAppModal(true);
+            } else if (!app?.url) {
                 onClick(e);
             }
         },
@@ -66,6 +72,16 @@ export const AppIconCard: React.FC<AppCardProps> = ({
             onClick,
         ]
     );
+
+    const handleAddNewApp = async (newApp: Omit<ITool, 'id'>) => {
+        await onAddNewApp?.(newApp);
+        setShowAddNewAppModal(false);
+    };
+
+    const handleCloseAddNewAppModal = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowAddNewAppModal(false);
+    }, []);
 
     const handleNameClick = useCallback(
         (e: React.MouseEvent) => {
@@ -109,13 +125,18 @@ export const AppIconCard: React.FC<AppCardProps> = ({
 
     const handleIconClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        handleSettingsClick(e);
+        if (isAddNewAppCard) {
+            setShowAddNewAppModal(true);
+        } else {
+            handleSettingsClick(e);
+        }
     };
 
     const handleStarClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         toggleStar();
     };
+
     const canViewSettings = isShared || (!isShared && !isEditMode);
 
     return (
@@ -136,7 +157,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                             ) : (
                                 selectedApp && (
                                     <IconDisplay
-                                        icon={selectedApp.icon}
+                                        icon={selectedApp.icon ?? ''}
                                         name={selectedApp.name}
                                     />
                                 )
@@ -212,6 +233,13 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                     app={selectedApp}
                     onConfirm={deleteAppAndCloseModal}
                     onCancel={() => setShowDeleteConfirmModal(false)}
+                />
+            )}
+            {showAddNewAppModal && (
+                <AddNewAppModal
+                    isOpen={showAddNewAppModal}
+                    onClose={handleCloseAddNewAppModal}
+                    onSubmit={handleAddNewApp}
                 />
             )}
         </div>

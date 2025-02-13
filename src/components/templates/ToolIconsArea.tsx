@@ -1,23 +1,19 @@
 'use client';
 
 import type React from 'react';
-import { useState } from 'react';
 
 import { useAuth } from '../../hooks/useAuth';
 import type { AppCategoryType } from '../../types/category';
 import type { ITool } from '../../types/item';
 import { AppIconCard } from './AppIconCard';
-import { AddNewAppModal } from './modal/AddNewAppModal';
-import { ConfirmModal } from './modal/ConfirmModal';
 
 interface ToolIconsProps {
     apps: ITool[];
-    onAddNewApp?: (newApp: ITool) => void;
-    onDeleteApp?: (id: string) => void;
+    onAddNewApp: (newApp: Omit<ITool, 'id'>) => Promise<void>;
+    onDeleteApp: (id: string) => Promise<void>;
     isItemSelected: (id: string) => boolean;
     toggleItem: (item: ITool) => void;
     currentCategory: AppCategoryType;
-    isReadOnly?: boolean;
 }
 
 const ToolIconsArea: React.FC<ToolIconsProps> = ({
@@ -26,35 +22,12 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     onDeleteApp,
     isItemSelected,
     toggleItem,
-    currentCategory,
-    isReadOnly = false,
 }) => {
-    const { user } = useAuth();
-    const { isEditMode, setIsEditMode } = useAuth();
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-
-    const handleAddNewApp = () => {
-        if (isEditMode) {
-            setIsAddModalOpen(true);
-        } else {
-            setIsConfirmModalOpen(true);
-        }
-    };
+    const { user, isEditMode } = useAuth();
 
     const handleDeleteApp = (appId: string) => {
-        if (isReadOnly || !onDeleteApp) return;
+        if (!isEditMode || !onDeleteApp) return;
         onDeleteApp(appId);
-    };
-
-    const handleConfirmEditMode = () => {
-        setIsEditMode(true);
-        setIsConfirmModalOpen(false);
-    };
-
-    const handleSubmitNewApp = (newApp: ITool) => {
-        if (isReadOnly || !onAddNewApp) return;
-        onAddNewApp(newApp);
     };
 
     const toggleSelectedItem = (item: ITool) => {
@@ -87,31 +60,18 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                 />
                             </div>
                         ))}
-                        {user && !isReadOnly && (
+                        {user && isEditMode && (
                             <AppIconCard
                                 isAddNewAppCard
                                 isStarred={false}
-                                onClick={handleAddNewApp}
+                                onClick={() => {}}
+                                onAddNewApp={onAddNewApp}
                                 onDeleteApp={() => {}}
                             />
                         )}
                     </div>
                 </div>
             </div>
-            <AddNewAppModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                onSubmit={handleSubmitNewApp}
-                currentCategory={currentCategory}
-            />
-
-            <ConfirmModal
-                isOpen={isConfirmModalOpen}
-                onClose={() => setIsConfirmModalOpen(false)}
-                onConfirm={handleConfirmEditMode}
-                title="🔄 Switch to Edit Mode"
-                message={`You can only add new apps in Edit mode.\nWould you like to switch to Edit mode?`}
-            />
         </>
     );
 };

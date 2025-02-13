@@ -15,8 +15,8 @@ import ZshPluginsPage from './ZshPluginsPage';
 
 interface AdvancedAppsProps {
     apps: ITool[];
-    onAddNewApp?: (newApp: ITool) => void;
-    onDeleteApp?: (id: string) => void;
+    onAddNewApp: (newApp: Omit<ITool, 'id'>) => Promise<void>;
+    onDeleteApp: (id: string) => Promise<void>;
 }
 
 const AdvancedAppsPage = ({
@@ -41,7 +41,6 @@ const AdvancedAppsPage = ({
                 apps,
                 onAddNewApp,
                 onDeleteApp,
-                copyToClipboard,
             };
 
             switch (category) {

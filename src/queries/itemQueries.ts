@@ -21,15 +21,13 @@ export const useGetItems = (userId: string) => {
 
 export const useAddItem = () => {
     const queryClient = useQueryClient();
+
     return useMutation({
-        mutationFn: ({ userId, newItem }: { userId: string; newItem: ITool }) =>
-            addAppToFirestore(userId, newItem),
-        onSuccess: (data, variables) => {
+        mutationFn: (newItem: ITool) => addAppToFirestore(newItem),
+        onSuccess: (data) => {
             queryClient.setQueryData<ITool[]>(
-                ['items', variables.userId],
-                (oldData) => {
-                    return oldData ? [...oldData, data] : [data];
-                }
+                ['items', data.userId],
+                (oldData) => (oldData ? [...oldData, data] : [data])
             );
         },
     });

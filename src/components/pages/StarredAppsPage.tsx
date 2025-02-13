@@ -74,6 +74,7 @@ export default function StarredAppsPage() {
                         <AppIconCard
                             key={app.id}
                             app={app}
+                            onAddNewApp={async () => {}}
                             onClick={() => {}}
                             onDeleteApp={() => {}}
                         />

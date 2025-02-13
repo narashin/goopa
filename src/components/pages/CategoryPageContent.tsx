@@ -17,7 +17,7 @@ interface CategoryPageContentProps {
     items: ITool[];
     isEditMode: boolean;
     isReadOnly: boolean;
-    onAddNewApp: (newApp: ITool) => Promise<void>;
+    onAddNewApp: (newApp: Omit<ITool, 'id'>) => Promise<void>;
     onDeleteApp: (appId: string) => Promise<void>;
     copyToClipboard: (text: string) => void;
 }
@@ -47,26 +47,11 @@ const CategoryPageContent = ({
             case AppCategoryType.Advanced:
                 return <AdvancedAppsPage {...commonProps} />;
             case AppCategoryType.Requirement:
-                return (
-                    <RequirementAppsPage
-                        {...commonProps}
-                        copyToClipboard={copyToClipboard}
-                    />
-                );
+                return <RequirementAppsPage {...commonProps} />;
             case AppCategoryType.ZshPlugin:
-                return (
-                    <ZshPluginsPage
-                        {...commonProps}
-                        copyToClipboard={copyToClipboard}
-                    />
-                );
+                return <ZshPluginsPage {...commonProps} />;
             case AppCategoryType.Additional:
-                return (
-                    <AdditionalAppsPage
-                        {...commonProps}
-                        copyToClipboard={copyToClipboard}
-                    />
-                );
+                return <AdditionalAppsPage {...commonProps} />;
             default:
                 return <div>Category not found.</div>;
         }

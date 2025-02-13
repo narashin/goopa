@@ -29,10 +29,15 @@ export function useItems() {
         newItem: Omit<ITool, 'id' | 'starCount' | 'userId'>
     ) => {
         if (user) {
-            addItemMutation.mutate({
+            const completeItem: ITool = {
+                ...newItem,
+                id: crypto.randomUUID(),
+                starCount: 0,
                 userId: user.uid,
-                newItem: newItem as ITool,
-            });
+                icon: newItem.icon ?? null,
+            };
+
+            addItemMutation.mutate(completeItem);
         }
     };
 

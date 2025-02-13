@@ -20,18 +20,18 @@ type FieldConfig = {
 interface AddNewAppFormProps {
     onSubmit: (newApp: Omit<ITool, 'id' | 'starCount' | 'userId'>) => void;
     onClose: () => void;
-    currentCategory: AppCategoryType;
 }
 
 export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     onSubmit,
     onClose,
-    currentCategory,
 }) => {
     const [name, setName] = useState('');
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [iconPreview, setIconPreview] = useState<string | null>(null);
-    const [category, setCategory] = useState<AppCategoryType>(currentCategory);
+    const [category, setCategory] = useState<AppCategoryType>(
+        AppCategoryType.General
+    );
     const [url, setDownloadUrl] = useState('');
     const [tooltip, setTooltip] = useState('');
     const [installCommand, setInstallCommand] = useState('');

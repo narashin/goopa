@@ -23,18 +23,28 @@ import { AuthenticatedUserData, UserData } from '../types/user';
 import { userConverter } from './auth';
 import { firestore } from './firebase';
 
-export const addAppToFirestore = async (
-    userId: string,
-    appData: Omit<ITool, 'starCount'>
-): Promise<ITool> => {
+const removeUndefinedFields = (obj: Partial<ITool>): Partial<ITool> => {
+    return Object.fromEntries(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Object.entries(obj).filter(([_, value]) => value !== undefined)
+    ) as Partial<ITool>;
+};
+
+export const addAppToFirestore = async (appData: ITool): Promise<ITool> => {
     try {
-        const userDocRef = doc(firestore, 'users', userId);
+        if (!appData.userId) {
+            throw new Error('User ID is missing in appData');
+        }
+
+        const userDocRef = doc(firestore, 'users', appData.userId);
         const appsCollectionRef = collection(userDocRef, 'apps');
         const newAppDocRef = doc(appsCollectionRef, appData.id);
-        const newApp: ITool = { ...appData, starCount: 0 };
-        await setDoc(newAppDocRef, newApp);
 
-        return newApp;
+        const cleanAppData = removeUndefinedFields(appData);
+
+        await setDoc(newAppDocRef, cleanAppData);
+
+        return cleanAppData as ITool;
     } catch (error) {
         console.error('Error adding app:', error);
         throw error;
@@ -476,11 +486,9 @@ export const shareUser = async (userUid: string): Promise<string> => {
         const userData = userDoc.data();
         const shareHistory = userData?.shareHistory || [];
 
-        // 새로운 shareId 생성
         const newShareId = nanoid();
         const startedAt = new Date().toISOString();
 
-        // 이전 share 종료 처리
         if (shareHistory.length > 0) {
             const lastShare = shareHistory[shareHistory.length - 1];
             if (lastShare.endedAt === null) {
@@ -488,7 +496,6 @@ export const shareUser = async (userUid: string): Promise<string> => {
             }
         }
 
-        // 새로운 share 정보 추가
         const newShareInfo = {
             shareId: newShareId,
             startedAt,
@@ -496,7 +503,6 @@ export const shareUser = async (userUid: string): Promise<string> => {
         };
         shareHistory.push(newShareInfo);
 
-        // Firestore 업데이트
         await setDoc(
             userDocRef,
             {
@@ -510,7 +516,7 @@ export const shareUser = async (userUid: string): Promise<string> => {
         return newShareId;
     } catch (error) {
         console.error('Error sharing user:', error);
-        throw error; // 에러를 throw하여 호출자가 처리할 수 있도록 함
+        throw error;
     }
 };
 

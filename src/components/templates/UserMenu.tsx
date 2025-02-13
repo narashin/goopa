@@ -2,11 +2,14 @@ import type React from 'react'; // Added import for React
 import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import router from 'next/router';
 
 import { Menu, Transition } from '@headlessui/react';
 
 import { useShare } from '../../hooks/useShare';
 import type { AuthenticatedUserData } from '../../types/user';
+import { errorToast, successToast } from '../ui/Toast';
 
 interface UserMenuProps {
     user: AuthenticatedUserData;
@@ -21,24 +24,33 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     toggleEditMode,
     isEditMode,
 }) => {
-    const { shareData, handleShare, handleUnshare } = useShare(user.uid);
-    const [localIsShared, setLocalIsShared] = useState(
-        shareData?.isShared ?? false
+    const { isShared, shareUrl, handleShare, handleUnshare } = useShare(
+        user.uid
     );
+    const [localIsShared, setLocalIsShared] = useState(isShared ?? false);
+    const pathname = usePathname();
+    const isSharePath = pathname.startsWith('/share');
+    const pathParts = pathname.split('/');
+    const isOwnShare = pathParts[2] === user.customUserId;
+    const canEditShare = !isSharePath || (isSharePath && isOwnShare);
 
     useEffect(() => {
-        setLocalIsShared(shareData?.isShared ?? false);
-    }, [shareData?.isShared]);
+        setLocalIsShared(isShared ?? false);
+    }, [isShared]);
+
+    const handleGoToMyGoopa = useCallback(() => {
+        router.push(`/`);
+    }, [router]);
 
     const handleShareClick = useCallback(async () => {
         if (user.uid) {
             try {
                 await handleShare(user.uid);
                 setLocalIsShared(true);
-                // TODO: Add a success toast or notification
+                successToast('Goopa Shared!');
             } catch (error) {
-                console.error('Error sharing:', error);
-                // TODO: Add an error toast or notification
+                errorToast('Error Sharing Goopa');
+                console.log('Error sharing:', error);
             }
         }
     }, [handleShare, user.uid]);
@@ -48,22 +60,27 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             try {
                 await handleUnshare(user.uid);
                 setLocalIsShared(false);
-                // TODO: Add a success toast or notification
+                successToast('Goopa unshared!');
             } catch (error) {
-                console.error('Error unsharing:', error);
-                // TODO: Add an error toast or notification
+                console.error('Error doing unshare:', error);
+                errorToast('Error unshare Goopa');
             }
         }
     }, [handleUnshare, user.uid]);
 
-    const handleCopyUrl = useCallback(() => {
-        if (shareData?.shareUrl) {
-            const fullUrl = `${window.location.origin}${shareData.shareUrl}`;
-            navigator.clipboard.writeText(fullUrl);
-            // TODO: Add a toast or notification here
-            console.log('🎉 Public URL copied to clipboard!');
+    const handleCopyUrl = useCallback(async () => {
+        console.log('handleCopyUrl', shareUrl);
+        if (isShared) {
+            const fullUrl = `${window.location.origin}${shareUrl}`;
+            try {
+                await navigator.clipboard.writeText(fullUrl);
+                successToast('Public URL copied to clipboard!');
+            } catch (error) {
+                console.error('Error copying to clipboard:', error);
+                errorToast('Error copying to clipboard');
+            }
         }
-    }, [shareData?.shareUrl]);
+    }, [shareUrl]);
 
     return (
         <Menu as="div" className="relative inline-block text-left">
@@ -98,7 +115,19 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             >
                 <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="px-4 py-2 text-sm">
-                        {localIsShared && (
+                        {isSharePath && !isOwnShare && (
+                            <Menu.Item>
+                                {({ active }) => (
+                                    <button
+                                        onClick={handleGoToMyGoopa}
+                                        className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                    >
+                                        Go To My Goopa
+                                    </button>
+                                )}
+                            </Menu.Item>
+                        )}
+                        {localIsShared && canEditShare && (
                             <>
                                 <Menu.Item>
                                     {({ active }) => (
@@ -119,7 +148,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                             </>
                         )}
 
-                        <Menu.Item>
+                        <Menu.Item disabled={!canEditShare}>
                             {({ active }) => (
                                 <button
                                     onClick={
@@ -127,7 +156,16 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                                             ? handleUnshareClick
                                             : handleShareClick
                                     }
-                                    className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                    className={`${
+                                        active && canEditShare
+                                            ? 'bg-gray-100'
+                                            : ''
+                                    } group flex w-full items-center rounded-md px-2 py-2 text-sm ${
+                                        canEditShare
+                                            ? ''
+                                            : 'opacity-50 cursor-not-allowed'
+                                    }`}
+                                    disabled={!canEditShare}
                                 >
                                     {localIsShared ? 'Unpublish' : 'Publish'}
                                 </button>
@@ -149,7 +187,16 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                                 {({ active }) => (
                                     <button
                                         onClick={toggleEditMode}
-                                        className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                        className={`${
+                                            active && canEditShare
+                                                ? 'bg-gray-100'
+                                                : ''
+                                        } group flex w-full items-center rounded-md px-2 py-2 text-sm ${
+                                            canEditShare
+                                                ? ''
+                                                : 'opacity-50 cursor-not-allowed'
+                                        }`}
+                                        disabled={!canEditShare}
                                     >
                                         Enter Edit Mode
                                     </button>
