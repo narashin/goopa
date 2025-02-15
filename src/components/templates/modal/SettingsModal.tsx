@@ -5,7 +5,8 @@ import ReactDOM from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { useItems } from '../../../hooks/useItem';
+import { useItems } from '../../../hooks/useItems';
+import { removeUndefinedFields } from '../../../lib/utils';
 import { AppCategoryType } from '../../../types/category';
 import { ITool } from '../../../types/item';
 import { IconDisplay } from '../../ui/IconDisplay';
@@ -25,7 +26,7 @@ export function SettingsModal({
     onSave,
     onUpdate,
 }: SettingsModalProps) {
-    const [updatedApp, setUpdatedApp] = useState(initialApp);
+    const [updatedApp, setUpdatedApp] = useState<ITool>(initialApp);
     const { updateItem } = useItems();
     const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
     const [contentHeight, setContentHeight] = useState<number>(400);
@@ -57,7 +58,12 @@ export function SettingsModal({
         if (readOnly) return;
 
         try {
-            await updateItem(updatedApp);
+            console.log('저장할 앱 정보:', updatedApp);
+
+            const { id, ...updateFields } = updatedApp;
+            const cleanFields = removeUndefinedFields(updateFields);
+
+            await updateItem(id, cleanFields);
             onUpdate(updatedApp);
             onSave(updatedApp);
             onClose();
@@ -69,7 +75,6 @@ export function SettingsModal({
     const modalContent = (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-xl">
-                {/* macOS-style window header */}
                 <div className="bg-gray-200 px-4 py-2 flex items-center rounded-t-lg border-b border-gray-300">
                     <div className="flex space-x-2">
                         <button
@@ -89,7 +94,7 @@ export function SettingsModal({
                 <div className="flex p-4 border-b border-gray-200">
                     <div className="w-16 h-16 mr-4">
                         <IconDisplay
-                            icon={updatedApp.icon}
+                            icon={updatedApp.icon ?? ''}
                             name={updatedApp.name}
                         />
                     </div>
@@ -106,7 +111,7 @@ export function SettingsModal({
                                         name="url"
                                         value={updatedApp.url || ''}
                                         onChange={handleInputChange}
-                                        placeholder="Download URL"
+                                        placeholder="URL"
                                         className="flex-1 p-1 text-sm border rounded"
                                         readOnly={readOnly}
                                     />

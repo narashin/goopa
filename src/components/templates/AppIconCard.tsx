@@ -5,8 +5,9 @@ import { MinusIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 import { useAuth } from '../../hooks/useAuth';
-import { useItems } from '../../hooks/useItem';
+import { useItems } from '../../hooks/useItems';
 import { useStarApp } from '../../hooks/useStarApp';
+import { removeUndefinedFields } from '../../lib/utils';
 import { useShareStore } from '../../stores/shareStore';
 import { useTooltipStore } from '../../stores/tooltipStore';
 import { ITool } from '../../types/item';
@@ -23,8 +24,6 @@ interface AppCardProps {
     isAddNewAppCard?: boolean;
     onAddNewApp?: (newApp: Omit<ITool, 'id'>) => Promise<void>;
     onDeleteApp: (id: string) => void;
-    isStarred?: boolean;
-    starCount?: number;
 }
 
 export const AppIconCard: React.FC<AppCardProps> = ({
@@ -42,10 +41,10 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
     const [showAddNewAppModal, setShowAddNewAppModal] = useState(false);
-    const starAppHook = useStarApp(app || null);
+    const starAppHook = useStarApp(app as ITool);
     const {
-        isStarred = false,
-        starCount = 0,
+        isStarred,
+        starCount,
         toggleStar = () => {},
         showLoginPrompt = false,
         setShowLoginPrompt = () => {},
@@ -73,13 +72,10 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         ]
     );
 
-    const handleAddNewApp = async (newApp: Omit<ITool, 'id'>) => {
-        await onAddNewApp?.(newApp);
-        setShowAddNewAppModal(false);
-    };
-
-    const handleCloseAddNewAppModal = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleCloseAddNewAppModal = useCallback((e?: React.MouseEvent) => {
+        if (e) {
+            e.stopPropagation();
+        }
         setShowAddNewAppModal(false);
     }, []);
 
@@ -120,7 +116,9 @@ export const AppIconCard: React.FC<AppCardProps> = ({
 
     const handleUpdateApp = (updatedApp: ITool) => {
         setSelectedApp(updatedApp);
-        updateApp(updatedApp);
+        const { id, ...updateFields } = updatedApp;
+        const cleanFields = removeUndefinedFields(updateFields);
+        updateApp(id, cleanFields);
     };
 
     const handleIconClick = (e: React.MouseEvent) => {
@@ -176,22 +174,22 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                         <>
                             <button
                                 onClick={handleStarClick}
-                                className={`absolute -top-1 right-0 h-5 bg-black flex items-center justify-center border border-white/30 z-10 transition-all duration-200 ease-in-out ${
-                                    isStarred
-                                        ? 'rounded-full px-2'
-                                        : 'rounded-full w-5'
+                                className={`absolute -top-1 right-0 h-5 bg-black flex items-center justify-center border border-white/30 z-10 transition-all duration-200 ease-in-out rounded-full ${
+                                    starCount && starCount > 0 ? 'px-2' : 'w-5'
                                 }`}
                             >
-                                {isStarred ? (
-                                    <>
-                                        <span className="mr-1 text-xs text-white">
-                                            {starCount}
-                                        </span>
-                                        <StarIconSolid className="w-3 h-3 text-yellow-400" />
-                                    </>
+                                {user && isStarred ? (
+                                    <StarIconSolid className="w-3 h-3 text-yellow-400" />
                                 ) : (
                                     <StarIcon className="w-3 h-3 text-white/70" />
                                 )}
+                                <span
+                                    className={`text-xs text-white ${starCount && starCount > 0 ? 'ml-1' : ''}`}
+                                >
+                                    {starCount && starCount > 0
+                                        ? starCount
+                                        : ''}
+                                </span>
                             </button>
                             <ConfirmModal
                                 isOpen={showLoginPrompt}
@@ -239,7 +237,13 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                 <AddNewAppModal
                     isOpen={showAddNewAppModal}
                     onClose={handleCloseAddNewAppModal}
-                    onSubmit={handleAddNewApp}
+                    onSubmit={(newApp) => {
+                        console.log(
+                            '🟢 AddNewAppModal onSubmit 호출됨',
+                            newApp
+                        );
+                        onAddNewApp?.(newApp);
+                    }}
                 />
             )}
         </div>

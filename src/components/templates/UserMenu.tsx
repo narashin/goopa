@@ -2,8 +2,7 @@ import type React from 'react'; // Added import for React
 import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import router from 'next/router';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Menu, Transition } from '@headlessui/react';
 
@@ -29,6 +28,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     );
     const [localIsShared, setLocalIsShared] = useState(isShared ?? false);
     const pathname = usePathname();
+    const router = useRouter();
     const isSharePath = pathname.startsWith('/share');
     const pathParts = pathname.split('/');
     const isOwnShare = pathParts[2] === user.customUserId;
@@ -208,8 +208,18 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                         <Menu.Item>
                             {({ active }) => (
                                 <button
+                                    onClick={() => router.push('/starred-apps')}
+                                    className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-6 py-2 text-sm`}
+                                >
+                                    Starred Apps
+                                </button>
+                            )}
+                        </Menu.Item>
+                        <Menu.Item>
+                            {({ active }) => (
+                                <button
                                     onClick={handleSignOut}
-                                    className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm text-red-500`}
+                                    className={`${active ? 'bg-gray-100' : ''} group flex w-full items-center rounded-md px-6 py-2 text-sm text-red-500`}
                                 >
                                     Sign out
                                 </button>

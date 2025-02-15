@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -18,6 +18,7 @@ import { useAuthStore } from '../stores/authStore';
 export function useAuth() {
     const queryClient = useQueryClient();
     const router = useRouter();
+    const pathname = usePathname();
     const { data: user, isLoading } = useAuthQuery();
     const signIn = useSignInMutation();
     const signOut = useSignOutMutation();
@@ -27,12 +28,14 @@ export function useAuth() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (newUser) => {
             queryClient.setQueryData(['user'], newUser);
-            if (!newUser) {
+
+            if (!newUser && !pathname.startsWith('/share/')) {
                 router.push('/');
             }
         });
+
         return () => unsubscribe();
-    }, [queryClient]);
+    }, [queryClient, pathname]);
 
     const handleSignIn = async () => {
         try {

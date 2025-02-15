@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import Image from 'next/image';
 
 import { ClipboardIcon } from '@heroicons/react/24/outline';
 
 import { categoryColors, categoryOrder } from '../../constants/category';
+import { useCategoryStore } from '../../stores/categoryStore';
 import { SubCategoryType } from '../../types/category';
 import { ITool } from '../../types/item';
 import AdditionalAppsPage from './AdditionalAppsPage';
@@ -24,8 +25,7 @@ const AdvancedAppsPage = ({
     onAddNewApp,
     onDeleteApp,
 }: AdvancedAppsProps) => {
-    const [selectedCategory, setSelectedCategory] =
-        useState<SubCategoryType | null>(null);
+    const { selectedSubCategory, setSelectedSubCategory } = useCategoryStore();
 
     const handleHomebrewClick = useCallback(() => {
         window.open('https://brew.sh/', '_blank', 'noopener,noreferrer');
@@ -66,8 +66,8 @@ const AdvancedAppsPage = ({
     return (
         <>
             <div className="flex-1 overflow-auto relative h-full">
-                {selectedCategory ? (
-                    renderCategoryContent(selectedCategory)
+                {selectedSubCategory ? (
+                    renderCategoryContent(selectedSubCategory)
                 ) : (
                     <div className="p-6">
                         <div className="mb-8">
@@ -114,26 +114,28 @@ const AdvancedAppsPage = ({
                     <div
                         key={category}
                         className={`relative w-24 h-10 flex items-center transform transition-transform duration-200 overflow-hidden cursor-pointer ${
-                            category === selectedCategory
+                            category === selectedSubCategory
                                 ? '-translate-x-2'
                                 : 'hover:-translate-x-2'
                         }`}
                         onClick={() =>
-                            setSelectedCategory(
-                                category === selectedCategory ? null : category
+                            setSelectedSubCategory(
+                                category === selectedSubCategory
+                                    ? null
+                                    : category
                             )
                         }
                     >
                         <div
                             className={`absolute inset-0 rounded-r-md transition-colors ${
-                                category === selectedCategory
+                                category === selectedSubCategory
                                     ? categoryColors[category]
                                     : 'bg-white'
                             }`}
                         />
                         <span
                             className={`relative z-10 text-gray-800 text-xs font-medium capitalize pl-2 transition-colors ${
-                                category === selectedCategory
+                                category === selectedSubCategory
                                     ? 'text-white'
                                     : ''
                             }`}
@@ -142,7 +144,7 @@ const AdvancedAppsPage = ({
                         </span>
                         <div
                             className={`absolute right-0 top-0 w-7 h-full ${categoryColors[category]} rounded-r-md ${
-                                category === selectedCategory
+                                category === selectedSubCategory
                                     ? 'opacity-100'
                                     : 'opacity-50'
                             }`}

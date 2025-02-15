@@ -1,46 +1,9 @@
 import { getRedirectResult, signInWithPopup, User } from 'firebase/auth';
-import {
-    doc,
-    FirestoreDataConverter,
-    getDoc,
-    setDoc,
-} from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import {
-    AnonymousUserData,
-    AuthenticatedUserData,
-    UserData,
-} from '../types/user';
-import { auth, firestore, googleProvider } from './firebase';
-
-export const userConverter: FirestoreDataConverter<UserData> = {
-    toFirestore: (userData: UserData) => {
-        if (!userData.isAnonymous) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { ShareHistory, ...dataToStore } = userData;
-            return dataToStore;
-        }
-        return userData;
-    },
-    fromFirestore: (snapshot, options) => {
-        const data = snapshot.data(options);
-        if (data.isAnonymous) {
-            return {
-                uid: snapshot.id,
-                isAnonymous: true,
-                createdAt: data.createdAt,
-            } as AnonymousUserData;
-        } else {
-            return {
-                ...data,
-                uid: snapshot.id,
-                isAnonymous: false,
-                ShareHistory: data.ShareHistory || [],
-            } as AuthenticatedUserData;
-        }
-    },
-};
+import { AuthenticatedUserData } from '../types/user';
+import { auth, googleProvider } from './firebase';
+import { getUser, saveUser } from './firestore/users';
 
 const createUserData = (user: User): AuthenticatedUserData => {
     return {
@@ -54,7 +17,7 @@ const createUserData = (user: User): AuthenticatedUserData => {
         createdAt: new Date(new Date().getTime() + 9 * 60 * 60 * 1000)
             .toISOString()
             .replace('Z', '+09:00'),
-        ShareHistory: [],
+        shareHistory: [],
         emailVerified: user.emailVerified,
         metadata: {
             creationTime: user.metadata.creationTime || '',
@@ -66,18 +29,14 @@ const createUserData = (user: User): AuthenticatedUserData => {
 export const signInWithGoogle = async (): Promise<AuthenticatedUserData> => {
     try {
         const result = await signInWithPopup(auth, googleProvider);
-        const userRef = doc(firestore, 'users', result.user.uid).withConverter(
-            userConverter
-        );
-        const userSnapshot = await getDoc(userRef);
+        let userData = await getUser(result.user.uid).catch(() => null);
 
-        if (!userSnapshot.exists()) {
-            const newUserData = createUserData(result.user);
-            await setDoc(userRef, newUserData);
-            return newUserData;
+        if (!userData) {
+            userData = createUserData(result.user);
+            await saveUser(userData);
         }
 
-        return userSnapshot.data() as AuthenticatedUserData;
+        return userData as AuthenticatedUserData;
     } catch (error) {
         console.error('Error during Google sign-in:', error);
         throw new Error('Authentication failed');
@@ -98,20 +57,14 @@ export const handleGoogleRedirect =
         try {
             const result = await getRedirectResult(auth);
             if (result?.user) {
-                const userRef = doc(
-                    firestore,
-                    'users',
-                    result.user.uid
-                ).withConverter(userConverter);
-                const userSnapshot = await getDoc(userRef);
+                let userData = await getUser(result.user.uid).catch(() => null);
 
-                if (!userSnapshot.exists()) {
-                    const newUserData = createUserData(result.user);
-                    await setDoc(userRef, newUserData);
-                    return newUserData;
+                if (!userData) {
+                    userData = createUserData(result.user);
+                    await saveUser(userData);
                 }
 
-                return userSnapshot.data() as AuthenticatedUserData;
+                return userData as AuthenticatedUserData;
             }
             return null;
         } catch (error) {
@@ -119,22 +72,3 @@ export const handleGoogleRedirect =
             throw new Error('Authentication failed');
         }
     };
-
-export const getUser = async (uid: string): Promise<UserData> => {
-    const userRef = doc(firestore, 'users', uid).withConverter(userConverter);
-    const userSnapshot = await getDoc(userRef);
-
-    if (!userSnapshot.exists()) {
-        throw new Error('User not found');
-    }
-
-    return userSnapshot.data();
-};
-
-export const getCustomUserId = async (uid: string): Promise<string> => {
-    const user = await getUser(uid);
-    if (user.isAnonymous) {
-        throw new Error('Anonymous users do not have a customUserId');
-    }
-    return user.customUserId;
-};

@@ -7,9 +7,13 @@ import {
     useQueryClient,
 } from '@tanstack/react-query';
 
-import { getUser, signInWithGoogle, signOutWithGoogle } from '../lib/auth';
+import { signInWithGoogle, signOutWithGoogle } from '../lib/auth';
 import { auth } from '../lib/firebase';
-import { getUserByCustomUserId } from '../lib/firestore';
+import {
+    createUserIfNotExists,
+    getUser,
+    getUserByCustomUserId,
+} from '../lib/firestore/users';
 import { useAuthStore } from '../stores/authStore';
 import { UserData } from '../types/user';
 
@@ -22,7 +26,8 @@ export const useAuthQuery = () => {
         queryFn: async () => {
             const firebaseUser = auth.currentUser;
             if (firebaseUser) {
-                return await getUser(firebaseUser.uid);
+                const userData = await getUser(firebaseUser.uid);
+                return userData;
             }
             return null;
         },
@@ -49,9 +54,13 @@ export const useSignInMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: signInWithGoogle,
-        onMutate: async () => {
-            await queryClient.cancelQueries({ queryKey: ['user'] });
+        mutationFn: async () => {
+            const user = await signInWithGoogle();
+            await createUserIfNotExists(user.uid, user); // ✅ Firestore에 사용자 문서 생성 (없으면)
+            return user;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user'] });
         },
     });
 };

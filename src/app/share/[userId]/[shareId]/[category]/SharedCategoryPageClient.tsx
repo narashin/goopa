@@ -5,11 +5,11 @@ import { notFound } from 'next/navigation';
 
 import type { AppCategoryType } from '@/types/category';
 import type { ITool } from '@/types/item';
-import type { AuthenticatedUserData } from '@/types/user';
 
 import CategoryPageContent from '../../../../../components/pages/CategoryPageContent';
 import { useUserByCustomUserId } from '../../../../../queries/authQueries';
 import { useItemsByCustomUserId } from '../../../../../queries/itemQueries';
+import { AuthenticatedUserData } from '../../../../../types/user';
 
 interface SharedCategoryPageClientProps {
     category: AppCategoryType;
@@ -22,23 +22,21 @@ export default function SharedCategoryPageClient({
     customUserId,
     shareId,
 }: SharedCategoryPageClientProps) {
-    const { data: user, isLoading: isUserLoading } =
+    const { data: sharedUser, isLoading: isUserLoading } =
         useUserByCustomUserId(customUserId);
     const { data: items, isLoading } = useItemsByCustomUserId(customUserId);
 
-    const authenticatedUser = user as AuthenticatedUserData | null;
     const toolItems = items as ITool[] | undefined;
 
     if (isLoading || isUserLoading) {
         return <div>로딩 중...</div>;
     }
 
+    const authenticatedSharedUser = sharedUser as AuthenticatedUserData | null;
     if (
-        !authenticatedUser ||
-        authenticatedUser.isAnonymous ||
-        !authenticatedUser.isShared ||
-        !authenticatedUser.lastShareId ||
-        authenticatedUser.lastShareId !== shareId
+        !authenticatedSharedUser ||
+        !authenticatedSharedUser.isShared ||
+        authenticatedSharedUser.lastShareId !== shareId
     ) {
         notFound();
     }

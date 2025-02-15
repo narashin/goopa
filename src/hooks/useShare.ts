@@ -19,7 +19,6 @@ export function useShare(userId: string | null) {
     useEffect(() => {
         if (shareData) {
             shareStore.setIsShared(shareData.isShared);
-            shareStore.setLastShareId(shareData.lastShareId);
             if (
                 shareData.isShared &&
                 shareData.customUserId &&
@@ -37,13 +36,16 @@ export function useShare(userId: string | null) {
     const handleShare = async (uid: string) => {
         try {
             const newShareId = await shareMutation.mutateAsync(uid);
-            shareStore.setLastShareId(newShareId);
+
             shareStore.setIsShared(true);
+            shareStore.setLastShareId(newShareId);
+
             if (shareData?.customUserId) {
                 shareStore.setShareUrl(
                     `/share/${shareData.customUserId}/${newShareId}`
                 );
             }
+
             successToast('Goopa successfully shared');
         } catch (error) {
             console.error('Error sharing user:', error);
@@ -55,8 +57,6 @@ export function useShare(userId: string | null) {
         try {
             await unshareMutation.mutateAsync(uid);
             shareStore.setIsShared(false);
-            shareStore.setShareUrl('');
-            shareStore.setLastShareId(null);
             successToast('Goopa successfully unshared');
         } catch (error) {
             console.error('Error unsharing user:', error);

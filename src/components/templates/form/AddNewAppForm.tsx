@@ -5,10 +5,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { uploadToS3 } from '../../../lib/s3';
-import { AppCategoryType } from '../../../types/category';
+import { useCategoryStore } from '../../../stores/categoryStore';
+import { AppCategoryType, SubCategoryType } from '../../../types/category';
 import { ITool } from '../../../types/item';
 
-// fieldConfig에 대한 타입 정의
 type FieldConfig = {
     [key in AppCategoryType]: {
         required: string[];
@@ -19,7 +19,7 @@ type FieldConfig = {
 
 interface AddNewAppFormProps {
     onSubmit: (newApp: Omit<ITool, 'id' | 'starCount' | 'userId'>) => void;
-    onClose: () => void;
+    onClose: (e?: React.MouseEvent) => void;
 }
 
 export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
@@ -29,8 +29,12 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [name, setName] = useState('');
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [iconPreview, setIconPreview] = useState<string | null>(null);
-    const [category, setCategory] = useState<AppCategoryType>(
-        AppCategoryType.General
+    const { category, selectedSubCategory } = useCategoryStore();
+    const [localCategory, setLocalCategory] = useState<AppCategoryType>(
+        category === AppCategoryType.Advanced
+            ? ((selectedSubCategory ??
+                  SubCategoryType.Requirement) as unknown as AppCategoryType)
+            : category
     );
     const [url, setDownloadUrl] = useState('');
     const [tooltip, setTooltip] = useState('');
@@ -38,6 +42,17 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [zshrcCommand, setZshrcCommand] = useState('');
     const [formTouched, setFormTouched] = useState(false);
     const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        if (category === AppCategoryType.Advanced) {
+            setLocalCategory(
+                (selectedSubCategory ??
+                    SubCategoryType.Requirement) as unknown as AppCategoryType
+            );
+        } else {
+            setLocalCategory(category);
+        }
+    }, [category, selectedSubCategory]);
 
     const categoryOptions = [
         { value: AppCategoryType.General, label: 'General' },
@@ -319,9 +334,9 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 </label>
                 <select
                     id="category"
-                    value={category}
+                    value={localCategory}
                     onChange={(e) =>
-                        setCategory(e.target.value as AppCategoryType)
+                        setLocalCategory(e.target.value as AppCategoryType)
                     }
                     required
                     className={inputClassName(!!errors.category)}

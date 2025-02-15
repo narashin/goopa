@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import { useAuth } from '../../../hooks/useAuth';
+import { AppCategoryType } from '../../../types/category';
 import { ITool } from '../../../types/item';
 import { errorToast } from '../../ui/Toast';
 import { AddNewAppForm } from '../form/AddNewAppForm';
 
 interface AddNewAppModalProps {
     isOpen: boolean;
-    onClose: (e?: React.MouseEvent) => void;
+    onClose: (e?: React.MouseEvent | undefined) => void;
     onSubmit: (newApp: ITool) => void;
+    currentCategory?: AppCategoryType;
 }
 
 export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
@@ -30,7 +32,7 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
         if (user) {
             try {
                 await onSubmit(newApp as ITool);
-                onClose();
+                onClose(undefined);
             } catch (error) {
                 console.error('Failed to add app', error);
                 errorToast('Failed to add app');
@@ -38,6 +40,13 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
         } else {
             errorToast('User is not authenticated');
         }
+    };
+
+    const handleClose = (e?: React.MouseEvent) => {
+        if (e) {
+            e.stopPropagation();
+        }
+        onClose();
     };
 
     if (!isOpen) return null;
@@ -49,7 +58,7 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
                 <div className="px-4 py-2 flex items-center">
                     <div className="flex space-x-2">
                         <button
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 focus:outline-none"
                         ></button>
                         <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -62,7 +71,7 @@ export const AddNewAppModal: React.FC<AddNewAppModalProps> = ({
                 <div className="p-6 bg-white rounded-b-lg">
                     <AddNewAppForm
                         onSubmit={handleFormSubmit}
-                        onClose={onClose}
+                        onClose={handleClose}
                     />
                 </div>
             </div>

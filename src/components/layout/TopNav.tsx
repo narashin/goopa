@@ -8,6 +8,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearch } from '../../hooks/useSearch';
 import { useShare } from '../../hooks/useShare';
+import { useCategoryStore } from '../../stores/categoryStore';
+import { AppCategoryType } from '../../types/category';
 import { AuthenticatedUserData } from '../../types/user';
 import { UserMenu } from '../templates/UserMenu';
 import { Logo } from '../ui/Logo';
@@ -26,6 +28,7 @@ export function TopNav() {
         setIsEditMode,
     } = useAuth();
     const pathname = usePathname();
+    const { setCategory } = useCategoryStore();
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
     const { shareData } = useShare(user?.uid ?? null);
@@ -33,11 +36,29 @@ export function TopNav() {
         user?.uid,
         shareData?.isShared
     );
+
     const views = ['home', 'general', 'dev', 'advanced'];
+
+    useEffect(() => {
+        if (pathname.includes('/general')) {
+            setCategory(AppCategoryType.General);
+        } else if (pathname.includes('/dev')) {
+            setCategory(AppCategoryType.Dev);
+        } else if (pathname.includes('/advanced')) {
+            setCategory(AppCategoryType.Advanced);
+        } else {
+            setCategory(AppCategoryType.Home);
+        }
+    }, [pathname, setCategory]);
 
     const generateLink = (category: string) => {
         if (pathname?.startsWith('/share/')) {
-            const [, , customUserId, publishId] = pathname.split('/');
+            const pathParts = pathname.split('/');
+            const customUserId = pathParts.length > 2 ? pathParts[2] : null;
+            const publishId = pathParts.length > 3 ? pathParts[3] : null;
+
+            if (!customUserId || !publishId) return '/';
+
             return `/share/${customUserId}/${publishId}${category === 'home' ? '' : `/${category}`}`;
         } else {
             return category === 'home' ? '/' : `/${category}`;
@@ -65,32 +86,46 @@ export function TopNav() {
         (query: string) => {
             setSearchQuery(query);
             if (query) {
-                if (shareData?.isShared) {
-                    const [, , customUserId, publishId] =
-                        pathname?.split('/') || [];
+                // 현재 경로를 기반으로 공유 정보 추출
+                const pathParts = pathname?.split('/') || [];
+                const customUserId = pathParts.length > 2 ? pathParts[2] : null;
+                const publishId = pathParts.length > 3 ? pathParts[3] : null;
+
+                if (
+                    pathname.startsWith('/share/') &&
+                    customUserId &&
+                    publishId
+                ) {
+                    // 공유 URL을 유지한 상태에서 검색
                     router.push(
                         `/share/${customUserId}/${publishId}/search?q=${encodeURIComponent(query)}`,
                         { scroll: false }
                     );
                 } else {
+                    // 일반 검색 URL
                     router.push(`/search?q=${encodeURIComponent(query)}`, {
                         scroll: false,
                     });
                 }
             }
         },
-        [router, shareData?.isShared, pathname]
+        [router, pathname]
     );
 
     const handleClearSearch = useCallback(() => {
         setSearchQuery('');
-        if (shareData?.isShared) {
-            const [, , customUserId, publishId] = pathname?.split('/') || [];
+
+        const pathParts = pathname?.split('/') || [];
+        const customUserId = pathParts.length > 2 ? pathParts[2] : null;
+        const publishId = pathParts.length > 3 ? pathParts[3] : null;
+
+        if (pathname.startsWith('/share/') && customUserId && publishId) {
+            // 공유 URL 유지한 채 검색 초기화
             router.push(`/share/${customUserId}/${publishId}`);
         } else {
             router.push('/');
         }
-    }, [router, shareData?.isShared, pathname]);
+    }, [router, pathname]);
 
     if (loading) {
         return (

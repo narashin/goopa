@@ -1,40 +1,18 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { AppIconCard } from '../../components/templates/AppIconCard';
 import { useAuth } from '../../hooks/useAuth';
-import { getStarredAppsByUser } from '../../lib/firestore';
-import { ITool } from '../../types/item';
+import { useGetStarredApps } from '../../queries/starQueries';
 import { Skeleton } from '../ui/skeletons/Skeleton';
 
 export default function StarredAppsPage() {
     const { user } = useAuth();
-    const [starredApps, setStarredApps] = useState<ITool[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const userId = user?.uid ?? null;
 
-    useEffect(() => {
-        const fetchStarredApps = async () => {
-            if (user) {
-                try {
-                    setIsLoading(true);
-                    setError(null);
-                    const apps = await getStarredAppsByUser(user.uid);
-                    setStarredApps(apps);
-                } catch (error) {
-                    console.error('Error loading starred apps:', error);
-                    setError(
-                        'Unable to load starred apps. Please try again later.'
-                    );
-                } finally {
-                    setIsLoading(false);
-                }
-            }
-        };
+    const { data: starredApps, isLoading, error } = useGetStarredApps(userId);
 
-        fetchStarredApps();
-    }, [user]);
-
+    console.log('Rendering starred apps:', starredApps);
     if (!user) {
         return (
             <div className="container mx-auto px-4 py-8 text-white">
@@ -46,7 +24,8 @@ export default function StarredAppsPage() {
     if (error) {
         return (
             <div className="container mx-auto px-4 py-8 text-red-500">
-                {error}
+                {error.message ||
+                    'Unable to load starred apps. Please try again later.'}
             </div>
         );
     }
@@ -66,7 +45,7 @@ export default function StarredAppsPage() {
                         </div>
                     ))}
                 </div>
-            ) : starredApps.length === 0 ? (
+            ) : !starredApps || starredApps.length === 0 ? (
                 <p>{"You haven't starred any apps yet."}</p>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">

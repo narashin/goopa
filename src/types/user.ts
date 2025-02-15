@@ -1,4 +1,4 @@
-import { ShareGoopaData } from '../lib/firestore';
+import type { ShareHistoryData } from './share'; // ✅ share.ts에서 가져오기
 
 export interface BaseUserData {
     uid: string;
@@ -18,7 +18,7 @@ export interface AuthenticatedUserData extends BaseUserData {
     isShared: boolean;
     lastShareId?: string;
     photoURL: string;
-    ShareHistory: ShareGoopaData[];
+    shareHistory: ShareHistoryData[]; // ✅ `ShareGoopaData` 대신 `ShareHistoryData` 사용
     emailVerified: boolean;
     metadata: {
         creationTime: string;

@@ -2,6 +2,8 @@ import { type ClassValue, clsx } from 'clsx';
 import { toast } from 'react-toastify';
 import { twMerge } from 'tailwind-merge';
 
+import { ITool } from '../types/item';
+
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -40,4 +42,11 @@ export const copyToClipboard = (
                 progress: undefined,
             });
         });
+};
+
+export const removeUndefinedFields = (obj: Partial<ITool>): Partial<ITool> => {
+    return Object.fromEntries(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Object.entries(obj).filter(([_, value]) => value !== undefined)
+    ) as Partial<ITool>;
 };
