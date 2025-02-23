@@ -202,7 +202,7 @@ export function SettingsModal({
                     </div>
                 </div>
 
-                <div className="bg-gray-100 px-4 py-3 flex justify-end space-x-2 border-t border-gray-200 rounded-b-lg">
+                <div className="bg-gray-100 px-4 py-3 flex justify-end spae-x-2 border-t border-gray-200 rounded-b-lg">
                     <button
                         onClick={onClose}
                         className="px-3 py-1 text-[11px] bg-white border border-gray-300 rounded-[4px] hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors shadow-sm"
