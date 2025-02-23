@@ -44,37 +44,24 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
     const handleShareClick = useCallback(async () => {
         if (user.uid) {
-            try {
-                await handleShare(user.uid);
-                setLocalIsShared(true);
-                successToast('Goopa Shared!');
-            } catch (error) {
-                errorToast('Error Sharing Goopa');
-                console.log('Error sharing:', error);
-            }
+            await handleShare(user.uid);
+            setLocalIsShared(true);
         }
     }, [handleShare, user.uid]);
 
     const handleUnshareClick = useCallback(async () => {
         if (user.uid) {
-            try {
-                await handleUnshare(user.uid);
-                setLocalIsShared(false);
-                successToast('Goopa unshared!');
-            } catch (error) {
-                console.error('Error doing unshare:', error);
-                errorToast('Error unshare Goopa');
-            }
+            await handleUnshare(user.uid);
+            setLocalIsShared(false);
         }
     }, [handleUnshare, user.uid]);
 
     const handleCopyUrl = useCallback(async () => {
-        console.log('handleCopyUrl', shareUrl);
         if (isShared) {
             const fullUrl = `${window.location.origin}${shareUrl}`;
             try {
                 await navigator.clipboard.writeText(fullUrl);
-                successToast('Public URL copied to clipboard!');
+                successToast('Share URL copied to clipboard!');
             } catch (error) {
                 console.error('Error copying to clipboard:', error);
                 errorToast('Error copying to clipboard');

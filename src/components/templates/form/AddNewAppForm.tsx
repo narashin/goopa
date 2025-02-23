@@ -32,8 +32,9 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const { category, selectedSubCategory } = useCategoryStore();
     const [localCategory, setLocalCategory] =
         useState<AppCategoryType>(category);
-    // TODO SubCategory 저장하도록 변경해야함
-    const [, setSubCategory] = useState<SubCategoryType | null>(null);
+    const [subCategory, setSubCategory] = useState<SubCategoryType | null>(
+        selectedSubCategory
+    );
     const [url, setDownloadUrl] = useState('');
     const [tooltip, setTooltip] = useState('');
     const [installCommand, setInstallCommand] = useState('');
@@ -42,63 +43,44 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [errors, setErrors] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
-        console.log('localCategory:', localCategory);
         if (category === AppCategoryType.Advanced) {
-            const subCategory =
-                selectedSubCategory === SubCategoryType.Requirement ||
-                selectedSubCategory === SubCategoryType.ZshPlugin ||
-                selectedSubCategory === SubCategoryType.Additional
-                    ? selectedSubCategory
-                    : SubCategoryType.Requirement;
-
-            if (
-                ![
-                    AppCategoryType.Requirement,
-                    AppCategoryType.ZshPlugin,
-                    AppCategoryType.Additional,
-                ].includes(localCategory)
-            ) {
-                setLocalCategory(subCategory as unknown as AppCategoryType);
-            }
+            // "Advanced"일 때 subCategory를 기본값으로 설정
+            setSubCategory(selectedSubCategory || SubCategoryType.Requirement);
         } else {
-            if (localCategory !== category) {
-                setLocalCategory(category);
-            }
+            setSubCategory(null); // "Advanced" 아닌 카테고리에서는 subCategory를 null
         }
-    }, [category, selectedSubCategory, localCategory]);
+    }, [category, selectedSubCategory]);
 
     const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        console.log('category change:', e.target.value);
         const newCategory = e.target.value as AppCategoryType;
         setLocalCategory(newCategory);
 
         if (newCategory === AppCategoryType.Advanced) {
-            // "Advanced" 선택 시, 기본적으로 Requirement로 설정
-            setSubCategory(SubCategoryType.Requirement);
+            setSubCategory(SubCategoryType.Requirement); // Advanced일 때 기본적으로 Requirement 설정
         } else {
-            // "Advanced"가 아닌 다른 카테고리에서는 subCategory를 null로 설정
-            setSubCategory(null);
+            setSubCategory(null); // Advanced가 아닌 카테고리에서는 subCategory를 null로 설정
         }
+    };
+
+    const handleSubCategoryChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSubCategory(e.target.value as SubCategoryType);
     };
 
     const categoryOptions = [
         { value: AppCategoryType.General, label: 'General' },
         { value: AppCategoryType.Dev, label: 'Development' },
         {
-            value: AppCategoryType.Requirement,
-            label: 'Requirement',
-            group: 'Advanced',
+            value: AppCategoryType.Advanced,
+            label: 'Advanced',
         },
-        {
-            value: AppCategoryType.ZshPlugin,
-            label: 'ZshPlugin',
-            group: 'Advanced',
-        },
-        {
-            value: AppCategoryType.Additional,
-            label: 'Additional',
-            group: 'Advanced',
-        },
+    ];
+
+    const subCategoryOptions = [
+        { value: SubCategoryType.Requirement, label: 'Requirement' },
+        { value: SubCategoryType.ZshPlugin, label: 'Zsh Plugin' },
+        { value: SubCategoryType.Additional, label: 'Additional' },
     ];
 
     const fieldConfig: FieldConfig = useMemo(
@@ -246,8 +228,8 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
         const newItem: Omit<ITool, 'id' | 'starCount' | 'userId'> = {
             name,
-            category: localCategory,
-            subCategory: null,
+            category: AppCategoryType.Advanced, // category는 항상 'Advanced'
+            subCategory: subCategory || null, // subCategory는 선택한 값
             icon: iconUrl || undefined,
             tooltip: tooltip || undefined,
             installCommand: installCommand || undefined,
@@ -367,24 +349,37 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                     required
                     className={inputClassName(!!errors.category)}
                 >
-                    {categoryOptions
-                        .filter((option) => !option.group)
-                        .map(({ value, label }) => (
+                    {categoryOptions.map(({ value, label }) => (
+                        <option key={value} value={value}>
+                            {label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {localCategory === AppCategoryType.Advanced && (
+                <div className="mb-4">
+                    <label
+                        htmlFor="subCategory"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Subcategory <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                        id="subCategory"
+                        value={subCategory || ''}
+                        onChange={handleSubCategoryChange}
+                        required
+                        className={inputClassName(!!errors.subCategory)}
+                    >
+                        {subCategoryOptions.map(({ value, label }) => (
                             <option key={value} value={value}>
                                 {label}
                             </option>
                         ))}
-                    <optgroup label="Advanced">
-                        {categoryOptions
-                            .filter((option) => option.group === 'Advanced')
-                            .map(({ value, label }) => (
-                                <option key={value} value={value}>
-                                    {label}
-                                </option>
-                            ))}
-                    </optgroup>
-                </select>
-            </div>
+                    </select>
+                </div>
+            )}
 
             {renderField(
                 'downloadUrl',

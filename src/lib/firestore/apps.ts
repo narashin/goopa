@@ -8,12 +8,6 @@ import { firestore } from '../firebase';
 import { removeUndefinedFields } from '../utils';
 import { getUserIdByCustomUserId } from './users';
 
-// ✅ 앱 추가
-export const addApp = async (appData: ITool): Promise<void> => {
-    const appRef = doc(collection(firestore, 'apps'), appData.id);
-    await setDoc(appRef, appData);
-};
-
 // ✅ 특정 사용자 앱 가져오기
 export const getUserApps = async (userId: string): Promise<ITool[]> => {
     const appsSnapshot = await getDocs(collection(firestore, 'apps'));
@@ -41,23 +35,21 @@ export const getUserAppsByCategory = async (
         return apps.filter((app) => app.subCategory === subCategory);
     }
 
-    // "Advanced"가 아닌 카테고리일 경우 기본적으로 카테고리만 필터링
     return apps;
 };
 
 // ✅ 특정 유저의 customUserId 기반으로 앱 가져오기
 export const getAppsByCustomUserId = async (
-    customUserId: string
+    customUserId: string,
+    category: AppCategoryType,
+    subCategory?: SubCategoryType | null
 ): Promise<ITool[]> => {
+    console.log('category', category, 'subCategory', subCategory);
     const userId = await getUserIdByCustomUserId(customUserId);
     if (!userId) return [];
 
-    const appsSnapshot = await getDocs(collection(firestore, 'apps'));
-    return appsSnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }) as ITool)
-        .filter((app) => app.userId === userId);
+    return getUserAppsByCategory(userId, category, subCategory);
 };
-
 // ✅ 앱 정보 업데이트
 export const updateUserApp = async (
     userId: string,
@@ -82,7 +74,7 @@ export const deleteUserApp = async (
 };
 
 // ✅ 공개된 앱 가져오기 (isShared가 true인 앱만 필터링)
-export const getPublicApps = async (): Promise<ITool[]> => {
+export const getSharedApps = async (): Promise<ITool[]> => {
     const appsSnapshot = await getDocs(collection(firestore, 'apps'));
     return appsSnapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }) as ITool)
@@ -90,7 +82,7 @@ export const getPublicApps = async (): Promise<ITool[]> => {
 };
 
 // ✅ Firestore의 최상위 `apps` 컬렉션에 앱 등록 (isShared 여부에 따라 공개)
-export const addPublicApp = async (appData: ITool): Promise<void> => {
+export const addSharedApp = async (appData: ITool): Promise<void> => {
     // isShared가 true일 경우만 공개 앱으로 간주
     if (appData.isShared) {
         const appRef = doc(firestore, 'apps', appData.id);
@@ -105,7 +97,7 @@ export const addPublicApp = async (appData: ITool): Promise<void> => {
 };
 
 // ✅ 공개 앱 등록 해제 (isShared를 false로 업데이트)
-export const deletePublicApp = async (appId: string): Promise<void> => {
+export const deleteSharedApp = async (appId: string): Promise<void> => {
     const appRef = doc(firestore, 'apps', appId);
     await updateDoc(appRef, { isShared: false });
 };

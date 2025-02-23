@@ -12,7 +12,6 @@ export default function StarredAppsPage() {
 
     const { data: starredApps, isLoading, error } = useGetStarredApps(userId);
 
-    console.log('Rendering starred apps:', starredApps);
     if (!user) {
         return (
             <div className="container mx-auto px-4 py-8 text-white">
@@ -56,6 +55,7 @@ export default function StarredAppsPage() {
                             onAddNewApp={async () => {}}
                             onClick={() => {}}
                             onDeleteApp={() => {}}
+                            readOnly={true}
                         />
                     ))}
                 </div>

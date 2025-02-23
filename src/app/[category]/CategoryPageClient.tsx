@@ -11,7 +11,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useItems } from '../../hooks/useItems';
 import {
-    useItemsByCategoryAndUserId, usePublicItemsByCategory,
+    useItemsByCategoryAndUserId, useSharedItemsByCategory,
 } from '../../queries/itemQueries'; // ✅ 수정된 Hook 경로
 import { useCategoryStore } from '../../stores/categoryStore';
 import { AppCategoryType, SubCategoryType } from '../../types/category';
@@ -37,7 +37,7 @@ export default function CategoryPageClient({
         user?.uid ?? ''
     );
     const { isLoading, addItem, deleteItem } = useItems();
-    const { data: publicItems } = usePublicItemsByCategory(category);
+    const { data: publicItems } = useSharedItemsByCategory(category);
     const [items, setItems] = useState<ITool[]>(userItems ?? []);
 
     useEffect(() => {

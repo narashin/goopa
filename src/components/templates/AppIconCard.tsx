@@ -24,6 +24,7 @@ interface AppCardProps {
     isAddNewAppCard?: boolean;
     onAddNewApp?: (newApp: Omit<ITool, 'id'>) => Promise<void>;
     onDeleteApp: (id: string) => void;
+    readOnly?: boolean;
 }
 
 export const AppIconCard: React.FC<AppCardProps> = ({
@@ -32,6 +33,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     isAddNewAppCard = false,
     onDeleteApp,
     onAddNewApp,
+    readOnly = false,
 }) => {
     const { user, isEditMode } = useAuth();
     const { closeAllTooltips, setModalOpen } = useTooltipStore();
@@ -135,6 +137,12 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         toggleStar();
     };
 
+    console.log(
+        'showSettingsModal',
+        showSettingsModal,
+        'selectedApp',
+        selectedApp
+    );
     const canViewSettings = isShared || (!isShared && !isEditMode);
 
     return (
@@ -162,14 +170,17 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                             )}
                         </div>
                     </div>
-                    {!isAddNewAppCard && isEditMode && selectedApp && (
-                        <button
-                            onClick={showDeleteConfirmationModal}
-                            className="absolute -top-1 left-0 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center z-10"
-                        >
-                            <MinusIcon className="w-3 h-3 text-white" />
-                        </button>
-                    )}
+                    {!isAddNewAppCard &&
+                        isEditMode &&
+                        !readOnly &&
+                        selectedApp && (
+                            <button
+                                onClick={showDeleteConfirmationModal}
+                                className="absolute -top-1 left-0 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center z-10"
+                            >
+                                <MinusIcon className="w-3 h-3 text-white" />
+                            </button>
+                        )}
                     {!isAddNewAppCard && canViewSettings && selectedApp && (
                         <>
                             <button

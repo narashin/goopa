@@ -1,27 +1,22 @@
 import { useEffect } from 'react';
 
 import {
-    QueryObserver,
-    useMutation,
-    useQuery,
-    useQueryClient,
+    QueryObserver, useMutation, useQuery, useQueryClient,
 } from '@tanstack/react-query';
 
 import { signInWithGoogle, signOutWithGoogle } from '../lib/auth';
 import { auth } from '../lib/firebase';
 import {
-    createUserIfNotExists,
-    getUser,
-    getUserByCustomUserId,
+    createUserIfNotExists, getUser, getUserByCustomUserId,
 } from '../lib/firestore/users';
 import { useAuthStore } from '../stores/authStore';
-import { UserData } from '../types/user';
+import { AuthenticatedUserData, UserData } from '../types/user';
 
 export const useAuthQuery = () => {
     const setUser = useAuthStore((state) => state.setUser);
     const queryClient = useQueryClient();
 
-    const query = useQuery<UserData | null, Error>({
+    const query = useQuery<AuthenticatedUserData | null, Error>({
         queryKey: ['user'],
         queryFn: async () => {
             const firebaseUser = auth.currentUser;

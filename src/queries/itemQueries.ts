@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { firestore } from '../lib/firebase';
 import {
-    deleteUserApp, getAppsByCustomUserId, getPublicApps, getUserApps,
+    deleteUserApp, getAppsByCustomUserId, getSharedApps, getUserApps,
     getUserAppsByCategory, updateUserApp,
 } from '../lib/firestore/apps';
 import { AppCategoryType, SubCategoryType } from '../types/category';
@@ -35,7 +35,6 @@ export const useItemsByCategoryAndUserId = (
                 category,
                 subCategory
             );
-            console.log(`📢 ${category} / ${subCategory} 데이터 로드됨:`, data);
             return data;
         },
         enabled: !!userId && !!category,
@@ -43,18 +42,30 @@ export const useItemsByCategoryAndUserId = (
 };
 
 // ✅ 공개된 특정 카테고리의 앱 가져오기
-export const usePublicItemsByCategory = (category: AppCategoryType) => {
+export const useSharedItemsByCategory = (category: AppCategoryType) => {
     return useQuery({
         queryKey: ['publicItems', category],
-        queryFn: () => getPublicApps(),
+        queryFn: () => getSharedApps(),
     });
 };
 
 // ✅ 특정 유저의 customUserId 기반으로 앱 가져오기
-export const useItemsByCustomUserId = (customUserId: string) => {
+export const useItemsByCustomUserId = (
+    customUserId: string,
+    category: AppCategoryType,
+    subCategory?: SubCategoryType | null
+) => {
     return useQuery({
-        queryKey: ['itemsByCustomUserId', customUserId],
-        queryFn: () => getAppsByCustomUserId(customUserId),
+        queryKey: ['itemsByCustomUserId', customUserId, category, subCategory],
+        queryFn: async () => {
+            const data = await getAppsByCustomUserId(
+                customUserId,
+                category,
+                subCategory
+            );
+            return data;
+        },
+        enabled: !!customUserId,
     });
 };
 
@@ -67,14 +78,12 @@ export const useAddItem = () => {
             console.log('🟢 Firestore에 추가할 데이터:', newApp);
 
             try {
-                const appRef = doc(
-                    collection(firestore, 'users', newApp.userId, 'apps'),
-                    newApp.id
-                );
+                // Firestore에 앱을 추가하는 작업
+                const appRef = doc(collection(firestore, 'apps'), newApp.id);
                 await setDoc(appRef, newApp);
 
                 console.log('🟢 Firestore 추가 성공:', newApp);
-                return newApp; // ✅ Firestore에 추가된 데이터 반환
+                return newApp; // 추가된 앱 반환
             } catch (error) {
                 console.error('❌ Firestore 추가 실패:', error);
                 throw error;
@@ -83,6 +92,7 @@ export const useAddItem = () => {
         onSuccess: (addedItem) => {
             console.log('🟢 Firestore 추가 성공 - UI 업데이트:', addedItem);
 
+            // 쿼리 업데이트
             queryClient.setQueryData(
                 ['itemsByCategory', addedItem.userId],
                 (oldData?: ITool[]) => {
@@ -90,6 +100,7 @@ export const useAddItem = () => {
                 }
             );
 
+            // 쿼리 무효화 및 리패칭
             queryClient.invalidateQueries({
                 queryKey: ['itemsByCategory', addedItem.userId],
             });

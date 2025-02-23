@@ -45,7 +45,6 @@ const SearchResultsContent = React.memo(
                     <AppIconCard
                         key={app.id}
                         app={app}
-                        isStarred={false}
                         onClick={() =>
                             app.hasScript ? handleNavigation(app) : null
                         }

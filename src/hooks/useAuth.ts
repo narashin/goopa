@@ -9,9 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { auth } from '../lib/firebase';
 import {
-    useAuthQuery,
-    useSignInMutation,
-    useSignOutMutation,
+    useAuthQuery, useSignInMutation, useSignOutMutation,
 } from '../queries/authQueries';
 import { useAuthStore } from '../stores/authStore';
 

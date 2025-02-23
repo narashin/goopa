@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 
 import { nanoid } from 'nanoid';
 
-import { addPublicApp, deletePublicApp } from '../lib/firestore/apps';
+import { addSharedApp, deleteSharedApp } from '../lib/firestore';
 import { getUser } from '../lib/firestore/users';
 import { removeUndefinedFields } from '../lib/utils';
 import {
     useAddItem, useDeleteItem, useGetItems as useItemsQuery,
-    useItemsByCategoryAndUserId, usePublicItemsByCategory, useUpdateItem,
+    useItemsByCategoryAndUserId, useSharedItemsByCategory, useUpdateItem,
 } from '../queries/itemQueries';
 import { useItemStore } from '../stores/itemStore';
 import { AppCategoryType, SubCategoryType } from '../types/category';
@@ -28,7 +28,7 @@ export function useItems() {
         SubCategoryType.None,
         userId
     );
-    const { data: publicItems } = usePublicItemsByCategory(
+    const { data: publicItems } = useSharedItemsByCategory(
         AppCategoryType.General
     );
     const { isEditMode, setIsEditMode, toggleEditMode, isShared, setIsShared } =
@@ -75,6 +75,7 @@ export function useItems() {
             tooltip: newItem.tooltip ?? '',
             installCommand: newItem.installCommand ?? '',
             zshrcCommand: newItem.zshrcCommand ?? '',
+            isShared: isShared, // 새로운 앱에 isShared 적용
         };
 
         try {
@@ -93,7 +94,7 @@ export function useItems() {
             console.log('🟢 Firestore 추가 성공:', addedItem);
 
             if (isShared) {
-                await addPublicApp(addedItem);
+                await addSharedApp(addedItem); // isShared가 true일 때만 공개 앱으로 추가
             }
 
             return addedItem;
@@ -125,9 +126,9 @@ export function useItems() {
                         updatedFields.subCategory ?? SubCategoryType.None,
                     starCount: updatedFields.starCount ?? 0,
                 };
-                await addPublicApp(updatedApp);
+                await addSharedApp(updatedApp); // isShared가 true로 변경된 앱을 공개 앱으로 추가
             } else {
-                await deletePublicApp(appId);
+                await deleteSharedApp(appId); // isShared가 false일 때는 공개 앱에서 삭제
             }
         }
     };
@@ -140,7 +141,7 @@ export function useItems() {
 
         // ✅ `apps` 컬렉션에서도 삭제
         if (publicItems && publicItems.some((item) => item.id === appId)) {
-            await deletePublicApp(appId);
+            await deleteSharedApp(appId); // 공개 앱에서 삭제
         }
     };
 
@@ -155,7 +156,7 @@ export function useItems() {
 
     // ✅ 공개된 특정 카테고리의 앱 가져오기
     const getPublicItemsByCategory = (category: AppCategoryType) => {
-        const { data } = usePublicItemsByCategory(category);
+        const { data } = useSharedItemsByCategory(category);
         return data ?? [];
     };
 

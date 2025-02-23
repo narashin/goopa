@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
+
+import { usePathname } from 'next/navigation';
 
 import { AppboardHeader } from '../../components/templates/AppBoardHeader';
 import { AppIconCard } from '../../components/templates/AppIconCard';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../hooks/useAuth';
-import { AppCategoryType } from '../../types/category';
 import { ITool } from '../../types/item';
 
 interface DevAppsPageProps {
@@ -20,12 +21,10 @@ export function DevAppsPage({
     onAddNewApp,
     onDeleteApp,
 }: DevAppsPageProps) {
-    const { user, isEditMode } = useAuth();
-
-    const filteredApps = useMemo(
-        () => apps.filter((app) => app.category === AppCategoryType.Dev),
-        [apps]
-    );
+    const { user, isEditMode, setIsEditMode } = useAuth();
+    const pathname = usePathname();
+    const pathParts = pathname.split('/');
+    const isOwnShare = pathParts[2] === user?.customUserId;
 
     return (
         <div className="flex-1 p-4 overflow-auto">
@@ -35,27 +34,43 @@ export function DevAppsPage({
                         title="Development Apps"
                         description="👩‍💻 개발 환경을 위한 필수 앱들"
                     />
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                        {filteredApps.map((app) => (
-                            <AppIconCard
-                                key={app.id}
-                                app={app}
-                                isStarred={false}
-                                onClick={() => {}}
-                                onDeleteApp={onDeleteApp}
-                                onAddNewApp={onAddNewApp}
-                            />
-                        ))}
-                        {user && isEditMode && (
-                            <AppIconCard
-                                isStarred={false}
-                                isAddNewAppCard
-                                onClick={() => {}}
-                                onDeleteApp={() => {}}
-                                onAddNewApp={onAddNewApp}
-                            />
-                        )}
-                    </div>
+                    {apps.length === 0 && !isEditMode ? (
+                        <div className="flex flex-col items-center justify-center space-y-4 py-10">
+                            <p className="text-white/70">
+                                No development apps registered yet
+                            </p>
+                            {user && isOwnShare && (
+                                <button
+                                    onClick={() => setIsEditMode(true)}
+                                    className="px-4 py-2 bg-black/40 rounded-lg border border-white/10 
+                                             text-white/90 hover:border-white/30 hover:bg-black/50 
+                                             transition-all duration-200"
+                                >
+                                    Enter Edit Mode
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                            {apps.map((app) => (
+                                <AppIconCard
+                                    key={app.id}
+                                    app={app}
+                                    onClick={() => {}}
+                                    onDeleteApp={onDeleteApp}
+                                    onAddNewApp={onAddNewApp}
+                                />
+                            ))}
+                            {user && isEditMode && (
+                                <AppIconCard
+                                    isAddNewAppCard
+                                    onClick={() => {}}
+                                    onDeleteApp={() => {}}
+                                    onAddNewApp={onAddNewApp}
+                                />
+                            )}
+                        </div>
+                    )}
                 </div>
             </Card>
         </div>
