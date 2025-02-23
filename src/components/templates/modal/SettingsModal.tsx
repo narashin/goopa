@@ -41,11 +41,13 @@ export function SettingsModal({
     }, [initialApp]);
 
     useEffect(() => {
-        if (contentRef.current) {
+        if (contentRef.current && updatedApp.description) {
             const newHeight = Math.max(contentRef.current.scrollHeight, 200);
             setContentHeight(Math.min(newHeight, 600));
+        } else {
+            setContentHeight(0);
         }
-    }, [contentRef]);
+    }, [contentRef, updatedApp.description]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -58,8 +60,6 @@ export function SettingsModal({
         if (readOnly) return;
 
         try {
-            console.log('저장할 앱 정보:', updatedApp);
-
             const { id, ...updateFields } = updatedApp;
             const cleanFields = removeUndefinedFields(updateFields);
 
@@ -191,21 +191,23 @@ export function SettingsModal({
                         </div>
                     )}
 
-                    <div
-                        className={`${readOnly ? 'w-full' : 'w-1/2'} p-4 flex flex-col`}
-                    >
-                        <h2 className="text-base font-semibold mb-2">
-                            👁️ {readOnly ? 'Description' : 'Preview'}
-                        </h2>
+                    {readOnly && initialApp.description === null && (
                         <div
-                            ref={contentRef}
-                            className="flex-1 border p-4 rounded bg-gray-50 overflow-auto prose prose-sm max-w-none"
+                            className={`${readOnly ? 'w-full' : 'w-1/2'} p-4 flex flex-col`}
                         >
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {updatedApp.description || ''}
-                            </ReactMarkdown>
+                            <h2 className="text-base font-semibold mb-2">
+                                👁️ {readOnly ? 'Description' : 'Preview'}
+                            </h2>
+                            <div
+                                ref={contentRef}
+                                className="flex-1 border p-4 rounded bg-gray-50 overflow-auto prose prose-sm max-w-none"
+                            >
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {updatedApp.description || ''}
+                                </ReactMarkdown>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 <div className="bg-gray-100 px-4 py-3 flex justify-end space-x-2 border-t border-gray-200 rounded-b-lg">

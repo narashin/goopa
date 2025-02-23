@@ -1,4 +1,3 @@
-// app/share/[userId]/[publishId]/page.tsx
 'use client';
 import React, { useEffect } from 'react';
 

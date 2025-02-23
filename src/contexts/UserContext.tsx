@@ -24,7 +24,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const { data: user, isLoading } = useQuery<User | null>({
         queryKey: ['user'],
-        queryFn: () => Promise.resolve(null), // 초기값은 null로 설정
+        queryFn: () => Promise.resolve(null),
         initialData: null,
     });
 

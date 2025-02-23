@@ -44,10 +44,9 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
     useEffect(() => {
         if (category === AppCategoryType.Advanced) {
-            // "Advanced"일 때 subCategory를 기본값으로 설정
             setSubCategory(selectedSubCategory || SubCategoryType.Requirement);
         } else {
-            setSubCategory(null); // "Advanced" 아닌 카테고리에서는 subCategory를 null
+            setSubCategory(null);
         }
     }, [category, selectedSubCategory]);
 
@@ -56,9 +55,9 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
         setLocalCategory(newCategory);
 
         if (newCategory === AppCategoryType.Advanced) {
-            setSubCategory(SubCategoryType.Requirement); // Advanced일 때 기본적으로 Requirement 설정
+            setSubCategory(SubCategoryType.Requirement);
         } else {
-            setSubCategory(null); // Advanced가 아닌 카테고리에서는 subCategory를 null로 설정
+            setSubCategory(null);
         }
     };
 
@@ -228,8 +227,8 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
         const newItem: Omit<ITool, 'id' | 'starCount' | 'userId'> = {
             name,
-            category: AppCategoryType.Advanced, // category는 항상 'Advanced'
-            subCategory: subCategory || null, // subCategory는 선택한 값
+            category: AppCategoryType.Advanced,
+            subCategory: subCategory || null,
             icon: iconUrl || undefined,
             tooltip: tooltip || undefined,
             installCommand: installCommand || undefined,

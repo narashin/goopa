@@ -48,11 +48,7 @@ const SearchResultsContent = React.memo(
                         onClick={() =>
                             app.hasScript ? handleNavigation(app) : null
                         }
-                        onDeleteApp={() => {
-                            console.log(
-                                'Delete app not implemented for search results'
-                            );
-                        }}
+                        onDeleteApp={() => {}}
                     />
                 ))}
             </div>

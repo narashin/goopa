@@ -1,10 +1,5 @@
-// src/contexts/NavigationContext.tsx
 import React, {
-    createContext,
-    ReactNode,
-    useCallback,
-    useContext,
-    useState,
+    createContext, ReactNode, useCallback, useContext, useState,
 } from 'react';
 
 import { AppCategoryType } from '../types/category';
@@ -14,7 +9,6 @@ interface NavigationContextType {
     setCurrentCategory: (category: AppCategoryType | null) => void;
 }
 
-// 초기값 설정
 const initialNavigationContext: NavigationContextType = {
     currentCategory: null,
     setCurrentCategory: () => {},

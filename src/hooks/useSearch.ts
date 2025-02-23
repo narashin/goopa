@@ -5,8 +5,7 @@ import { debounce } from 'lodash';
 import { useQuery } from '@tanstack/react-query';
 
 import {
-    searchAppsByCustomUserId,
-    searchAppsByUserId,
+    searchAppsByCustomUserId, searchAppsByUserId,
 } from '../lib/firestore/search';
 import { ITool } from '../types/item';
 
@@ -14,7 +13,6 @@ export function useSearch(loggedInUserId?: string, isPublicMode = false) {
     const [searchQuery, setSearchQuery] = useState('');
     const [localSearchQuery, setLocalSearchQuery] = useState('');
 
-    // ✅ Firestore에서 검색 데이터 가져오기 (React Query)
     const { data: results, isLoading } = useQuery<ITool[], Error>({
         queryKey: ['searchApps', searchQuery, loggedInUserId, isPublicMode],
         queryFn: async () => {
@@ -22,16 +20,16 @@ export function useSearch(loggedInUserId?: string, isPublicMode = false) {
             if (isPublicMode) {
                 const customUserId = window.location.pathname.split('/')[2];
                 return await searchAppsByCustomUserId(
-                    searchQuery,
-                    customUserId
+                    customUserId,
+                    searchQuery
                 );
             } else if (loggedInUserId) {
-                return await searchAppsByUserId(searchQuery, loggedInUserId);
+                return await searchAppsByUserId(loggedInUserId, searchQuery);
             }
             return [];
         },
         enabled: !!searchQuery.trim(),
-        staleTime: 1000 * 60 * 5, // ✅ 캐시 5분 유지
+        staleTime: 1000 * 60 * 5,
     });
 
     const debouncedFetchSearchResults = useMemo(
@@ -54,7 +52,7 @@ export function useSearch(loggedInUserId?: string, isPublicMode = false) {
 
     return {
         searchQuery: localSearchQuery,
-        results: results ?? [], // ✅ `undefined` 방지
+        results: results ?? [],
         isLoading,
         handleSearch,
         clearSearch,

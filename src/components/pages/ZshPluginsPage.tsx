@@ -7,9 +7,7 @@ import { usePathname } from 'next/navigation';
 import ToolIconsArea from '../../components/templates/ToolIconsArea';
 import ToolScriptsArea from '../../components/templates/ToolScriptsArea';
 import { Card } from '../../components/ui/Card';
-import {
-    useAuth,
-} from '../../hooks/useAuth'; // user 정보를 가져오기 위해 useAuth를 import
+import { useAuth } from '../../hooks/useAuth';
 import { AppCategoryType } from '../../types/category';
 import { ITool } from '../../types/item';
 
@@ -66,7 +64,6 @@ const ZshPluginsPage: React.FC<ZshPluginsPageProps> = ({
                         )}
                     </div>
                 ) : (
-                    // 앱이 있을 때, 또는 Edit 모드일 때
                     <>
                         <ToolIconsArea
                             apps={apps}

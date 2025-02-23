@@ -1,11 +1,7 @@
-// components/StyledToast.tsx
 import React from 'react';
 
 import {
-    toast,
-    ToastContent,
-    ToastContentProps,
-    ToastOptions,
+    toast, ToastContent, ToastContentProps, ToastOptions,
 } from 'react-toastify';
 
 interface StyledToastProps extends Omit<ToastOptions, 'bodyClassName'> {

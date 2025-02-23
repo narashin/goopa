@@ -12,7 +12,7 @@ import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useItems } from '../../hooks/useItems';
 import {
     useItemsByCategoryAndUserId, useSharedItemsByCategory,
-} from '../../queries/itemQueries'; // ✅ 수정된 Hook 경로
+} from '../../queries/itemQueries';
 import { useCategoryStore } from '../../stores/categoryStore';
 import { AppCategoryType, SubCategoryType } from '../../types/category';
 import type { ITool } from '../../types/item';

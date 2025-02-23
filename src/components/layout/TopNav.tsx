@@ -7,7 +7,6 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { useAuth } from '../../hooks/useAuth';
 import { useSearch } from '../../hooks/useSearch';
-import { useShare } from '../../hooks/useShare';
 import { useCategoryStore } from '../../stores/categoryStore';
 import { AppCategoryType } from '../../types/category';
 import { AuthenticatedUserData } from '../../types/user';
@@ -28,14 +27,11 @@ export function TopNav() {
         setIsEditMode,
     } = useAuth();
     const pathname = usePathname();
+    const isSharedPage = pathname.split('/')[1] === 'share';
     const { setCategory } = useCategoryStore();
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
-    const { shareData } = useShare(user?.uid ?? null);
-    const { handleSearch: performSearch } = useSearch(
-        user?.uid,
-        shareData?.isShared
-    );
+    const { handleSearch: performSearch } = useSearch(user?.uid, isSharedPage);
 
     const views = ['home', 'general', 'dev', 'advanced'];
 
@@ -86,7 +82,6 @@ export function TopNav() {
         (query: string) => {
             setSearchQuery(query);
             if (query) {
-                // 현재 경로를 기반으로 공유 정보 추출
                 const pathParts = pathname?.split('/') || [];
                 const customUserId = pathParts.length > 2 ? pathParts[2] : null;
                 const publishId = pathParts.length > 3 ? pathParts[3] : null;
@@ -96,13 +91,11 @@ export function TopNav() {
                     customUserId &&
                     publishId
                 ) {
-                    // 공유 URL을 유지한 상태에서 검색
                     router.push(
                         `/share/${customUserId}/${publishId}/search?q=${encodeURIComponent(query)}`,
                         { scroll: false }
                     );
                 } else {
-                    // 일반 검색 URL
                     router.push(`/search?q=${encodeURIComponent(query)}`, {
                         scroll: false,
                     });
@@ -120,7 +113,6 @@ export function TopNav() {
         const publishId = pathParts.length > 3 ? pathParts[3] : null;
 
         if (pathname.startsWith('/share/') && customUserId && publishId) {
-            // 공유 URL 유지한 채 검색 초기화
             router.push(`/share/${customUserId}/${publishId}`);
         } else {
             router.push('/');

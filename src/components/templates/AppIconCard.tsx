@@ -136,13 +136,6 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         e.stopPropagation();
         toggleStar();
     };
-
-    console.log(
-        'showSettingsModal',
-        showSettingsModal,
-        'selectedApp',
-        selectedApp
-    );
     const canViewSettings = isShared || (!isShared && !isEditMode);
 
     return (
@@ -249,10 +242,6 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                     isOpen={showAddNewAppModal}
                     onClose={handleCloseAddNewAppModal}
                     onSubmit={(newApp) => {
-                        console.log(
-                            '🟢 AddNewAppModal onSubmit 호출됨',
-                            newApp
-                        );
                         onAddNewApp?.(newApp);
                     }}
                 />

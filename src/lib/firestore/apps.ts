@@ -13,7 +13,7 @@ export const getUserApps = async (userId: string): Promise<ITool[]> => {
     const appsSnapshot = await getDocs(collection(firestore, 'apps'));
     return appsSnapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }) as ITool)
-        .filter((app) => app.userId === userId); // userId로 필터링
+        .filter((app) => app.userId === userId);
 };
 
 // ✅ 특정 카테고리의 앱 가져오기
@@ -41,18 +41,16 @@ export const getUserAppsByCategory = async (
 // ✅ 특정 유저의 customUserId 기반으로 앱 가져오기
 export const getAppsByCustomUserId = async (
     customUserId: string,
-    category: AppCategoryType,
+    category?: AppCategoryType,
     subCategory?: SubCategoryType | null
 ): Promise<ITool[]> => {
-    console.log('category', category, 'subCategory', subCategory);
     const userId = await getUserIdByCustomUserId(customUserId);
     if (!userId) return [];
 
-    return getUserAppsByCategory(userId, category, subCategory);
+    return getUserAppsByCategory(userId, category!, subCategory);
 };
 // ✅ 앱 정보 업데이트
-export const updateUserApp = async (
-    userId: string,
+export const updateApp = async (
     appId: string,
     updatedFields: Partial<ITool>
 ): Promise<void> => {
@@ -65,10 +63,7 @@ export const updateUserApp = async (
 };
 
 // ✅ 앱 삭제
-export const deleteUserApp = async (
-    userId: string,
-    appId: string
-): Promise<void> => {
+export const deleteApp = async (appId: string): Promise<void> => {
     const appRef = doc(firestore, 'apps', appId);
     await deleteDoc(appRef);
 };
@@ -83,7 +78,6 @@ export const getSharedApps = async (): Promise<ITool[]> => {
 
 // ✅ Firestore의 최상위 `apps` 컬렉션에 앱 등록 (isShared 여부에 따라 공개)
 export const addSharedApp = async (appData: ITool): Promise<void> => {
-    // isShared가 true일 경우만 공개 앱으로 간주
     if (appData.isShared) {
         const appRef = doc(firestore, 'apps', appData.id);
         await setDoc(appRef, {
@@ -91,8 +85,6 @@ export const addSharedApp = async (appData: ITool): Promise<void> => {
             id: appData.id,
             ownerId: appData.userId,
         });
-    } else {
-        console.log(`❌ App ${appData.id} is not marked as shared.`);
     }
 };
 

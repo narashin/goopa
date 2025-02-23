@@ -1,4 +1,4 @@
-import type React from 'react'; // Added import for React
+import type React from 'react';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import Image from 'next/image';

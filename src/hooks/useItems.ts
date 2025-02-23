@@ -44,7 +44,6 @@ export function useItems() {
                     userId
                 )) as AuthenticatedUserData;
                 if (!userData) {
-                    console.log('User data not found');
                     return;
                 }
                 if (userData.isShared !== isShared) {
@@ -78,30 +77,24 @@ export function useItems() {
             isShared: isShared, // 새로운 앱에 isShared 적용
         };
 
-        try {
-            const cleanItem: ITool = {
-                ...removeUndefinedFields(completeItem),
-                id: nanoid(),
-                name: completeItem.name ?? 'Unknown App',
-                category: completeItem.category ?? AppCategoryType.General,
-                subCategory: completeItem.subCategory ?? SubCategoryType.None,
-                userId: completeItem.userId,
-                createdAt: new Date().toISOString(),
-                starCount: completeItem.starCount ?? 0,
-            };
+        const cleanItem: ITool = {
+            ...removeUndefinedFields(completeItem),
+            id: nanoid(),
+            name: completeItem.name ?? 'Unknown App',
+            category: completeItem.category ?? AppCategoryType.General,
+            subCategory: completeItem.subCategory ?? SubCategoryType.None,
+            userId: completeItem.userId,
+            createdAt: new Date().toISOString(),
+            starCount: completeItem.starCount ?? 0,
+        };
 
-            const addedItem = await addItemMutation.mutateAsync(cleanItem);
-            console.log('🟢 Firestore 추가 성공:', addedItem);
+        const addedItem = await addItemMutation.mutateAsync(cleanItem);
 
-            if (isShared) {
-                await addSharedApp(addedItem); // isShared가 true일 때만 공개 앱으로 추가
-            }
-
-            return addedItem;
-        } catch (error) {
-            console.error('❌ Firestore 추가 실패:', error);
-            return undefined;
+        if (isShared) {
+            await addSharedApp(addedItem);
         }
+
+        return addedItem;
     };
 
     // ✅ 앱 업데이트
@@ -111,9 +104,8 @@ export function useItems() {
     ) => {
         if (!user) return;
 
-        updateItemMutation.mutate({ userId, appId, updatedFields });
+        updateItemMutation.mutate({ appId, updatedFields });
 
-        // ✅ 공유 상태 변경 시 `apps` 컬렉션 업데이트
         if ('isShared' in updatedFields) {
             if (updatedFields.isShared) {
                 const updatedApp: ITool = {
@@ -126,9 +118,9 @@ export function useItems() {
                         updatedFields.subCategory ?? SubCategoryType.None,
                     starCount: updatedFields.starCount ?? 0,
                 };
-                await addSharedApp(updatedApp); // isShared가 true로 변경된 앱을 공개 앱으로 추가
+                await addSharedApp(updatedApp);
             } else {
-                await deleteSharedApp(appId); // isShared가 false일 때는 공개 앱에서 삭제
+                await deleteSharedApp(appId);
             }
         }
     };
@@ -137,11 +129,11 @@ export function useItems() {
     const handleDeleteItem = async (appId: string) => {
         if (!user) return;
 
-        deleteItemMutation.mutate({ userId, appId });
+        deleteItemMutation.mutate({ appId });
 
         // ✅ `apps` 컬렉션에서도 삭제
         if (publicItems && publicItems.some((item) => item.id === appId)) {
-            await deleteSharedApp(appId); // 공개 앱에서 삭제
+            await deleteSharedApp(appId);
         }
     };
 

@@ -22,7 +22,7 @@ export function Logo({ isEditMode = false }: LogoProps) {
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
     const handleEditModeClick = (e: React.MouseEvent) => {
-        e.preventDefault(); // Link의 기본 동작을 막습니다
+        e.preventDefault();
         setIsConfirmModalOpen(true);
     };
 
