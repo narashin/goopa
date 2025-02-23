@@ -6,8 +6,12 @@ import { addSharedApp, deleteSharedApp } from '../lib/firestore';
 import { getUser } from '../lib/firestore/users';
 import { removeUndefinedFields } from '../lib/utils';
 import {
-    useAddItem, useDeleteItem, useGetItems as useItemsQuery,
-    useItemsByCategoryAndUserId, useSharedItemsByCategory, useUpdateItem,
+    useAddItem,
+    useDeleteItem,
+    useGetItems as useItemsQuery,
+    useItemsByCategoryAndUserId,
+    useSharedItemsByCategory,
+    useUpdateItem,
 } from '../queries/itemQueries';
 import { useItemStore } from '../stores/itemStore';
 import { AppCategoryType, SubCategoryType } from '../types/category';
@@ -74,7 +78,7 @@ export function useItems() {
             tooltip: newItem.tooltip ?? '',
             installCommand: newItem.installCommand ?? '',
             zshrcCommand: newItem.zshrcCommand ?? '',
-            isShared: isShared, // 새로운 앱에 isShared 적용
+            isShared: isShared,
         };
 
         const cleanItem: ITool = {

@@ -1,5 +1,11 @@
 import {
-    arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment,
+    arrayRemove,
+    arrayUnion,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    increment,
     writeBatch,
 } from 'firebase/firestore';
 
@@ -63,9 +69,6 @@ export const removeStarFromApp = async (
 
     const userAppSnap = await getDoc(userAppRef);
     if (!userAppSnap.exists()) {
-        console.warn(
-            `⚠️ App document ${appId} does not exist in 'apps' collection.`
-        );
         return;
     }
 

@@ -51,11 +51,11 @@ export function TopNav() {
         if (pathname?.startsWith('/share/')) {
             const pathParts = pathname.split('/');
             const customUserId = pathParts.length > 2 ? pathParts[2] : null;
-            const publishId = pathParts.length > 3 ? pathParts[3] : null;
+            const shareId = pathParts.length > 3 ? pathParts[3] : null;
 
-            if (!customUserId || !publishId) return '/';
+            if (!customUserId || !shareId) return '/';
 
-            return `/share/${customUserId}/${publishId}${category === 'home' ? '' : `/${category}`}`;
+            return `/share/${customUserId}/${shareId}${category === 'home' ? '' : `/${category}`}`;
         } else {
             return category === 'home' ? '/' : `/${category}`;
         }
@@ -84,15 +84,11 @@ export function TopNav() {
             if (query) {
                 const pathParts = pathname?.split('/') || [];
                 const customUserId = pathParts.length > 2 ? pathParts[2] : null;
-                const publishId = pathParts.length > 3 ? pathParts[3] : null;
+                const shareId = pathParts.length > 3 ? pathParts[3] : null;
 
-                if (
-                    pathname.startsWith('/share/') &&
-                    customUserId &&
-                    publishId
-                ) {
+                if (pathname.startsWith('/share/') && customUserId && shareId) {
                     router.push(
-                        `/share/${customUserId}/${publishId}/search?q=${encodeURIComponent(query)}`,
+                        `/share/${customUserId}/${shareId}/search?q=${encodeURIComponent(query)}`,
                         { scroll: false }
                     );
                 } else {
@@ -110,10 +106,10 @@ export function TopNav() {
 
         const pathParts = pathname?.split('/') || [];
         const customUserId = pathParts.length > 2 ? pathParts[2] : null;
-        const publishId = pathParts.length > 3 ? pathParts[3] : null;
+        const shareId = pathParts.length > 3 ? pathParts[3] : null;
 
-        if (pathname.startsWith('/share/') && customUserId && publishId) {
-            router.push(`/share/${customUserId}/${publishId}`);
+        if (pathname.startsWith('/share/') && customUserId && shareId) {
+            router.push(`/share/${customUserId}/${shareId}`);
         } else {
             router.push('/');
         }

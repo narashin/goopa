@@ -8,9 +8,9 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export const generateShareUrl = (publishUrl: string, category: string) => {
-    if (!publishUrl) return '';
-    return `${publishUrl}${category === 'home' ? '' : `/${category}`}`;
+export const generateShareUrl = (shareUrl: string, category: string) => {
+    if (!shareUrl) return '';
+    return `${shareUrl}${category === 'home' ? '' : `/${category}`}`;
 };
 
 export const copyToClipboard = (

@@ -45,6 +45,7 @@ export function Logo({ isEditMode = false }: LogoProps) {
                             <Image
                                 src="/images/goopa-char-outlined-logo.png"
                                 alt="GOOPA Logo"
+                                sizes="(max-width: 768px) 100vw, 250px"
                                 fill
                                 className={`object-contain transition-all duration-300 ${
                                     isEditMode ? 'filter blur-[1px]' : ''

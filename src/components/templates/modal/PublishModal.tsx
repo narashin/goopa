@@ -7,49 +7,49 @@ import { toast } from 'react-toastify';
 
 import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 
-interface PublishModalProps {
+interface ShareModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onPublish: () => Promise<string | null>;
-    onUnpublish: () => Promise<boolean>;
-    isPublishAction: boolean;
-    publishUrl?: string;
+    onShare: () => Promise<string | null>;
+    onUnshare: () => Promise<boolean>;
+    isSharingAction: boolean;
+    shareUrl?: string;
 }
 
-export const PublishModal: React.FC<PublishModalProps> = ({
+export const ShareModal: React.FC<ShareModalProps> = ({
     isOpen,
     onClose,
-    onPublish,
-    onUnpublish,
-    isPublishAction,
+    onShare,
+    onUnshare,
+    isSharingAction,
 }) => {
     const copyToClipboard = useCopyToClipboard();
 
     const handleConfirm = async () => {
         try {
-            if (isPublishAction) {
-                const newPublishUrl = await onPublish();
-                if (newPublishUrl) {
-                    const fullUrl = `${window.location.origin}${newPublishUrl}`;
+            if (isSharingAction) {
+                const newShareUrl = await onShare();
+                if (newShareUrl) {
+                    const fullUrl = `${window.location.origin}${newShareUrl}`;
                     copyToClipboard(
                         fullUrl,
                         '🎉 Public URL copied to clipboard!'
                     );
                 }
             } else {
-                const success = await onUnpublish();
+                const success = await onUnshare();
                 if (success) {
                     toast.info('Your Goopa is no longer publicly shared.', {
                         position: 'top-right',
                         autoClose: 3000,
                     });
                 } else {
-                    throw new Error('Failed to unpublish');
+                    throw new Error('Failed to unshared');
                 }
             }
             onClose();
         } catch (error) {
-            console.error('Error during publish/unpublish:', error);
+            console.error('Error during share/unshare:', error);
             toast.error('An error occurred. Please try again.', {
                 position: 'top-right',
                 autoClose: 3000,
@@ -61,10 +61,10 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         return null;
     }
 
-    const title = isPublishAction
-        ? 'Publish Confirmation'
-        : 'Unpublish Confirmation';
-    const message = isPublishAction
+    const title = isSharingAction
+        ? 'Share Confirmation'
+        : 'Unshared Confirmation';
+    const message = isSharingAction
         ? 'Your Goopa will be shared publicly. Do you want to proceed?'
         : 'Your Goopa will no longer be shared. Do you want to proceed?';
 
@@ -80,7 +80,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                 <div className="p-4 pt-3">
                     <div className="flex items-start space-x-4">
                         <div className="text-2xl mt-1 w-8 h-8 flex items-center justify-center">
-                            {isPublishAction ? '🌍' : '🔒'}
+                            {isSharingAction ? '🌍' : '🔒'}
                         </div>
 
                         <div className="flex-1">

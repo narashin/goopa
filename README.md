@@ -31,16 +31,18 @@ Next.js, React 및 Tailwind CSS를 사용하여 개발된 Goopa는 MacBook 설�
 
 ## TODO List / 할 일 목록
 
-- [ ] Implement bookmark functionality / 북마크 기능 구현
-    - [ ] Implement quick access to bookmarked configurations / 북마크된 구성에 빠르게 접근할 수 있는 기능 구현
+- [V] Implement bookmark functionality / 북마크 기능 구현
+    - [V] Implement quick access to bookmarked configurations / 북마크된 구성에 빠르게 접근할 수 있는 기능 구현
+- [V] Enhance configuration sharing capabilities / 구성 공유 기능 향상
 - [ ] Ensure app order preservation / 앱 순서 보존 보장
     - [ ] Create a system to save user-defined app order / 사용자 정의 앱 순서를 저장하는 시스템 생성
     - [ ] Display app list in the saved order / 저장된 순서대로 앱 목록 표시
     - [ ] Allow users to reorder apps easily / 사용자가 쉽게 앱 순서를 변경할 수 있도록 함
 - [ ] Expand beyond computer categories / 컴퓨터 카테고리 외 확장
+
     - [ ] Include categories for non-tech setups (e.g., workspace organization, productivity tools) / 비기술적 설정을 위한 카테고리 포함 (예: 작업 공간 구성, 생산성 도구)
     - [ ] Develop a flexible category system for user-defined setups / 사용자 정의 설정을 위한 유연한 카테고리 시스템 개발
-- [ ] Enhance configuration sharing capabilities / 구성 공유 기능 향상
+
 - [ ] Optimize performance / 성능 최적화
 - [ ] Improve mobile responsive design / 모바일 반응형 디자인 개선
 

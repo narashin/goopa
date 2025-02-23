@@ -154,7 +154,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                                     }`}
                                     disabled={!canEditShare}
                                 >
-                                    {localIsShared ? 'Unpublish' : 'Publish'}
+                                    {localIsShared ? 'Unshared' : 'Share'}
                                 </button>
                             )}
                         </Menu.Item>

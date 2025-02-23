@@ -32,7 +32,7 @@ export function DevAppsPage({
                 <div className="p-6">
                     <AppboardHeader
                         title="Development Apps"
-                        description="👩‍💻 개발 환경을 위한 필수 앱들"
+                        description="Introduction to Development Apps"
                     />
                     {apps.length === 0 && !isEditMode ? (
                         <div className="flex flex-col items-center justify-center space-y-4 py-10">

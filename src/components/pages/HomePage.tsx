@@ -27,7 +27,7 @@ export function HomePage() {
             'displayName' in sharedUser
         ) {
             if (isLoading) {
-                return 'Loading...'; // 로딩 중 표시
+                return 'Loading...';
             }
             return `${sharedUser?.displayName}'s Goopa!`;
         }
@@ -46,9 +46,9 @@ export function HomePage() {
                     <Image
                         src="/images/goopa-character-only-logo.png"
                         alt="Start Your Mac Setup"
-                        layout="intrinsic"
-                        width={300}
-                        height={350}
+                        className="w-auto h-auto"
+                        width={250}
+                        height={300}
                         priority
                     />
                     <div className="absolute bottom-4 left-4 right-4 text-center">

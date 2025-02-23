@@ -32,7 +32,7 @@ export function GeneralAppsPage({
                 <div className="p-6">
                     <AppboardHeader
                         title="General Apps"
-                        description="🎉 일단 이거부터 설치하세요!"
+                        description="Introduction to General Apps"
                     />
                     {apps.length === 0 && !isEditMode ? (
                         <div className="flex flex-col items-center justify-center space-y-4 py-10">

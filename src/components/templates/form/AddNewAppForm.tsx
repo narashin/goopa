@@ -35,7 +35,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [subCategory, setSubCategory] = useState<SubCategoryType | null>(
         selectedSubCategory
     );
-    const [url, setDownloadUrl] = useState('');
+    const [url, setUrl] = useState('');
     const [tooltip, setTooltip] = useState('');
     const [installCommand, setInstallCommand] = useState('');
     const [zshrcCommand, setZshrcCommand] = useState('');
@@ -89,40 +89,40 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 optional: [
                     'icon',
                     'tooltip',
-                    'downloadUrl',
+                    'url',
                     'installCommand',
                     'zshrcCommand',
                 ],
                 hidden: [],
             },
             [AppCategoryType.General]: {
-                required: ['name', 'downloadUrl'],
+                required: ['name', 'url'],
                 optional: ['icon', 'tooltip'],
                 hidden: ['installCommand', 'zshrcCommand'],
             },
             [AppCategoryType.Dev]: {
-                required: ['name', 'downloadUrl'],
+                required: ['name', 'url'],
                 optional: ['icon', 'tooltip'],
                 hidden: ['installCommand', 'zshrcCommand'],
             },
             [AppCategoryType.ZshPlugin]: {
                 required: ['name', 'installCommand'],
-                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                optional: ['icon', 'tooltip', 'url', 'zshrcCommand'],
                 hidden: [],
             },
             [AppCategoryType.Requirement]: {
                 required: ['name', 'installCommand'],
-                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                optional: ['icon', 'tooltip', 'url', 'zshrcCommand'],
                 hidden: [],
             },
             [AppCategoryType.Additional]: {
                 required: ['name', 'installCommand'],
-                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                optional: ['icon', 'tooltip', 'url', 'zshrcCommand'],
                 hidden: [],
             },
             [AppCategoryType.Advanced]: {
                 required: ['name', 'installCommand'],
-                optional: ['icon', 'tooltip', 'downloadUrl', 'zshrcCommand'],
+                optional: ['icon', 'tooltip', 'url', 'zshrcCommand'],
                 hidden: [],
             },
         }),
@@ -156,7 +156,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
             const value =
                 field === 'name'
                     ? name
-                    : field === 'downloadUrl'
+                    : field === 'url'
                       ? url
                       : field === 'installCommand'
                         ? installCommand
@@ -173,7 +173,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
             const value =
                 field === 'name'
                     ? name
-                    : field === 'downloadUrl'
+                    : field === 'url'
                       ? url
                       : field === 'installCommand'
                         ? installCommand
@@ -192,6 +192,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('handleFormSubmit');
         setFormTouched(true);
         const newErrors: Record<string, boolean> = {};
 
@@ -199,7 +200,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
             const value =
                 field === 'name'
                     ? name
-                    : field === 'downloadUrl'
+                    : field === 'url'
                       ? url
                       : field === 'installCommand'
                         ? installCommand
@@ -227,7 +228,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
         const newItem: Omit<ITool, 'id' | 'starCount' | 'userId'> = {
             name,
-            category: AppCategoryType.Advanced,
+            category: category,
             subCategory: subCategory || null,
             icon: iconUrl || undefined,
             tooltip: tooltip || undefined,
@@ -381,10 +382,10 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
             )}
 
             {renderField(
-                'downloadUrl',
+                'url',
                 'URL',
                 url,
-                (e) => setDownloadUrl(e.target.value),
+                (e) => setUrl(e.target.value),
                 'url'
             )}
             {renderField('tooltip', 'Tooltip', tooltip, (e) =>

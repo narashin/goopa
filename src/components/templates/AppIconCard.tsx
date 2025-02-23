@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { MinusIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
@@ -80,6 +80,10 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         ]
     );
 
+    useEffect(() => {
+        setSelectedApp(app || null);
+    }, [app]);
+
     const handleCloseAddNewAppModal = useCallback((e?: React.MouseEvent) => {
         if (e) {
             e.stopPropagation();
@@ -116,10 +120,10 @@ export const AppIconCard: React.FC<AppCardProps> = ({
 
     const deleteAppAndCloseModal = async () => {
         if (selectedApp) {
-            await onDeleteApp(selectedApp.id);
+            setShowDeleteConfirmModal(false);
             setSelectedApp(null);
+            await onDeleteApp(selectedApp.id);
         }
-        setShowDeleteConfirmModal(false);
     };
 
     const handleUpdateApp = (updatedApp: ITool) => {

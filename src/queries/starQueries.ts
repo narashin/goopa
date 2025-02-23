@@ -8,7 +8,6 @@ export const useGetStarredApps = (userId: string | null) => {
         queryKey: ['starredApps', userId],
         queryFn: async () => {
             if (!userId) {
-                console.warn('useGetStarredApps called with null userId');
                 return [];
             }
             return await getStarredAppsByUser(userId);

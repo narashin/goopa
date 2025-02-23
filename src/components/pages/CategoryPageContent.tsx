@@ -2,6 +2,8 @@
 
 import React, { useMemo } from 'react';
 
+import { notFound } from 'next/navigation';
+
 import { AppCategoryType, SubCategoryType } from '../../types/category';
 import type { ITool } from '../../types/item';
 import AdditionalAppsPage from './AdditionalAppsPage';
@@ -58,7 +60,7 @@ const CategoryPageContent = ({
             case AppCategoryType.Additional:
                 return <AdditionalAppsPage {...commonProps} />;
             default:
-                return <div>Category not found.</div>;
+                return notFound();
         }
     }, [
         category,

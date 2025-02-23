@@ -6,11 +6,8 @@ import { notFound } from 'next/navigation';
 import { AppCategoryType, SubCategoryType } from '@/types/category';
 import type { ITool } from '@/types/item';
 
-import CategoryPageContent
-    from '../../../../../components/pages/CategoryPageContent';
-import {
-    AppIconCardSkeleton,
-} from '../../../../../components/ui/skeletons/AppIconCardSkeleton';
+import CategoryPageContent from '../../../../../components/pages/CategoryPageContent';
+import { AppIconCardSkeleton } from '../../../../../components/ui/skeletons/AppIconCardSkeleton';
 import { successToast } from '../../../../../components/ui/Toast';
 import { useUserByCustomUserId } from '../../../../../queries/authQueries';
 import { useItemsByCustomUserId } from '../../../../../queries/itemQueries';
