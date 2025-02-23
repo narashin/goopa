@@ -159,7 +159,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
 
     const canViewSettings = isShared || (!isShared && !isEditMode);
 
-    return (
+    return selectedApp || isAddNewAppCard ? (
         <div
             key={app?.id || 'add-new'}
             className="flex flex-col items-center space-y-2 cursor-pointer group"
@@ -290,5 +290,5 @@ export const AppIconCard: React.FC<AppCardProps> = ({
                 />
             )}
         </div>
-    );
+    ) : null;
 };
