@@ -41,13 +41,11 @@ export function SettingsModal({
     }, [initialApp]);
 
     useEffect(() => {
-        if (contentRef.current && updatedApp.description) {
+        if (contentRef.current) {
             const newHeight = Math.max(contentRef.current.scrollHeight, 200);
             setContentHeight(Math.min(newHeight, 600));
-        } else {
-            setContentHeight(0);
         }
-    }, [contentRef, updatedApp.description]);
+    }, [contentRef]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -59,17 +57,13 @@ export function SettingsModal({
     const handleSave = async () => {
         if (readOnly) return;
 
-        try {
-            const { id, ...updateFields } = updatedApp;
-            const cleanFields = removeUndefinedFields(updateFields);
+        const { id, ...updateFields } = updatedApp;
+        const cleanFields = removeUndefinedFields(updateFields);
 
-            await updateItem(id, cleanFields);
-            onUpdate(updatedApp);
-            onSave(updatedApp);
-            onClose();
-        } catch (error) {
-            console.error('Error saving settings:', error);
-        }
+        await updateItem(id, cleanFields);
+        onUpdate(updatedApp);
+        onSave(updatedApp);
+        onClose();
     };
 
     const modalContent = (
@@ -191,23 +185,21 @@ export function SettingsModal({
                         </div>
                     )}
 
-                    {readOnly && initialApp.description === null && (
+                    <div
+                        className={`${readOnly ? 'w-full' : 'w-1/2'} p-4 flex flex-col`}
+                    >
+                        <h2 className="text-base font-semibold mb-2">
+                            👁️ {readOnly ? 'Description' : 'Preview'}
+                        </h2>
                         <div
-                            className={`${readOnly ? 'w-full' : 'w-1/2'} p-4 flex flex-col`}
+                            ref={contentRef}
+                            className="flex-1 border p-4 rounded bg-gray-50 overflow-auto prose prose-sm max-w-none"
                         >
-                            <h2 className="text-base font-semibold mb-2">
-                                👁️ {readOnly ? 'Description' : 'Preview'}
-                            </h2>
-                            <div
-                                ref={contentRef}
-                                className="flex-1 border p-4 rounded bg-gray-50 overflow-auto prose prose-sm max-w-none"
-                            >
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {updatedApp.description || ''}
-                                </ReactMarkdown>
-                            </div>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {updatedApp.description || ''}
+                            </ReactMarkdown>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 <div className="bg-gray-100 px-4 py-3 flex justify-end space-x-2 border-t border-gray-200 rounded-b-lg">

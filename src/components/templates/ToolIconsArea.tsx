@@ -3,7 +3,7 @@
 import type React from 'react';
 
 import { useAuth } from '../../hooks/useAuth';
-import type { AppCategoryType } from '../../types/category';
+import { AppCategoryType } from '../../types/category';
 import type { ITool } from '../../types/item';
 import { AppIconCard } from './AppIconCard';
 
@@ -22,6 +22,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
     onDeleteApp,
     isItemSelected,
     toggleItem,
+    currentCategory,
 }) => {
     const { user, isEditMode } = useAuth();
 
@@ -54,16 +55,24 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                 <AppIconCard
                                     key={tool.id}
                                     app={tool}
-                                    isStarred={false}
                                     onClick={() => toggleSelectedItem(tool)}
                                     onDeleteApp={() => handleDeleteApp(tool.id)}
+                                    showCheckbox={
+                                        currentCategory ===
+                                            AppCategoryType.ZshPlugin ||
+                                        currentCategory ===
+                                            AppCategoryType.Requirement ||
+                                        currentCategory ===
+                                            AppCategoryType.Additional
+                                    }
+                                    isChecked={isItemSelected(tool.id)}
+                                    onCheckboxClick={() => toggleItem(tool)}
                                 />
                             </div>
                         ))}
                         {user && isEditMode && (
                             <AppIconCard
                                 isAddNewAppCard
-                                isStarred={false}
                                 onClick={() => {}}
                                 onAddNewApp={onAddNewApp}
                                 onDeleteApp={() => {}}

@@ -80,55 +80,35 @@ body {
 
 
 .neon-text-outline-blue {
-    color: #60a5fa;
+    color: #8cbffc;
     text-shadow:
-    0 0 7px #60a5fa,
-    0 0 10px #60a5fa,
-    0 0 21px #60a5fa,
-    0 0 42px #60a5fa,
-    0 0 82px #60a5fa;
+    0 0 7px #8cbffc,
+    0 0 10px #8cbffc,
+    0 0 21px #8cbffc,
+    0 0 42px #8cbffc,
+    0 0 82px #8cbffc,
+    0 0 92px #8cbffc;
     animation: pulsate-blue 1.5s infinite alternate;  
-}
-
-@keyframes pulsate {
-    100% {
-        text-shadow:
-        0 0 4px #4ade80,
-        0 0 11px #4ade80,
-        0 0 19px #4ade80,
-        0 0 40px #4ade80,
-        0 0 80px #4ade80,
-        0 0 90px #4ade80,
-    }
-    0% {
-        text-shadow:
-        0 0 2px #4ade80,
-        0 0 4px #4ade80,
-        0 0 6px #4ade80,
-        0 0 10px #4ade80,
-        0 0 45px #4ade80,
-        0 0 55px #4ade80,
-    }
 }
 
 @keyframes pulsate-blue {
     100% {
         text-shadow:
-        0 0 4px #60a5fa,
-        0 0 11px #60a5fa,
-        0 0 19px #60a5fa,
-        0 0 40px #60a5fa,
-        0 0 80px #60a5fa,
-        0 0 90px #60a5fa,
+        0 0 4px #8cbffc,
+        0 0 11px #8cbffc,
+        0 0 19px #8cbffc,
+        0 0 40px #8cbffc,
+        0 0 80px #8cbffc,
+        0 0 90px #8cbffc,
     }
     0% {
         text-shadow:
-        0 0 2px #60a5fa,
-        0 0 4px #60a5fa,
-        0 0 6px #60a5fa,
-        0 0 10px #60a5fa,
-        0 0 45px #60a5fa,
-        0 0 55px #60a5fa,
+        0 0 2px #8cbffc,
+        0 0 4px #8cbffc,
+        0 0 6px #8cbffc,
+        0 0 10px #8cbffc,
+        0 0 45px #8cbffc,
+        0 0 55px #8cbffc,
     }
 }
 

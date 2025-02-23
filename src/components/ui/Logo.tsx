@@ -34,11 +34,10 @@ export function Logo({ isEditMode = false }: LogoProps) {
     return (
         <div className="relative">
             {' '}
-            {/* 새로운 wrapper div 추가 */}
             <Link href={shareData?.shareUrl || '/'} className="block">
                 <div
                     className={`w-32 h-8 overflow-hidden hover:opacity-90 transition-opacity ${
-                        isEditMode || (!user && isSharePage) ? 'opacity-50' : ''
+                        isEditMode || isSharePage ? 'opacity-50' : ''
                     }`}
                 >
                     <div className="w-full h-full flex items-center justify-center">

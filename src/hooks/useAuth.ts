@@ -26,10 +26,6 @@ export function useAuth() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (newUser) => {
             queryClient.setQueryData(['user'], newUser);
-
-            if (!newUser && !pathname.startsWith('/share/')) {
-                router.push('/');
-            }
         });
 
         return () => unsubscribe();

@@ -25,6 +25,9 @@ interface AppCardProps {
     onAddNewApp?: (newApp: Omit<ITool, 'id'>) => Promise<void>;
     onDeleteApp: (id: string) => void;
     readOnly?: boolean;
+    showCheckbox?: boolean;
+    isChecked?: boolean;
+    onCheckboxClick?: (e: React.MouseEvent) => void;
 }
 
 export const AppIconCard: React.FC<AppCardProps> = ({
@@ -34,6 +37,9 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     onDeleteApp,
     onAddNewApp,
     readOnly = false,
+    showCheckbox = false,
+    isChecked = false,
+    onCheckboxClick,
 }) => {
     const { user, isEditMode } = useAuth();
     const { closeAllTooltips, setModalOpen } = useTooltipStore();
@@ -136,6 +142,17 @@ export const AppIconCard: React.FC<AppCardProps> = ({
         e.stopPropagation();
         toggleStar();
     };
+
+    const handleCheckboxClick = useCallback(
+        (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (onCheckboxClick && app) {
+                onCheckboxClick(e);
+            }
+        },
+        [onCheckboxClick, app]
+    );
+
     const canViewSettings = isShared || (!isShared && !isEditMode);
 
     return (
@@ -147,6 +164,28 @@ export const AppIconCard: React.FC<AppCardProps> = ({
             <Tooltip content={app?.tooltip || ''}>
                 <div className="relative">
                     <div className="relative w-20 h-20 bg-black/40 rounded-2xl border border-white/10 overflow-hidden">
+                        {showCheckbox && !isAddNewAppCard && (
+                            <div
+                                className="absolute bottom-1 right-2 z-10"
+                                onClick={handleCheckboxClick}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {}}
+                                    className="peer h-4 w-4 appearance-none rounded-md border-2 border-white/30 
+                           bg-black/50 checked:border-primary checked:bg-primary 
+                           hover:border-white/50 focus:outline-none focus:ring-2 
+                           focus:ring-primary/20 transition-all duration-200
+                           relative
+                           after:content-[''] after:absolute after:left-[4px] after:top-[2px]
+                           after:w-[4px] after:h-[8px] after:border-white
+                           after:border-r-2 after:border-b-2 after:rotate-45
+                           after:opacity-0 checked:after:opacity-100
+                           after:transition-opacity after:duration-200"
+                                />
+                            </div>
+                        )}
                         <div
                             className="relative inset-0 w-full h-full flex items-center justify-center"
                             onClick={handleIconClick}
@@ -218,7 +257,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
             >
                 {isAddNewAppCard ? 'Add new app' : selectedApp?.name}
             </span>
-            {showSettingsModal && selectedApp && user && (
+            {showSettingsModal && selectedApp && (
                 <SettingsModal
                     initialApp={selectedApp}
                     readOnly={canViewSettings && !isEditMode}
