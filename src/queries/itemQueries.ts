@@ -23,7 +23,7 @@ export const useGetItems = (userId: string) => {
             return apps.sort((a, b) => {
                 const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                 const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                return dateB - dateA;
+                return dateA - dateB; // 오름차순
             });
         },
         staleTime: 0,
@@ -49,7 +49,7 @@ export const useItemsByCategoryAndUserId = (
             return data.sort((a, b) => {
                 const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                 const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                return dateB - dateA;
+                return dateA - dateB;
             });
         },
         enabled: !!userId && !!category,
