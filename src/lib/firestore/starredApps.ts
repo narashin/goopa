@@ -1,12 +1,5 @@
 import {
-    arrayRemove,
-    arrayUnion,
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    increment,
-    setDoc,
+    arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment,
     writeBatch,
 } from 'firebase/firestore';
 
@@ -15,45 +8,39 @@ import { firestore } from '../firebase';
 
 // ✅ Star 추가
 export const addStarToApp = async (
-    userId: string,
-    appId: string
+    userId: string, // B유저의 `uid`는 그대로 사용
+    appId: string,
+    appOwnerId: string // A유저의 `uid` 추가
 ): Promise<void> => {
-    const starRef = doc(firestore, 'users', userId, 'starredApps', appId);
-    const userAppRef = doc(firestore, 'users', userId, 'apps', appId); // userId 하위로 앱 정보 저장
+    const starRef = doc(firestore, 'users', userId, 'starredApps', appId); // B유저의 starredApps에 추가
+    const userAppRef = doc(firestore, 'users', appOwnerId, 'apps', appId); // A유저의 앱 정보
     const publicAppRef = doc(firestore, 'publicApps', appId); // 공개 앱 컬렉션
 
     const batch = writeBatch(firestore);
 
-    // 🔥 먼저 `publicApps/{appId}` 문서가 존재하는지 확인하고, 없으면 생성
     const publicAppSnap = await getDoc(publicAppRef);
-    if (!publicAppSnap.exists()) {
-        // 문서가 없으면 기본값을 설정하여 생성
-        await setDoc(publicAppRef, {
-            starCount: 0, // 초기 starCount 설정
-            starredByUsers: [userId], // 스타한 사용자 배열 (첫 번째 스타 등록)
-        });
-        console.log(`🟢 Created public app document for ${appId}`);
-    }
-
-    // `users/{userId}/apps/{appId}`에 앱 정보를 저장 (기존 앱 정보 복사)
     const userAppSnap = await getDoc(userAppRef);
-    if (!userAppSnap.exists()) {
-        // 기존 앱 정보 복사하여 저장
-        const appData = {
-            id: appId,
-            name: `App ${appId}`,
-            category: 'general',
-        }; // 예시, 실제 앱 정보에 맞게 복사
-        await setDoc(userAppRef, appData);
-        console.log(`🟢 Created user app document for ${appId}`);
+
+    if (!publicAppSnap.exists()) {
+        throw new Error(
+            `App with ID ${appId} does not exist in publicApps collection.`
+        );
     }
 
-    batch.set(starRef, { appId }); // 유저의 starredApps 컬렉션에 추가
-    batch.update(userAppRef, { starCount: increment(1) }); // 유저 앱의 starCount 증가
+    if (!userAppSnap.exists()) {
+        throw new Error(
+            `App with ID ${appId} does not exist in users/${appOwnerId}/apps.`
+        );
+    }
+
+    // A유저의 앱에서 starCount 증가
+    batch.update(userAppRef, { starCount: increment(1) });
+
     batch.update(publicAppRef, {
-        starCount: increment(1), // Public 앱에도 starCount 증가
+        starCount: increment(1), // Public 앱에서도 starCount 증가
         starredByUsers: arrayUnion(userId), // 스타한 유저를 배열에 추가
     });
+    batch.set(starRef, { appId }); // B유저의 starredApps 컬렉션에 추가
 
     await batch.commit();
 };
@@ -117,8 +104,8 @@ export const getStarredAppsByUser = async (
     for (const appId of starredAppIds) {
         console.log(`Fetching app data for appId: ${appId}`);
 
-        // 2. 앱 데이터 가져오기 (users/{userId}/starredApps 컬렉션에서 앱 데이터 찾기)
-        const appRef = doc(firestore, 'users', userId, 'apps', appId); // 🔧 users/{userId}/starredApps 경로 사용
+        // 2. 앱 데이터 가져오기 (publicApps 컬렉션에서 앱 데이터 찾기)
+        const appRef = doc(firestore, 'publicApps', appId); // `publicApps`에서 앱 정보 가져오기
         const appSnap = await getDoc(appRef);
 
         console.log(`Document exists for appId ${appId}:`, appSnap.exists());
@@ -129,7 +116,7 @@ export const getStarredAppsByUser = async (
             starredApps.push(appData);
         } else {
             console.warn(
-                `App with ID ${appId} does not exist in 'starredApps' collection.`
+                `App with ID ${appId} does not exist in 'publicApps' collection.`
             );
         }
     }

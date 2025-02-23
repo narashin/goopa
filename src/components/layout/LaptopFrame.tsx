@@ -1,7 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 
-import { useUserShare } from '../../hooks/useUserShare';
+import { useAuth } from '../../hooks/useAuth';
+import { useShare } from '../../hooks/useShare';
 
 interface LaptopFrameProps {
     children: React.ReactNode;
@@ -9,7 +10,8 @@ interface LaptopFrameProps {
 
 export function LaptopFrame({ children }: LaptopFrameProps) {
     const [showTooltip, setShowTooltip] = useState(false);
-    const { isUserShared } = useUserShare();
+    const { user } = useAuth();
+    const { isShared } = useShare(user?.uid ?? null);
 
     return (
         <div className="relative w-full max-w-[960px] mx-auto">
@@ -122,7 +124,7 @@ export function LaptopFrame({ children }: LaptopFrameProps) {
                     />
                 </svg>
 
-                {isUserShared && (
+                {isShared && (
                     <div
                         className="absolute top-[25.2%] left-[49.5%] w-[10] h-[10] bg-green-500 rounded-full animate-pulse"
                         onMouseEnter={() => setShowTooltip(true)}

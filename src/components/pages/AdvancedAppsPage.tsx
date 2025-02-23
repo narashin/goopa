@@ -35,6 +35,15 @@ const AdvancedAppsPage = ({
         navigator.clipboard.writeText(text).then(() => {});
     }, []);
 
+    const handleTabChange = useCallback(
+        (subCategory: SubCategoryType) => {
+            setSelectedSubCategory(
+                subCategory === selectedSubCategory ? null : subCategory
+            );
+        },
+        [selectedSubCategory, setSelectedSubCategory]
+    );
+
     const renderCategoryContent = useCallback(
         (category: SubCategoryType) => {
             const commonProps = {
@@ -118,13 +127,7 @@ const AdvancedAppsPage = ({
                                 ? '-translate-x-2'
                                 : 'hover:-translate-x-2'
                         }`}
-                        onClick={() =>
-                            setSelectedSubCategory(
-                                category === selectedSubCategory
-                                    ? null
-                                    : category
-                            )
-                        }
+                        onClick={() => handleTabChange(category)}
                     >
                         <div
                             className={`absolute inset-0 rounded-r-md transition-colors ${

@@ -11,7 +11,7 @@ interface CategoryStore {
 
 export const useCategoryStore = create<CategoryStore>((set) => ({
     category: AppCategoryType.General,
-    selectedSubCategory: null, // 기본값
+    selectedSubCategory: null,
     setCategory: (category) => set({ category, selectedSubCategory: null }),
     setSelectedSubCategory: (subCategory) =>
         set({

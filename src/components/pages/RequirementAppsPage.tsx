@@ -24,6 +24,8 @@ const RequirementAppsPage: React.FC<RequirementAppsPageProps> = ({
 }) => {
     const [selectedItems, setSelectedItems] = useState<ITool[]>([]);
 
+    console.log('RequirementAppsPage render', apps);
+
     const filteredApps = useMemo(
         () =>
             apps.filter((app) => app.category === AppCategoryType.Requirement),

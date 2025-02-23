@@ -30,12 +30,10 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [iconPreview, setIconPreview] = useState<string | null>(null);
     const { category, selectedSubCategory } = useCategoryStore();
-    const [localCategory, setLocalCategory] = useState<AppCategoryType>(
-        category === AppCategoryType.Advanced
-            ? ((selectedSubCategory ??
-                  SubCategoryType.Requirement) as unknown as AppCategoryType)
-            : category
-    );
+    const [localCategory, setLocalCategory] =
+        useState<AppCategoryType>(category);
+    // TODO SubCategory 저장하도록 변경해야함
+    const [, setSubCategory] = useState<SubCategoryType | null>(null);
     const [url, setDownloadUrl] = useState('');
     const [tooltip, setTooltip] = useState('');
     const [installCommand, setInstallCommand] = useState('');
@@ -44,15 +42,44 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
     const [errors, setErrors] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
+        console.log('localCategory:', localCategory);
         if (category === AppCategoryType.Advanced) {
-            setLocalCategory(
-                (selectedSubCategory ??
-                    SubCategoryType.Requirement) as unknown as AppCategoryType
-            );
+            const subCategory =
+                selectedSubCategory === SubCategoryType.Requirement ||
+                selectedSubCategory === SubCategoryType.ZshPlugin ||
+                selectedSubCategory === SubCategoryType.Additional
+                    ? selectedSubCategory
+                    : SubCategoryType.Requirement;
+
+            if (
+                ![
+                    AppCategoryType.Requirement,
+                    AppCategoryType.ZshPlugin,
+                    AppCategoryType.Additional,
+                ].includes(localCategory)
+            ) {
+                setLocalCategory(subCategory as unknown as AppCategoryType);
+            }
         } else {
-            setLocalCategory(category);
+            if (localCategory !== category) {
+                setLocalCategory(category);
+            }
         }
-    }, [category, selectedSubCategory]);
+    }, [category, selectedSubCategory, localCategory]);
+
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        console.log('category change:', e.target.value);
+        const newCategory = e.target.value as AppCategoryType;
+        setLocalCategory(newCategory);
+
+        if (newCategory === AppCategoryType.Advanced) {
+            // "Advanced" 선택 시, 기본적으로 Requirement로 설정
+            setSubCategory(SubCategoryType.Requirement);
+        } else {
+            // "Advanced"가 아닌 다른 카테고리에서는 subCategory를 null로 설정
+            setSubCategory(null);
+        }
+    };
 
     const categoryOptions = [
         { value: AppCategoryType.General, label: 'General' },
@@ -219,7 +246,8 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
 
         const newItem: Omit<ITool, 'id' | 'starCount' | 'userId'> = {
             name,
-            category,
+            category: localCategory,
+            subCategory: null,
             icon: iconUrl || undefined,
             tooltip: tooltip || undefined,
             installCommand: installCommand || undefined,
@@ -335,9 +363,7 @@ export const AddNewAppForm: React.FC<AddNewAppFormProps> = ({
                 <select
                     id="category"
                     value={localCategory}
-                    onChange={(e) =>
-                        setLocalCategory(e.target.value as AppCategoryType)
-                    }
+                    onChange={handleCategoryChange}
                     required
                     className={inputClassName(!!errors.category)}
                 >

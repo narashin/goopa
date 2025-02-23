@@ -55,9 +55,10 @@ export function useStarApp(app: ITool | null) {
         setStarCount((prev) => (newStarredState ? prev + 1 : prev - 1)); // UI 상태에서 바로 반영
 
         try {
+            const ownerId = app.userId;
             // 스타 추가 또는 제거
             if (newStarredState) {
-                await addStarToApp(user.uid, app.id);
+                await addStarToApp(user.uid, app.id, ownerId);
             } else {
                 await removeStarFromApp(user.uid, app.id);
             }

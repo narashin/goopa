@@ -1,4 +1,4 @@
-import { AppCategoryType } from './category';
+import { AppCategoryType, SubCategoryType } from './category';
 
 export interface Item {
     id: string;
@@ -7,9 +7,12 @@ export interface Item {
     tooltip?: string | null;
     url?: string | null;
     category: AppCategoryType;
+    subCategory: SubCategoryType | null;
     userId: string;
     createdAt?: string;
     updatedAt?: string;
+    isShared?: boolean;
+    starCount: number;
 }
 
 export interface ITool extends Item {
@@ -19,5 +22,4 @@ export interface ITool extends Item {
     hasScript?: boolean | null;
     hasSettings?: boolean | null;
     settings?: string | null;
-    starCount: number;
 }

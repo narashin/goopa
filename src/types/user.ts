@@ -1,13 +1,9 @@
-import type { ShareHistoryData } from './share'; // ✅ share.ts에서 가져오기
+import { ShareHistoryData } from './share';
 
 export interface BaseUserData {
     uid: string;
     isAnonymous: boolean;
     createdAt: string;
-}
-
-export interface AnonymousUserData extends BaseUserData {
-    isAnonymous: true;
 }
 
 export interface AuthenticatedUserData extends BaseUserData {
@@ -18,7 +14,7 @@ export interface AuthenticatedUserData extends BaseUserData {
     isShared: boolean;
     lastShareId?: string;
     photoURL: string;
-    shareHistory: ShareHistoryData[]; // ✅ `ShareGoopaData` 대신 `ShareHistoryData` 사용
+    shareHistory: ShareHistoryData[];
     emailVerified: boolean;
     metadata: {
         creationTime: string;
@@ -26,4 +22,4 @@ export interface AuthenticatedUserData extends BaseUserData {
     };
 }
 
-export type UserData = AnonymousUserData | AuthenticatedUserData;
+export type UserData = BaseUserData | AuthenticatedUserData;

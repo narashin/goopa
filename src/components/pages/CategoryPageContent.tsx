@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 
-import { AppCategoryType } from '../../types/category';
+import { AppCategoryType, SubCategoryType } from '../../types/category';
 import type { ITool } from '../../types/item';
 import AdditionalAppsPage from './AdditionalAppsPage';
 import AdvancedAppsPage from './AdvancedAppsPage';
@@ -14,6 +14,7 @@ import ZshPluginsPage from './ZshPluginsPage';
 
 interface CategoryPageContentProps {
     category: AppCategoryType;
+    subCategory: SubCategoryType | null;
     items: ITool[];
     isEditMode: boolean;
     isReadOnly: boolean;
@@ -24,6 +25,7 @@ interface CategoryPageContentProps {
 
 const CategoryPageContent = ({
     category,
+    subCategory,
     items,
     isReadOnly,
     onAddNewApp,
@@ -35,6 +37,9 @@ const CategoryPageContent = ({
             apps: items,
             onAddNewApp,
             onDeleteApp,
+            copyToClipboard,
+            isReadOnly,
+            subCategory,
         };
 
         switch (category) {
@@ -62,6 +67,7 @@ const CategoryPageContent = ({
         onDeleteApp,
         copyToClipboard,
         isReadOnly,
+        subCategory,
     ]);
 
     return categoryContent;

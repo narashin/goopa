@@ -6,15 +6,11 @@ import { addPublicApp, deletePublicApp } from '../lib/firestore/apps';
 import { getUser } from '../lib/firestore/users';
 import { removeUndefinedFields } from '../lib/utils';
 import {
-    useAddItem,
-    useDeleteItem,
-    useGetItems as useItemsQuery,
-    useItemsByCategoryAndUserId,
-    usePublicItemsByCategory,
-    useUpdateItem,
+    useAddItem, useDeleteItem, useGetItems as useItemsQuery,
+    useItemsByCategoryAndUserId, usePublicItemsByCategory, useUpdateItem,
 } from '../queries/itemQueries';
-import { useItemStore } from '../stores/itemStore'; // ✅ zustand 상태 포함
-import { AppCategoryType } from '../types/category';
+import { useItemStore } from '../stores/itemStore';
+import { AppCategoryType, SubCategoryType } from '../types/category';
 import type { ITool } from '../types/item';
 import { AuthenticatedUserData } from '../types/user';
 import { useAuth } from './useAuth';
@@ -29,6 +25,7 @@ export function useItems() {
     const deleteItemMutation = useDeleteItem();
     const itemsByCategoryAndUserIdResult = useItemsByCategoryAndUserId(
         AppCategoryType.General,
+        SubCategoryType.None,
         userId
     );
     const { data: publicItems } = usePublicItemsByCategory(
@@ -42,9 +39,19 @@ export function useItems() {
         if (!user) return;
 
         const updateShareStatus = async () => {
-            const userData = (await getUser(userId)) as AuthenticatedUserData;
-            if (userData.isShared !== isShared) {
-                setIsShared(userData.isShared, userId);
+            try {
+                const userData = (await getUser(
+                    userId
+                )) as AuthenticatedUserData;
+                if (!userData) {
+                    console.log('User data not found');
+                    return;
+                }
+                if (userData.isShared !== isShared) {
+                    setIsShared(userData.isShared, userId);
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
             }
         };
 
@@ -60,22 +67,23 @@ export function useItems() {
         const completeItem: ITool = {
             ...newItem,
             id: nanoid(),
-            starCount: 0, // ✅ 기본값 명시
+            starCount: 0,
             userId,
+            category: newItem.category ?? AppCategoryType.General,
+            subCategory: newItem.subCategory ?? SubCategoryType.None,
             icon: newItem.icon ?? null,
-            tooltip: newItem.tooltip ?? '', // ✅ 기본값 추가
-            installCommand: newItem.installCommand ?? '', // ✅ 기본값 추가
-            zshrcCommand: newItem.zshrcCommand ?? '', // ✅ 기본값 추가
+            tooltip: newItem.tooltip ?? '',
+            installCommand: newItem.installCommand ?? '',
+            zshrcCommand: newItem.zshrcCommand ?? '',
         };
 
         try {
-            console.log('🟢 Firestore에 추가 요청:', completeItem);
-
             const cleanItem: ITool = {
                 ...removeUndefinedFields(completeItem),
                 id: nanoid(),
                 name: completeItem.name ?? 'Unknown App',
                 category: completeItem.category ?? AppCategoryType.General,
+                subCategory: completeItem.subCategory ?? SubCategoryType.None,
                 userId: completeItem.userId,
                 createdAt: new Date().toISOString(),
                 starCount: completeItem.starCount ?? 0,
@@ -113,6 +121,8 @@ export function useItems() {
                     userId,
                     name: updatedFields.name ?? 'Unknown App',
                     category: updatedFields.category ?? AppCategoryType.General,
+                    subCategory:
+                        updatedFields.subCategory ?? SubCategoryType.None,
                     starCount: updatedFields.starCount ?? 0,
                 };
                 await addPublicApp(updatedApp);

@@ -1,25 +1,14 @@
 import {
-    collection,
-    doc,
-    FirestoreDataConverter,
-    getDoc,
-    getDocs,
-    query,
-    setDoc,
-    updateDoc,
-    where,
+    collection, doc, FirestoreDataConverter, getDoc, getDocs, query, setDoc,
+    updateDoc, where,
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import {
-    AnonymousUserData,
-    AuthenticatedUserData,
-    UserData,
-} from '../../types/user';
+import { AuthenticatedUserData } from '../../types/user';
 import { firestore } from '../firebase';
 
-export const userConverter: FirestoreDataConverter<UserData> = {
-    toFirestore: (userData: UserData) => {
+export const userConverter: FirestoreDataConverter<AuthenticatedUserData> = {
+    toFirestore: (userData: AuthenticatedUserData) => {
         if (!userData.isAnonymous) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { shareHistory, ...dataToStore } = userData;
@@ -29,20 +18,12 @@ export const userConverter: FirestoreDataConverter<UserData> = {
     },
     fromFirestore: (snapshot, options) => {
         const data = snapshot.data(options);
-        if (data.isAnonymous) {
-            return {
-                uid: snapshot.id,
-                isAnonymous: true,
-                createdAt: data.createdAt,
-            } as AnonymousUserData;
-        } else {
-            return {
-                ...data,
-                uid: snapshot.id,
-                isAnonymous: false,
-                shareHistory: data.ShareHistory || [],
-            } as AuthenticatedUserData;
-        }
+        return {
+            ...data,
+            uid: snapshot.id,
+            isAnonymous: false,
+            shareHistory: data.ShareHistory || [],
+        } as AuthenticatedUserData;
     },
 };
 
@@ -100,7 +81,7 @@ export const updateUserShareStatus = async (
 };
 
 // ✅ Firestore에서 사용자 데이터 가져오기
-export const getUser = async (uid: string): Promise<UserData> => {
+export const getUser = async (uid: string): Promise<AuthenticatedUserData> => {
     const userRef = doc(firestore, 'users', uid).withConverter(userConverter);
     const userSnapshot = await getDoc(userRef);
 
@@ -135,7 +116,7 @@ export const getUserIdByCustomUserId = async (
 // ✅ Firestore에서 `customUserId`로 사용자 전체 정보 가져오기
 export const getUserByCustomUserId = async (
     customUserId: string
-): Promise<UserData | null> => {
+): Promise<AuthenticatedUserData | null> => {
     const usersRef = collection(firestore, 'users');
     const q = query(usersRef, where('customUserId', '==', customUserId));
     const querySnapshot = await getDocs(q);
@@ -144,5 +125,5 @@ export const getUserByCustomUserId = async (
         return null;
     }
 
-    return querySnapshot.docs[0].data() as UserData;
+    return querySnapshot.docs[0].data() as AuthenticatedUserData;
 };

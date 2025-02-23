@@ -4,14 +4,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { firestore } from '../lib/firebase';
 import {
-    deleteUserApp,
-    getAppsByCustomUserId,
-    getPublicApps,
-    getUserApps,
-    getUserAppsByCategory,
-    updateUserApp,
+    deleteUserApp, getAppsByCustomUserId, getPublicApps, getUserApps,
+    getUserAppsByCategory, updateUserApp,
 } from '../lib/firestore/apps';
-import { AppCategoryType } from '../types/category';
+import { AppCategoryType, SubCategoryType } from '../types/category';
 import { ITool } from '../types/item';
 
 // ✅ 특정 유저의 앱 가져오기
@@ -28,16 +24,21 @@ export const useGetItems = (userId: string) => {
 // ✅ 특정 유저의 특정 카테고리의 앱 가져오기
 export const useItemsByCategoryAndUserId = (
     category: AppCategoryType,
+    subCategory: SubCategoryType,
     userId: string
 ) => {
     return useQuery({
-        queryKey: ['items', userId, category],
+        queryKey: ['items', userId, category, subCategory],
         queryFn: async () => {
-            const data = await getUserAppsByCategory(userId, category);
-            console.log(`📢 ${category} 데이터 로드됨:`, data);
+            const data = await getUserAppsByCategory(
+                userId,
+                category,
+                subCategory
+            );
+            console.log(`📢 ${category} / ${subCategory} 데이터 로드됨:`, data);
             return data;
         },
-        enabled: !!userId,
+        enabled: !!userId && !!category,
     });
 };
 
