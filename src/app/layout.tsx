@@ -13,7 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { LaptopFrame } from '../components/layout/LaptopFrame';
 import { TopNav } from '../components/layout/TopNav';
-import { NavigationProvider } from '../contexts/navigationContext';
+import { NavigationProvider } from '../contexts/NavigationContext';
 import { handleGoogleRedirect } from '../lib/auth';
 import { AuthProvider } from './providers/AuthProvider';
 
