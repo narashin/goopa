@@ -28,6 +28,7 @@ interface AppCardProps {
     showCheckbox?: boolean;
     isChecked?: boolean;
     onCheckboxClick?: (e: React.MouseEvent) => void;
+    wrapperClassName?: string;
 }
 
 export const AppIconCard: React.FC<AppCardProps> = ({
@@ -40,6 +41,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     showCheckbox = false,
     isChecked = false,
     onCheckboxClick,
+    wrapperClassName,
 }) => {
     const { user, isEditMode } = useAuth();
     const { closeAllTooltips, setModalOpen } = useTooltipStore();
@@ -162,7 +164,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     return selectedApp || isAddNewAppCard ? (
         <div
             key={app?.id || 'add-new'}
-            className="flex flex-col items-center space-y-2 cursor-pointer group"
+            className={wrapperClassName}
             onClick={handleCardClick}
         >
             <Tooltip content={app?.tooltip || ''}>

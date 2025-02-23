@@ -44,31 +44,27 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                 <div className="overflow-y-auto flex-grow">
                     <div className="grid grid-cols-2 gap-4 w-full pt-2">
                         {tools.map((tool) => (
-                            <div
+                            <AppIconCard
                                 key={tool.id}
-                                className={`relative transition-all cursor-pointer ${
+                                app={tool}
+                                onClick={() => toggleSelectedItem(tool)}
+                                onDeleteApp={() => handleDeleteApp(tool.id)}
+                                showCheckbox={
+                                    currentCategory ===
+                                        AppCategoryType.ZshPlugin ||
+                                    currentCategory ===
+                                        AppCategoryType.Requirement ||
+                                    currentCategory ===
+                                        AppCategoryType.Additional
+                                }
+                                isChecked={isItemSelected(tool.id)}
+                                onCheckboxClick={() => toggleItem(tool)}
+                                wrapperClassName={`relative transition-all cursor-pointer ${
                                     isItemSelected(tool.id)
                                         ? 'border-white/60 bg-white/10'
                                         : 'border-white/20 hover:border-white/40'
                                 }`}
-                            >
-                                <AppIconCard
-                                    key={tool.id}
-                                    app={tool}
-                                    onClick={() => toggleSelectedItem(tool)}
-                                    onDeleteApp={() => handleDeleteApp(tool.id)}
-                                    showCheckbox={
-                                        currentCategory ===
-                                            AppCategoryType.ZshPlugin ||
-                                        currentCategory ===
-                                            AppCategoryType.Requirement ||
-                                        currentCategory ===
-                                            AppCategoryType.Additional
-                                    }
-                                    isChecked={isItemSelected(tool.id)}
-                                    onCheckboxClick={() => toggleItem(tool)}
-                                />
-                            </div>
+                            />
                         ))}
                         {user && isEditMode && (
                             <AppIconCard
