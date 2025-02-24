@@ -7,21 +7,23 @@ import { getUserByCustomUserId } from '../../../../lib/firestore';
 
 export const runtime = 'edge';
 
-type Params = Promise<{
-    customUserId: string;
+interface ShareParams {
+    userId: string;
     shareId: string;
-}>;
+}
 
-export default async function Image(props: { params: Params }) {
-    const { customUserId } = await props.params;
+export default async function Image({ params }: { params: ShareParams }) {
+    const { userId } = params;
     try {
-        if (!customUserId) {
+        if (!userId) {
+            console.error('Custom user ID not found:', userId);
             redirect('/opengraph-image.png');
         }
 
-        const userData = await getUserByCustomUserId(customUserId);
+        const userData = await getUserByCustomUserId(userId);
 
         if (!userData) {
+            console.error('User not found:', userId);
             redirect('/opengraph-image.png');
         }
 
