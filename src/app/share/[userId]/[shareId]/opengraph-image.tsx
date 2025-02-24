@@ -1,20 +1,19 @@
 import React from 'react';
 
+// src/app/share/[customUserId]/[shareId]/opengraph-image.tsx
 import { ImageResponse } from 'next/og';
 
-import { getUserByCustomUserId } from '../../../lib/firestore';
+import { getUserByCustomUserId } from '../../../../lib/firestore';
 
 export const runtime = 'edge';
-export const contentType = 'image/png';
 
-interface RouteParams {
-    params: { userId: string };
-    searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export async function GET(request: Request, { params }: RouteParams) {
+export default async function Image({
+    params,
+}: {
+    params: { customUserId: string; shareId: string };
+}) {
     try {
-        const userData = await getUserByCustomUserId(params.userId);
+        const userData = await getUserByCustomUserId(params.customUserId);
 
         return new ImageResponse(
             (
@@ -39,7 +38,7 @@ export async function GET(request: Request, { params }: RouteParams) {
                         }}
                     >
                         <img
-                            src="/images/goopa-logo.png"
+                            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/goopa-logo-rCfpDwRO4YdP0vk5K1NrND8IIAjWih.png"
                             alt="Goopa Logo"
                             style={{
                                 width: '400px',
@@ -86,7 +85,48 @@ export async function GET(request: Request, { params }: RouteParams) {
             }
         );
     } catch (error) {
-        console.error('❌ Error generating image:', error);
-        return new Response('Failed to generate image', { status: 500 });
+        console.error('OG Image generation error:', error);
+
+        return new ImageResponse(
+            (
+                <div
+                    style={{
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#E5E5E5',
+                        padding: '40px',
+                    }}
+                >
+                    <div
+                        style={{
+                            color: '#EF4444',
+                            fontSize: '24px',
+                            marginBottom: '20px',
+                        }}
+                    >
+                        Failed to generate image
+                    </div>
+                    <div
+                        style={{
+                            color: '#666666',
+                            fontSize: '16px',
+                            textAlign: 'center',
+                        }}
+                    >
+                        {error instanceof Error
+                            ? error.message
+                            : 'Unknown error occurred'}
+                    </div>
+                </div>
+            ),
+            {
+                width: 1200,
+                height: 630,
+            }
+        );
     }
 }
