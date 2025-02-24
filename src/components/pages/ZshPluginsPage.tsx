@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
@@ -38,6 +38,10 @@ const ZshPluginsPage: React.FC<ZshPluginsPageProps> = ({
                 : [...prev, item]
         );
     }, []);
+
+    useEffect(() => {
+        setSelectedItems([]);
+    }, [apps]);
 
     const isItemSelected = useCallback(
         (id: string) => selectedItems.some((item) => item.id === id),
