@@ -1,19 +1,29 @@
 import React from 'react';
 
-// src/app/share/[customUserId]/[shareId]/opengraph-image.tsx
+import { redirect } from 'next/navigation';
 import { ImageResponse } from 'next/og';
 
 import { getUserByCustomUserId } from '../../../../lib/firestore';
 
 export const runtime = 'edge';
 
-export default async function Image({
-    params,
-}: {
-    params: { customUserId: string; shareId: string };
-}) {
+type Params = Promise<{
+    customUserId: string;
+    shareId: string;
+}>;
+
+export default async function Image(props: { params: Params }) {
+    const { customUserId } = await props.params;
     try {
-        const userData = await getUserByCustomUserId(params.customUserId);
+        if (!customUserId) {
+            redirect('/opengraph-image.png');
+        }
+
+        const userData = await getUserByCustomUserId(customUserId);
+
+        if (!userData) {
+            redirect('/opengraph-image.png');
+        }
 
         return new ImageResponse(
             (
@@ -65,7 +75,7 @@ export default async function Image({
                                 textAlign: 'center',
                             }}
                         >
-                            {userData?.displayName || 'User'}`&apos;`s Goopa
+                            {userData.displayName}`&apos;`s Goopa
                         </div>
 
                         <div
@@ -86,47 +96,6 @@ export default async function Image({
         );
     } catch (error) {
         console.error('OG Image generation error:', error);
-
-        return new ImageResponse(
-            (
-                <div
-                    style={{
-                        height: '100%',
-                        width: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#E5E5E5',
-                        padding: '40px',
-                    }}
-                >
-                    <div
-                        style={{
-                            color: '#EF4444',
-                            fontSize: '24px',
-                            marginBottom: '20px',
-                        }}
-                    >
-                        Failed to generate image
-                    </div>
-                    <div
-                        style={{
-                            color: '#666666',
-                            fontSize: '16px',
-                            textAlign: 'center',
-                        }}
-                    >
-                        {error instanceof Error
-                            ? error.message
-                            : 'Unknown error occurred'}
-                    </div>
-                </div>
-            ),
-            {
-                width: 1200,
-                height: 630,
-            }
-        );
+        redirect('/opengraph-image.png');
     }
 }

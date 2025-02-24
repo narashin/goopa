@@ -2,18 +2,17 @@ import { Metadata } from 'next';
 
 import { getUserByCustomUserId } from '../../../../lib/firestore';
 
-type ShareParams = {
-    params: {
-        customUserId: string;
-        shareId: string;
-    };
-};
+type ShareParams = Promise<{
+    customUserId: string;
+    shareId: string;
+}>;
 
-export async function generateMetadata({
-    params,
-}: ShareParams): Promise<Metadata> {
+export async function generateMetadata(props: {
+    params: ShareParams;
+}): Promise<Metadata> {
     try {
-        const userData = await getUserByCustomUserId(params.customUserId);
+        const { customUserId, shareId } = await props.params;
+        const userData = await getUserByCustomUserId(customUserId);
 
         return {
             title: `${userData?.displayName || 'User'}'s Goopa Setup`,
@@ -21,11 +20,11 @@ export async function generateMetadata({
             openGraph: {
                 title: `${userData?.displayName || 'User'}'s Goopa Setup`,
                 description: 'Check out my must-have Mac apps and setup!',
-                url: `https://goopa.nara.dev/share/${params.customUserId}/${params.shareId}`,
+                url: `https://goopa.nara.dev/share/${customUserId}/${shareId}`,
                 siteName: 'Goopa',
                 images: [
                     {
-                        url: `https://goopa.nara.dev/api/og?userId=${params.customUserId}`,
+                        url: `https://goopa.nara.dev/api/og?userId=${customUserId}`,
                         width: 1200,
                         height: 630,
                         alt: `${userData?.displayName || 'User'}'s Goopa Setup`,
@@ -39,7 +38,7 @@ export async function generateMetadata({
                 title: `${userData?.displayName || 'User'}'s Goopa Setup`,
                 description: 'Check out my must-have Mac apps and setup!',
                 images: [
-                    `https://goopa.nara.dev/api/og?userId=${params.customUserId}`,
+                    `https://goopa.nara.dev/api/og?userId=${customUserId}`,
                 ],
             },
         };
