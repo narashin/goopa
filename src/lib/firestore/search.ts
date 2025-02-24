@@ -1,5 +1,5 @@
 import { ITool } from '../../types/item';
-import { getAppsByCustomUserId, getUserApps } from './apps';
+import { getAppsByCustomUserIdNoCategory, getUserApps } from './apps';
 
 export const searchAppsByUserId = async (
     userId: string,
@@ -16,7 +16,7 @@ export const searchAppsByCustomUserId = async (
     customUserId: string,
     searchQuery: string
 ): Promise<ITool[]> => {
-    const apps = await getAppsByCustomUserId(customUserId);
+    const apps = await getAppsByCustomUserIdNoCategory(customUserId);
 
     return apps.filter((app) =>
         app.name.toLowerCase().includes(searchQuery.toLowerCase())

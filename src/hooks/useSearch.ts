@@ -5,7 +5,8 @@ import { debounce } from 'lodash';
 import { useQuery } from '@tanstack/react-query';
 
 import {
-    searchAppsByCustomUserId, searchAppsByUserId,
+    searchAppsByCustomUserId,
+    searchAppsByUserId,
 } from '../lib/firestore/search';
 import { ITool } from '../types/item';
 
@@ -19,6 +20,7 @@ export function useSearch(loggedInUserId?: string, isPublicMode = false) {
             if (!searchQuery.trim()) return [];
             if (isPublicMode) {
                 const customUserId = window.location.pathname.split('/')[2];
+                console.log('isPublicMode', customUserId);
                 return await searchAppsByCustomUserId(
                     customUserId,
                     searchQuery

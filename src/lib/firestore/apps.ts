@@ -1,5 +1,10 @@
 import {
-    collection, deleteDoc, doc, getDocs, setDoc, updateDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    setDoc,
+    updateDoc,
 } from 'firebase/firestore';
 
 import { AppCategoryType, SubCategoryType } from '../../types/category';
@@ -49,6 +54,16 @@ export const getAppsByCustomUserId = async (
 
     return getUserAppsByCategory(userId, category!, subCategory);
 };
+
+export const getAppsByCustomUserIdNoCategory = async (
+    customUserId: string
+): Promise<ITool[]> => {
+    const userId = await getUserIdByCustomUserId(customUserId);
+    if (!userId) return [];
+
+    return getUserApps(userId);
+};
+
 // ✅ 앱 정보 업데이트
 export const updateApp = async (
     appId: string,
