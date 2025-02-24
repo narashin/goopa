@@ -41,7 +41,7 @@ export const AppIconCard: React.FC<AppCardProps> = ({
     showCheckbox = false,
     isChecked = false,
     onCheckboxClick,
-    wrapperClassName,
+    wrapperClassName = 'relative flex flex-col items-center space-y-2 transition-all cursor-pointer',
 }) => {
     const { user, isEditMode } = useAuth();
     const { closeAllTooltips, setModalOpen } = useTooltipStore();

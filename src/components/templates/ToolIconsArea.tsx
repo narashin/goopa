@@ -59,7 +59,7 @@ const ToolIconsArea: React.FC<ToolIconsProps> = ({
                                 }
                                 isChecked={isItemSelected(tool.id)}
                                 onCheckboxClick={() => toggleItem(tool)}
-                                wrapperClassName={`relative transition-all cursor-pointer ${
+                                wrapperClassName={`relative flex flex-col items-center space-y-2 transition-all cursor-pointer ${
                                     isItemSelected(tool.id)
                                         ? 'border-white/60 bg-white/10'
                                         : 'border-white/20 hover:border-white/40'
