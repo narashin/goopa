@@ -1,13 +1,18 @@
 import { useEffect } from 'react';
 
 import {
-    QueryObserver, useMutation, useQuery, useQueryClient,
+    QueryObserver,
+    useMutation,
+    useQuery,
+    useQueryClient,
 } from '@tanstack/react-query';
 
 import { signInWithGoogle, signOutWithGoogle } from '../lib/auth';
 import { auth } from '../lib/firebase';
 import {
-    createUserIfNotExists, getUser, getUserByCustomUserId,
+    createUserIfNotExists,
+    getUser,
+    getUserByCustomUserId,
 } from '../lib/firestore/users';
 import { useAuthStore } from '../stores/authStore';
 import { AuthenticatedUserData, UserData } from '../types/user';
@@ -81,7 +86,7 @@ export const useSignOutMutation = () => {
 };
 
 export const useUserByCustomUserId = (customUserId: string) => {
-    return useQuery<UserData | null, Error>({
+    return useQuery<AuthenticatedUserData | null, Error>({
         queryKey: ['userByCustomUserId', customUserId],
         queryFn: () => getUserByCustomUserId(customUserId),
         enabled: !!customUserId,
