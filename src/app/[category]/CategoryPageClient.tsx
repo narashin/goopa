@@ -1,6 +1,8 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { nanoid } from 'nanoid';
+
 import { useQueryClient } from '@tanstack/react-query';
 
 import CategoryPageContent from '../../components/pages/CategoryPageContent';
@@ -31,7 +33,7 @@ export default function CategoryPageClient({
     const copyToClipboard = useCopyToClipboard();
     const { selectedSubCategory, setCategory, setSelectedSubCategory } =
         useCategoryStore();
-    const { data: userItems } = useItemsByCategoryAndUserId(
+    const { data: userItems, refetch } = useItemsByCategoryAndUserId(
         category,
         selectedSubCategory ?? SubCategoryType.None,
         user?.uid ?? ''
@@ -41,17 +43,32 @@ export default function CategoryPageClient({
     const [items, setItems] = useState<ITool[]>(userItems ?? []);
 
     useEffect(() => {
-        if (userItems !== undefined) {
+        if (user && userItems) {
             setItems(userItems);
+        } else if (!user) {
+            setItems(publicItems ?? initialApps);
         }
-    }, [userItems]);
+    }, [
+        user,
+        userItems,
+        publicItems,
+        initialApps,
+        category,
+        selectedSubCategory,
+    ]);
 
     useEffect(() => {
         setCategory(category);
         if (category === AppCategoryType.Advanced) {
             setSelectedSubCategory(null);
         }
-    }, [category, setCategory, setSelectedSubCategory]);
+
+        if (user) {
+            queryClient.invalidateQueries({
+                queryKey: ['itemsByCategory', category, user.uid],
+            });
+        }
+    }, [category, setCategory, setSelectedSubCategory, user, queryClient]);
 
     const appsToDisplay = user
         ? items !== undefined
@@ -68,8 +85,7 @@ export default function CategoryPageClient({
                 return;
             }
 
-            const tempId = Date.now().toString();
-            const tempApp: ITool = { id: tempId, ...newApp };
+            const tempApp: ITool = { id: nanoid(), ...newApp };
 
             setItems((prevItems) => [...prevItems, tempApp]);
 
@@ -77,18 +93,24 @@ export default function CategoryPageClient({
                 const result = await addItem(newApp);
 
                 if (!result) {
-                    console.error('❌ Firestore 추가 실패 가능성 있음.');
+                    console.error('❌ Firestore update failed');
                     return;
                 }
+
+                setItems((prevItems) =>
+                    prevItems.map((app) =>
+                        app.id === tempApp.id ? result : app
+                    )
+                );
 
                 queryClient.setQueryData(
                     ['itemsByCategory', category, user.uid],
                     (oldData?: ITool[]) => {
                         if (!oldData) return [result];
-
-                        return oldData.map((app) =>
-                            app.id === tempId ? result : app
-                        );
+                        return [
+                            ...oldData.filter((item) => item.id !== result.id),
+                            result,
+                        ];
                     }
                 );
 
@@ -96,15 +118,9 @@ export default function CategoryPageClient({
                     queryKey: ['itemsByCategory', category, user.uid],
                 });
 
-                await queryClient.refetchQueries({
-                    queryKey: ['itemsByCategory', category, user.uid],
-                });
+                await refetch();
             } catch (error) {
-                console.error('❌ handleAddItem 실행 중 오류 발생:', error);
-
-                setItems((prevItems) =>
-                    prevItems.filter((app) => app.id !== tempId)
-                );
+                console.error('❌ Error:', error);
             }
         },
         [addItem, category, queryClient, user]
@@ -116,10 +132,32 @@ export default function CategoryPageClient({
                 console.error('User must be logged in to delete items');
                 return;
             }
-            await deleteItem(appId);
-            queryClient.invalidateQueries({
-                queryKey: ['itemsByCategory', category, user.uid],
-            });
+
+            setItems((prevItems) =>
+                prevItems.filter((app) => app.id !== appId)
+            );
+
+            try {
+                await deleteItem(appId);
+
+                // 캐시 직접 업데이트
+                queryClient.setQueryData(
+                    ['itemsByCategory', category, user.uid],
+                    (oldData?: ITool[]) => {
+                        if (!oldData) return [];
+                        return oldData.filter((item) => item.id !== appId);
+                    }
+                );
+
+                await queryClient.invalidateQueries({
+                    queryKey: ['itemsByCategory', category, user.uid],
+                });
+
+                await refetch();
+            } catch (error) {
+                console.error('❌ Error deleting item:', error);
+                await refetch();
+            }
         },
         [deleteItem, category, queryClient]
     );
