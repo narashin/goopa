@@ -123,6 +123,17 @@ If you'd like to contribute to the project, please submit a pull request. For ma
 
 프로젝트에 기여하고 싶으시다면 풀 리퀘스트를 제출해 주세요. 주요 변경사항의 경우, 먼저 이슈를 열어 제안된 변경사항에 대해 논의하는 것이 좋습니다.
 
+## Contributors / 기여한 사람들
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
 ## License / 라이선스
 
 This project is licensed under the [MIT License](LICENSE).
