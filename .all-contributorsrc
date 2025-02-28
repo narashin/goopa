@@ -1,4 +1,21 @@
 {
   "projectName": "goopa",
-  "projectOwner": "narashin"
+  "projectOwner": "narashin",
+  "files": [
+    "README.md"
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": [
+    {
+      "login": "narashin",
+      "name": "nara",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16604401?v=4",
+      "profile": "http://nara.dev",
+      "contributions": [
+        "maintenance"
+      ]
+    }
+  ]
 }
