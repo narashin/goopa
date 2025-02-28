@@ -131,7 +131,7 @@ If you'd like to contribute to the project, please submit a pull request. For ma
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="http://nara.dev"><img src="https://avatars.githubusercontent.com/u/16604401?v=4?s=100" width="100px;" alt="nara"/><br /><sub><b>nara</b></sub></a><br /><a href="#maintenance-narashin" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://nara.dev"><img src="https://avatars.githubusercontent.com/u/16604401?v=4?s=100" width="100px;" alt="nara"/><br /><sub><b>nara</b></sub></a><br /><a href="#maintenance-narashin" title="Maintenance">🚧</a> <a href="#code-narashin" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://tigeryoo-portfolio.web.app/"><img src="https://avatars.githubusercontent.com/u/6271133?v=4?s=100" width="100px;" alt="Taekwon Yoo"/><br /><sub><b>Taekwon Yoo</b></sub></a><br /><a href="#bug-MTGVim" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
