@@ -16,6 +16,15 @@
       "contributions": [
         "maintenance"
       ]
+    },
+    {
+      "login": "MTGVim",
+      "name": "Taekwon Yoo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6271133?v=4",
+      "profile": "https://tigeryoo-portfolio.web.app/",
+      "contributions": [
+        "bug"
+      ]
     }
   ]
 }
